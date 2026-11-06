@@ -3,11 +3,11 @@ import { OrbitControls } from './vendor/OrbitControls.js';
 import { HandFlow } from './nubes-interactivas.js?v=9';
 import { createCloudNoiseTexture } from './cloud-volume.js';
 import { CloudLayer } from './capa-nubes.js?v=24';
-import { Countries } from './paises.js?v=4';
+import { Countries } from './paises.js?v=5';
 import { ModoPais } from './modo-pais.js?v=11';
-import { PanelPais } from './panel-pais.js?v=4';
-import { PanelDatos } from './panel-datos.js?v=3';
-import { entradaCatalogo, cargarDatos, diaDelAnio, fechaDeDia, etiquetaConfianza, etiquetaSatelite } from './datos-pais.js';
+import { PanelPais } from './panel-pais.js?v=5';
+import { PanelDatos } from './panel-datos.js?v=4';
+import { entradaCatalogo, cargarDatos, diaDelAnio, fechaDeDia, etiquetaConfianza, etiquetaSatelite } from './datos-pais.js?v=2';
 
 const canvas = document.querySelector('#tierra');
 const loading = document.querySelector('#carga');
@@ -35,7 +35,9 @@ const parametrosIniciales = new URLSearchParams(location.search);
 function leerInicial(parametros) {
   const fecha = parametros.get('dia');
   const sensor = parametros.get('sensor');
+  const anio = parametros.get('anio');
   return {
+    anio: /^\d{4}-/.test(fecha || '') ? +fecha.slice(0, 4) : /^\d{4}$/.test(anio || '') ? +anio : null,
     dia: /^\d{4}-\d{2}-\d{2}$/.test(fecha || '') ? diaDelAnio(fecha, +fecha.slice(0, 4)) : null,
     sensor: ['MODIS', 'VIIRS'].includes(sensor) ? sensor : null,
   };
@@ -612,10 +614,20 @@ async function main() {
     onPais: id => solicitarPais(id, {}),
     onReintentar: () => abrirPais(panelPais.feature),
     onRegistros: filtro => panelDatos.abrir(filtro),
+    onAnio: anio => {
+      // Cambiar de año recarga solo el detalle diario y los puntos del mapa.
+      if (!paisAbierto) return;
+      const entrada = entradaCatalogo(paisAbierto.id, anio);
+      if (!entrada) return;
+      panelPais.cargandoAnio(entrada);
+      actualizarURL({ anio: entrada.anio, dia: null });
+      cargarDatosPais(paisAbierto, entrada, {}, ++pedidoPais);
+    },
     onFiltro: filtro => {
       modo.filtrar(filtro);
       if (filtro.persistente) {
         actualizarURL({
+          anio: panelPais.datos.anio,
           dia: filtro.dia === null ? null : fechaDeDia(filtro.dia, panelPais.datos.anio),
           sensor: filtro.sensor === 'todos' ? null : filtro.sensor,
         });
@@ -641,15 +653,15 @@ async function main() {
   }
   function abrirPais(country) {
     if (transition) return;
-    const entrada = entradaCatalogo(country.id);
     const inicial = inicialPais;
+    const entrada = entradaCatalogo(country.id, inicial.anio);
     inicialPais = {};
     const pedido = ++pedidoPais;
     if (!paisAbierto) giroPrevio = rotating;
     setRotation(false);
     panelPais.preparar(country, entrada);
     stage.dataset.conDatos = entrada ? 'si' : 'no';
-    actualizarURL({ pais: country.id, dia: null, sensor: null });
+    actualizarURL({ pais: country.id, dia: null, sensor: null, anio: null });
     const nombre = country.properties.spanish || country.properties.name;
     piezaCanvas.setAttribute('aria-label', `Mapa de ${nombre}. Arrastra para girar y usa la rueda para acercar. Las flechas giran el mapa; más y menos cambian el zoom. Escape vuelve a la Tierra.`);
     if (paisAbierto) {
@@ -695,7 +707,7 @@ async function main() {
     panelPais.detener();
     delete stage.dataset.modo;
     modo.salir();
-    actualizarURL({ pais: null, dia: null, sensor: null });
+    actualizarURL({ pais: null, dia: null, sensor: null, anio: null });
     if (vuelo) { vuelo.sentido = -1; vuelo.ultimo = performance.now(); return; }
     // Vuelve al planeta completo mirando el país, aunque el globo haya seguido girando.
     const dirRegreso = direccionPais(paisAbierto);

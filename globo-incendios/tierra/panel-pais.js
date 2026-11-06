@@ -1,20 +1,21 @@
 import {
-  conteosPara, suma, diasActivos, mayoresDias, escalaCalendario, fechaDeDia, CATALOGO,
-} from './datos-pais.js';
+  conteosPara, suma, diasActivos, mayoresDias, escalaCalendario, fechaDeDia, CATALOGO, cargarSerie,
+} from './datos-pais.js?v=2';
+import { CalendarioHistorico } from './calendario-historico.js?v=3';
 
 const numero = new Intl.NumberFormat('es-CL');
 const fechaLarga = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'long', timeZone: 'UTC' });
 const fechaCorta = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', timeZone: 'UTC' });
 const mesCorto = new Intl.DateTimeFormat('es', { month: 'short', timeZone: 'UTC' });
 const fecha = (dia, anio) => new Date(`${fechaDeDia(dia, anio)}T00:00:00Z`);
-const NOMBRES_SENSOR = { todos: 'Ambos', MODIS: 'MODIS', VIIRS: 'VIIRS' };
+const NOMBRES_SENSOR = { todos: 'Ambos (crudo)', MODIS: 'MODIS', VIIRS: 'VIIRS' };
 const DIAS_POR_SEGUNDO = 12;
 const ICONO_PLAY = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M7 4.8v14.4c0 .8.9 1.3 1.5.8l11-7.2c.6-.4.6-1.2 0-1.6l-11-7.2c-.6-.5-1.5 0-1.5.8Z"/></svg>';
 const ICONO_PAUSA = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
 
 export class PanelPais {
-  constructor({ raiz, reduceMotion, onCerrar, onFiltro, onRegistros, onPais, onReintentar }) {
-    Object.assign(this, { raiz, reduceMotion, onCerrar, onFiltro, onRegistros, onPais, onReintentar });
+  constructor({ raiz, reduceMotion, onCerrar, onFiltro, onRegistros, onPais, onReintentar, onAnio }) {
+    Object.assign(this, { raiz, reduceMotion, onCerrar, onFiltro, onRegistros, onPais, onReintentar, onAnio });
     raiz.innerHTML = `
       <button type="button" class="panel-asa" data-accion="hoja" aria-expanded="false" aria-label="Mostrar más datos"><span aria-hidden="true"></span></button>
       <div class="panel-contenido" data-parte="contenido">
@@ -111,10 +112,21 @@ export class PanelPais {
   // ---------- Datos ----------
   ponerDatos(datos, omitidos, inicial = {}) {
     this.datos = datos; this.omitidos = omitidos;
-    if (inicial.sensor) this.sensor = inicial.sensor;
+    // Un solo sensor por defecto: sumar MODIS + VIIRS cuenta dos veces el mismo fuego.
+    // Desde 2012 se usa VIIRS, igual que la serie harmonizada; antes, MODIS.
+    this.sensor = inicial.sensor || (datos.anio >= 2012 ? 'VIIRS' : 'MODIS');
+    this.dia = null;
     if (Number.isInteger(inicial.dia) && inicial.dia >= 0 && inicial.dia < datos.totalDias) this.dia = inicial.dia;
     this.botonRegistros.hidden = false;
+    const anios = this.entrada?.anios || [datos.anio];
     this.cuerpo.innerHTML = `
+      <section class="bloque historico" aria-labelledby="titulo-historico" data-parte="historico" hidden></section>
+      <div class="diario-cabeza">
+        <h3>Detalle diario</h3>
+        <label class="selector-anio">Año
+          <select data-parte="anio" aria-label="Año del detalle diario">${anios.slice().reverse().map(a => `<option value="${a}"${a === datos.anio ? ' selected' : ''}>${a}</option>`).join('')}</select>
+        </label>
+      </div>
       <section class="resumen" aria-live="polite">
         <p class="resumen-fecha"><span data-parte="fecha"></span><button type="button" class="enlace" data-accion="todo" hidden></button></p>
         <p class="cifra"><strong data-parte="cifra"></strong> <span data-parte="cifra-unidad"></span></p>
@@ -139,10 +151,31 @@ export class PanelPais {
         <h3 id="titulo-picos">Días de mayor actividad</h3>
         <ol class="ranking" data-parte="picos"></ol>
       </section>
-      <p class="panel-nota">Puntos de calor, no incendios únicos. Sin armonizar entre sensores.<span data-parte="omitidos"></span></p>`;
+      <p class="panel-nota">El detalle diario muestra los puntos de calor originales de cada sensor (no son incendios únicos y no están harmonizados). Para comparar años usa el calendario histórico.<span data-parte="omitidos"></span></p>`;
     this.parte = nombre => this.cuerpo.querySelector(`[data-parte="${nombre}"]`);
+    this.parte('anio').addEventListener('change', e => this.onAnio?.(+e.target.value));
+    this.pintarHistorico();
     this.construirCalendario();
     this.actualizar();
+  }
+  pintarHistorico() {
+    const nodo = this.parte('historico');
+    const entrada = this.entrada, anio = this.datos.anio;
+    if (!entrada?.serie) return;
+    this.historico = new CalendarioHistorico({ nodo, tip: this.tip, onAnio: a => { if (a !== this.datos?.anio) this.onAnio?.(a); } });
+    cargarSerie(entrada).then(serie => {
+      if (!serie || this.parte?.('historico') !== nodo) return;
+      nodo.hidden = false;
+      this.historico.poner(serie, anio);
+    }).catch(error => console.error('Serie mensual:', error));
+  }
+  // Mientras llega otro año, el detalle se atenúa; el calendario histórico sigue visible.
+  cargandoAnio(entrada) {
+    this.entrada = entrada;
+    this.detener();
+    this.historico?.marcarAnio(entrada.anio);
+    for (const n of this.cuerpo.querySelectorAll('.resumen, .sensores, .bloque:not(.historico), .panel-nota')) n.classList.add('cargando-anio');
+    const sel = this.parte?.('anio'); if (sel) sel.value = entrada.anio;
   }
   ponerRegiones(nombres, indices) {
     this.regiones = { nombres, indices };
@@ -305,7 +338,7 @@ export class PanelPais {
     if (!this.datos) return;
     if (accion === 'todo') { this.detener(); this.dia = null; this.actualizar(); return; }
     if (accion === 'reproducir') { if (this.reproduciendo) this.detener(true); else this.reproducir(); return; }
-    if (accion === 'registros') { this.onRegistros?.({ id: this.entrada.id, dia: this.dia, sensor: this.sensor }); return; }
+    if (accion === 'registros') { this.onRegistros?.({ id: this.entrada.id, dia: this.dia, sensor: this.sensor, anio: this.datos.anio }); return; }
     const sensor = e.target.closest('[data-sensor]')?.dataset.sensor;
     if (sensor) { this.sensor = sensor; this.actualizar(); return; }
     const celda = e.target.closest('.celda') || e.target.closest('[data-dia-pico]');

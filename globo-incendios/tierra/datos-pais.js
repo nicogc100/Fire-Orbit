@@ -1,9 +1,18 @@
 // Datos guardados por país. Sin DOM ni WebGL: se prueba con comprobar-datos.mjs.
+// anios: años con detecciones guardadas (data/<prefijo>-<año>.json).
+// serie: archivo con la serie mensual harmonizada MODIS + VIIRS (procesamiento/2_armonizar.py).
+const rango = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
 export const CATALOGO = {
-  152: { id: '152', nombre: 'Chile', archivo: 'chile-2023.json' },
-  620: { id: '620', nombre: 'Portugal', archivo: 'portugal-2023.json' },
+  152: { id: '152', nombre: 'Chile', prefijo: 'chile', anios: rango(2000, 2026), serie: 'chile-mensual.json', grilla: 'chile-grilla.json' },
+  620: { id: '620', nombre: 'Portugal', prefijo: 'portugal', anios: [2023] },
 };
-export const entradaCatalogo = id => CATALOGO[id] || null;
+// Entrada para un año concreto; sin año, el más reciente con datos.
+export function entradaAnio(entrada, anio) {
+  if (!entrada) return null;
+  const a = entrada.anios.includes(+anio) ? +anio : entrada.anios.at(-1);
+  return { ...entrada, anio: a, archivo: `${entrada.prefijo}-${a}.json` };
+}
+export const entradaCatalogo = (id, anio) => entradaAnio(CATALOGO[id], anio);
 
 const cache = new Map();
 let procedencia;
@@ -26,13 +35,26 @@ export function cargarProcedencia() {
 }
 
 export function cargarDatos(entrada) {
-  if (!cache.has(entrada.id)) {
-    cache.set(entrada.id, pedirJSON(`../data/${entrada.archivo}`).then(prepararDatos).catch(error => {
-      cache.delete(entrada.id);
+  const clave = entrada.archivo;
+  if (!cache.has(clave)) {
+    // Solo se guardan en memoria los últimos años abiertos: cada año puede pesar varios MB.
+    if (cache.size >= 4) cache.delete(cache.keys().next().value);
+    cache.set(clave, pedirJSON(`../data/${entrada.archivo}`).then(prepararDatos).catch(error => {
+      cache.delete(clave);
       throw error;
     }));
   }
-  return cache.get(entrada.id);
+  return cache.get(clave);
+}
+
+// Serie mensual harmonizada (2000 → hoy). null si el país no la tiene.
+const series = new Map();
+export function cargarSerie(entrada) {
+  if (!entrada?.serie) return Promise.resolve(null);
+  if (!series.has(entrada.id)) {
+    series.set(entrada.id, pedirJSON(`../data/${entrada.serie}`).catch(error => { series.delete(entrada.id); throw error; }));
+  }
+  return series.get(entrada.id);
 }
 
 export function diasDelAnio(anio) { return (Date.UTC(anio + 1, 0, 1) - Date.UTC(anio, 0, 1)) / 864e5; }
