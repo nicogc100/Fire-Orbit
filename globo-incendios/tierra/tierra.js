@@ -5,7 +5,7 @@ import { createCloudNoiseTexture } from './cloud-volume.js';
 import { CloudLayer } from './capa-nubes.js?v=24';
 import { Countries } from './paises.js?v=5';
 import { ModoPais } from './modo-pais.js?v=11';
-import { PanelPais } from './panel-pais.js?v=5';
+import { PanelPais } from './panel-pais.js?v=6';
 import { PanelDatos } from './panel-datos.js?v=4';
 import { entradaCatalogo, cargarDatos, diaDelAnio, fechaDeDia, etiquetaConfianza, etiquetaSatelite } from './datos-pais.js?v=2';
 

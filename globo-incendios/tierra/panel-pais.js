@@ -116,6 +116,8 @@ export class PanelPais {
     // Desde 2012 se usa VIIRS, igual que la serie harmonizada; antes, MODIS.
     this.sensor = inicial.sensor || (datos.anio >= 2012 ? 'VIIRS' : 'MODIS');
     this.dia = null;
+    // Las regiones se calculan por registro: las de otro año no sirven (llegan después).
+    if (this.regiones && this.regiones.indices.length !== datos.registros.length) this.regiones = null;
     if (Number.isInteger(inicial.dia) && inicial.dia >= 0 && inicial.dia < datos.totalDias) this.dia = inicial.dia;
     this.botonRegistros.hidden = false;
     const anios = this.entrada?.anios || [datos.anio];
@@ -173,6 +175,7 @@ export class PanelPais {
   cargandoAnio(entrada) {
     this.entrada = entrada;
     this.detener();
+    this.regiones = null;
     this.historico?.marcarAnio(entrada.anio);
     for (const n of this.cuerpo.querySelectorAll('.resumen, .sensores, .bloque:not(.historico), .panel-nota')) n.classList.add('cargando-anio');
     const sel = this.parte?.('anio'); if (sel) sel.value = entrada.anio;
@@ -187,7 +190,7 @@ export class PanelPais {
   }
   pintarRegiones() {
     const { datos, dia, sensor, regiones } = this;
-    if (!regiones || !this.parte) return;
+    if (!regiones || !this.parte || regiones.indices.length !== datos.registros.length) return;
     const conteo = new Int32Array(regiones.nombres.length);
     for (let i = 0; i < regiones.indices.length; i++) {
       const r = regiones.indices[i];
