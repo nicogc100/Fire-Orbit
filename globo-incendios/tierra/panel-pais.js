@@ -1,21 +1,22 @@
 import {
   conteosPara, suma, diasActivos, mayoresDias, escalaCalendario, fechaDeDia, CATALOGO, cargarSerie,
-} from './datos-pais.js?v=2';
-import { CalendarioHistorico } from './calendario-historico.js?v=3';
+} from './datos-pais.js?v=4';
+import { CalendarioHistorico } from './calendario-historico.js?v=5';
 
 const numero = new Intl.NumberFormat('es-CL');
 const fechaLarga = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'long', timeZone: 'UTC' });
 const fechaCorta = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', timeZone: 'UTC' });
 const mesCorto = new Intl.DateTimeFormat('es', { month: 'short', timeZone: 'UTC' });
 const fecha = (dia, anio) => new Date(`${fechaDeDia(dia, anio)}T00:00:00Z`);
+const MESES_LARGOS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const NOMBRES_SENSOR = { todos: 'Ambos (crudo)', MODIS: 'MODIS', VIIRS: 'VIIRS' };
 const DIAS_POR_SEGUNDO = 12;
 const ICONO_PLAY = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M7 4.8v14.4c0 .8.9 1.3 1.5.8l11-7.2c.6-.4.6-1.2 0-1.6l-11-7.2c-.6-.5-1.5 0-1.5.8Z"/></svg>';
 const ICONO_PAUSA = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
 
 export class PanelPais {
-  constructor({ raiz, reduceMotion, onCerrar, onFiltro, onRegistros, onPais, onReintentar, onAnio }) {
-    Object.assign(this, { raiz, reduceMotion, onCerrar, onFiltro, onRegistros, onPais, onReintentar, onAnio });
+  constructor({ raiz, reduceMotion, onCerrar, onFiltro, onRegistros, onPais, onReintentar, onAnio, onPeriodo }) {
+    Object.assign(this, { raiz, reduceMotion, onCerrar, onFiltro, onRegistros, onPais, onReintentar, onAnio, onPeriodo });
     raiz.innerHTML = `
       <button type="button" class="panel-asa" data-accion="hoja" aria-expanded="false" aria-label="Mostrar más datos"><span aria-hidden="true"></span></button>
       <div class="panel-contenido" data-parte="contenido">
@@ -162,14 +163,44 @@ export class PanelPais {
   }
   pintarHistorico() {
     const nodo = this.parte('historico');
-    const entrada = this.entrada, anio = this.datos.anio;
+    const entrada = this.entrada, anio = this.datos?.anio ?? null;
     if (!entrada?.serie) return;
-    this.historico = new CalendarioHistorico({ nodo, tip: this.tip, onAnio: a => { if (a !== this.datos?.anio) this.onAnio?.(a); } });
+    const detalle = !entrada.soloSerie;
+    this.historico = new CalendarioHistorico({
+      nodo, tip: this.tip, detalle,
+      onAnio: detalle ? a => { if (a !== this.datos?.anio) this.onAnio?.(a); } : null,
+      onSeleccion: detalle ? null : sel => this.elegirPeriodo(sel),
+    });
     cargarSerie(entrada).then(serie => {
       if (!serie || this.parte?.('historico') !== nodo) return;
       nodo.hidden = false;
       this.historico.poner(serie, anio);
-    }).catch(error => console.error('Serie mensual:', error));
+      // Sin detalle diario: el mapa muestra el último año completo hasta que se elija otro período.
+      if (!detalle) this.historico.seleccionar(this.historico.ultimoAnioCompleto(), null);
+    }).catch(error => {
+      console.error('Serie mensual:', error);
+      if (!detalle && this.parte?.('historico') === nodo) this.error();
+    });
+  }
+  elegirPeriodo(sel) {
+    const nodo = this.parte?.('periodo');
+    if (nodo) {
+      nodo.hidden = false;
+      nodo.querySelector('strong').textContent = sel.mes === null ? `todo ${sel.anio}` : `${MESES_LARGOS[sel.mes]} de ${sel.anio}`;
+    }
+    this.onPeriodo?.(sel);
+  }
+  // Países del índice mundial sin detecciones guardadas: serie harmonizada y mapa mensual por celdas.
+  ponerSoloSerie() {
+    this.datos = null; this.regiones = null;
+    this.botonRegistros.hidden = true;
+    this.cuerpo.innerHTML = `
+      <p class="periodo-mapa" data-parte="periodo" aria-live="polite" hidden>En el mapa: <strong></strong> <span>(zonas de 25 a 100 km, harmonizado)</span></p>
+      <section class="bloque historico" aria-labelledby="titulo-historico" data-parte="historico" hidden></section>
+      <p class="panel-nota">Serie mensual harmonizada a partir de los archivos anuales de NASA FIRMS (MODIS, VIIRS Suomi NPP y NOAA-20).
+        Cada punto del mapa es una zona con fuego en el período elegido. El detalle día a día con cada detección está disponible para ${Object.values(CATALOGO).map(c => c.nombre).join(' y ')}.</p>`;
+    this.parte = nombre => this.cuerpo.querySelector(`[data-parte="${nombre}"]`);
+    this.pintarHistorico();
   }
   // Mientras llega otro año, el detalle se atenúa; el calendario histórico sigue visible.
   cargandoAnio(entrada) {

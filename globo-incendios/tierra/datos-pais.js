@@ -6,13 +6,73 @@ export const CATALOGO = {
   152: { id: '152', nombre: 'Chile', prefijo: 'chile', anios: rango(2000, 2026), serie: 'chile-mensual.json', grilla: 'chile-grilla.json' },
   620: { id: '620', nombre: 'Portugal', prefijo: 'portugal', anios: [2023] },
 };
+// Índice mundial (procesamiento/5_mundo_armonizar.py): serie mensual harmonizada de cada país.
+let indiceMundo = new Map();
+export async function cargarIndice() {
+  try {
+    const indice = await pedirJSON('../data/mundo/indice.json', 2);
+    indiceMundo = new Map(indice.paises.map(p => [String(p.id), p]));
+  } catch (error) {
+    console.warn('Sin índice mundial; solo países con datos detallados.', error);
+  }
+  return indiceMundo;
+}
+export const datosMundo = id => indiceMundo.get(String(id)) || null;
+
+// Mapa del país: celdas (0,25° a 1°) × meses, harmonizado. Uint16 comprimido con gzip.
+const mapas = new Map();
+export function cargarCeldas(id) {
+  if (!mapas.has(id)) {
+    const base = `../data/mundo/celdas-pais/${id}`;
+    mapas.set(id, Promise.all([
+      pedirJSON(`${base}.json`, 2),
+      fetch(`${base}.bin.gz`).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.arrayBuffer(); }),
+    ]).then(async ([cabecera, bytes]) => {
+      let crudo = new Uint8Array(bytes);
+      // Si el servidor ya lo descomprimió (Content-Encoding), no empieza con la firma de gzip.
+      if (crudo[0] === 0x1f && crudo[1] === 0x8b) {
+        crudo = new Uint8Array(await new Response(new Blob([crudo]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+      }
+      const valores = new Uint16Array(crudo.buffer, crudo.byteOffset, crudo.byteLength / 2);
+      const [a0, m0] = cabecera.meses_inicio.split('-').map(Number);
+      return { ...cabecera, valores, a0, m0: m0 - 1 };
+    }).catch(error => { mapas.delete(id); throw error; }));
+  }
+  return mapas.get(id);
+}
+// Suma de cada celda entre dos meses (incluidos). Devuelve Float32Array por celda.
+export function sumarCeldas(mapa, anio, mes = null) {
+  const indice = (a, m) => (a - mapa.a0) * 12 + (m - mapa.m0);
+  const i0 = Math.max(0, indice(anio, mes ?? 0)), i1 = Math.min(mapa.n_meses - 1, indice(anio, mes ?? 11));
+  const n = mapa.celdas.length, salida = new Float32Array(n);
+  if (i1 < i0) return salida;
+  for (let c = 0; c < n; c++) {
+    let s = 0;
+    for (let i = i0, base = c * mapa.n_meses; i <= i1; i++) s += mapa.valores[base + i];
+    salida[c] = s * mapa.escala;
+  }
+  return salida;
+}
+
 // Entrada para un año concreto; sin año, el más reciente con datos.
 export function entradaAnio(entrada, anio) {
   if (!entrada) return null;
+  if (entrada.soloSerie) return entrada;
   const a = entrada.anios.includes(+anio) ? +anio : entrada.anios.at(-1);
   return { ...entrada, anio: a, archivo: `${entrada.prefijo}-${a}.json` };
 }
-export const entradaCatalogo = (id, anio) => entradaAnio(CATALOGO[id], anio);
+// Países con detecciones guardadas (CATALOGO): detalle diario + serie.
+// El resto de los países del índice mundial: solo la serie mensual harmonizada.
+export function entradaCatalogo(id, anio) {
+  const detalle = CATALOGO[id], mundo = datosMundo(id);
+  if (detalle) {
+    return entradaAnio({ ...detalle, serie: detalle.serie || (mundo && `mundo/${mundo.archivo}`), calidad: mundo?.calidad }, anio);
+  }
+  if (mundo) {
+    return { id: String(id), nombre: mundo.spanish || mundo.nombre, soloSerie: true, anios: [], serie: `mundo/${mundo.archivo}`, calidad: mundo.calidad };
+  }
+  return null;
+}
 
 const cache = new Map();
 let procedencia;

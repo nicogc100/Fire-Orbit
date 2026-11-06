@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {geoPath,geoEquirectangular} from './vendor/d3-geo.js';
 import {countryAt,coordinatesFromPoint,searchCountries} from './paises-geo.js';
-import {entradaCatalogo} from './datos-pais.js?v=2';
+import {entradaCatalogo} from './datos-pais.js?v=4';
 
 const W=4096,H=2048;
 export const countryColor=index=>new THREE.Vector3(index/255,((index*37)%256)/255,((index*91)%256)/255);

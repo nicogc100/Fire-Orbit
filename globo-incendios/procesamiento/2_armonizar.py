@@ -99,7 +99,9 @@ def main():
         .reindex(meses, fill_value=0).reindex(columns=["MODIS", "VIIRS"], fill_value=0)
 
     # ---- 2. Factores por mes del calendario ----
-    en_traslape = np.array([m.year in traslape for m in meses])
+    # S-NPP empieza el 20 de enero de 2012: ese mes está incompleto y no sirve para calibrar
+    desde_viirs = lambda m: m.year in anios_v and not (m.year == min(anios_v) and m.month == 1)
+    en_traslape = np.array([m.year in traslape and desde_viirs(m) for m in meses])
     t = tabla[en_traslape]
     factor_global = t["VIIRS"].sum() / max(t["MODIS"].sum(), 1)
 
@@ -131,7 +133,7 @@ def main():
     r = float(np.corrcoef(pred_traslape, t["VIIRS"].to_numpy())[0, 1]) if len(t) > 2 else None
 
     # ---- 4. Serie harmonizada ----
-    usa_viirs = np.array([m.year in anios_v for m in meses])
+    usa_viirs = np.array([desde_viirs(m) for m in meses])
     armonizado = np.where(usa_viirs, tabla["VIIRS"].to_numpy(),
                           tabla["MODIS"].to_numpy() * f_mes[[m.month - 1 for m in meses]])
     armonizado = np.round(armonizado, 1)
@@ -188,7 +190,8 @@ def main():
     g["im"] = g["mes"].map(idx_mes)
     g["anio"] = g["fecha"].dt.year
     # Se usa VIIRS en años con VIIRS y MODIS×f en el resto, igual que la serie nacional
-    g = g[((g["sensor"] == "VIIRS") & g["anio"].isin(anios_v)) | ((g["sensor"] == "MODIS") & ~g["anio"].isin(anios_v))]
+    con_viirs = g["mes"].map(desde_viirs)
+    g = g[((g["sensor"] == "VIIRS") & con_viirs) | ((g["sensor"] == "MODIS") & ~con_viirs)]
     cnt = g.groupby(["gi", "gj", "im", "sensor"]).size().reset_index(name="n")
     cnt["valor"] = np.where(cnt["sensor"] == "MODIS",
                             cnt["n"] * f_mes[[meses[i].month - 1 for i in cnt["im"]]], cnt["n"])

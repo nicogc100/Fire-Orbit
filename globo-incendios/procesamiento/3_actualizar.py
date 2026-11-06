@@ -39,6 +39,10 @@ CAJA_CHILE = "-76,-56.5,-66,-17"  # oeste,sur,este,norte (Chile continental)
 CELDA_FINA = 0.01
 CELDA_GRILLA = 0.25
 DIAS_POR_CONSULTA = 5
+# Suomi NPP dejó de entregar datos el 1-2 de noviembre de 2026 (anuncio de NOAA/NASA).
+# Desde ese día se usa NOAA-20, que lleva el mismo instrumento VIIRS, corregido por el
+# factor g(mes) calibrado con el traslape NOAA-20/S-NPP (5_mundo_armonizar.py).
+CORTE_SNPP = date(2026, 11, 1)
 
 
 # ---------- utilidades ----------
@@ -80,9 +84,20 @@ def celdas_no_vegetacion(pais):
     return celdas
 
 
-def fecha_maxima_sp(key):
+def factores_noaa20(pais):
+    """g(mes) del país, desde data/mundo (si existe). Sin ese archivo se usa 1,0 (NOAA-20 ≈ S-NPP)."""
     try:
-        r = requests.get(f"{API}/data_availability/csv/{key}/VIIRS_SNPP_SP", timeout=60)
+        indice = json.loads((DATA / "mundo" / "indice.json").read_text(encoding="utf-8"))
+        fila = next(p for p in indice["paises"] if p["nombre"] == pais or p["firms"] == pais.replace(" ", "_"))
+        serie = json.loads((DATA / "mundo" / fila["archivo"]).read_text(encoding="utf-8"))
+        return np.array(serie["metodo"]["factores_noaa20_por_mes"]), "calibrado 2019-2025"
+    except Exception:
+        return np.ones(12), "sin calibrar (falta data/mundo; se usa 1,0)"
+
+
+def fecha_maxima_sp(key, fuente="VIIRS_SNPP_SP"):
+    try:
+        r = requests.get(f"{API}/data_availability/csv/{key}/{fuente}", timeout=60)
         tabla = pd.read_csv(io.StringIO(r.text))
         return pd.to_datetime(tabla["max_date"].iloc[0]).date()
     except Exception:
@@ -141,8 +156,10 @@ def main():
     # 1. Descargar por tramos de 5 días
     inicio, hoy = date(args.anio, 1, 1), date.today()
     max_sp = fecha_maxima_sp(args.key)
-    print(f"Datos definitivos (SP) disponibles hasta: {max_sp or 'desconocido'}; después se usa NRT")
-    cache = CRUDOS / args.pais / f"viirs-api_{args.anio}.csv"
+    max_sp20 = fecha_maxima_sp(args.key, "VIIRS_NOAA20_SP")
+    print(f"Suomi NPP hasta el {CORTE_SNPP - timedelta(days=1)}, después NOAA-20. "
+          f"Datos definitivos (SP) hasta: S-NPP {max_sp or '?'}, NOAA-20 {max_sp20 or '?'}; después se usa NRT")
+    cache = CRUDOS / args.pais / f"viirs-api_{args.anio}_v2.csv"
     if cache.exists() and date.fromtimestamp(cache.stat().st_mtime) == hoy:
         print(f"Usando lo descargado hoy: {cache.name} (bórralo para descargar de nuevo)")
         df = pd.read_csv(cache, dtype={"version": str, "confidence": str, "satellite": str})
@@ -150,8 +167,13 @@ def main():
         partes, d = [], inicio
         while d <= hoy:
             dias = min(DIAS_POR_CONSULTA, (hoy - d).days + 1)
+            if d < CORTE_SNPP:
+                dias = min(dias, (CORTE_SNPP - d).days)  # ningún tramo cruza el cambio de satélite
             fin = d + timedelta(days=dias - 1)
-            fuente = "VIIRS_SNPP_SP" if max_sp and fin <= max_sp else "VIIRS_SNPP_NRT"
+            if d < CORTE_SNPP:
+                fuente = "VIIRS_SNPP_SP" if max_sp and fin <= max_sp else "VIIRS_SNPP_NRT"
+            else:
+                fuente = "VIIRS_NOAA20_SP" if max_sp20 and fin <= max_sp20 else "VIIRS_NOAA20_NRT"
             # el último tramo (el que llega a hoy) se pide sin fecha: "los últimos N días"
             df = pedir(args.key, fuente, None if fin == hoy else d, dias)
             if not df.empty:
@@ -192,22 +214,32 @@ def main():
     listas = ["meses", "modis", "viirs", "detecciones_modis", "detecciones_viirs", "armonizado", "origen", "incompleto"]
     for campo in listas:
         mensual[campo] = [mensual[campo][i] for i in conservar]
-    cuenta = finas.groupby(finas["mes"].astype(str)).size()
+    # NOAA-20 se pasa a "unidades S-NPP" con g(mes); S-NPP vale 1
+    g, origen_g = factores_noaa20(args.pais)
+    es20 = finas["fuente"].str.contains("NOAA20").to_numpy()
+    finas = finas.assign(peso=np.where(es20, g[finas["mes"].dt.month.to_numpy() - 1], 1.0))
+    print(f"Factores NOAA-20→S-NPP ({origen_g}):", " ".join(f"{x:.2f}" for x in g))
+    cuenta = finas.groupby(finas["mes"].astype(str))["peso"].sum()
     detec = df.groupby(df["mes"].astype(str)).size()
-    nrt_por_mes = df.groupby(df["mes"].astype(str))["fuente"].apply(lambda s: (s == "VIIRS_SNPP_NRT").any())
+    fuentes_mes = df.groupby(df["mes"].astype(str))["fuente"].agg(lambda s: set(s))
+    def etiqueta(m):
+        f = fuentes_mes.get(m, set())
+        sat = "NOAA-20×g" if any("NOAA20" in x for x in f) else "VIIRS"
+        return sat + (" NRT" if any(x.endswith("NRT") for x in f) else "")
     for m in meses_nuevos:
-        v = int(cuenta.get(m, 0))
+        v = round(float(cuenta.get(m, 0)), 1)
         mensual["meses"].append(m)
         mensual["modis"].append(None)
         mensual["viirs"].append(v)
         mensual["detecciones_modis"].append(None)
         mensual["detecciones_viirs"].append(int(detec.get(m, 0)))
         mensual["armonizado"].append(float(v))
-        mensual["origen"].append("VIIRS NRT" if bool(nrt_por_mes.get(m, False)) else "VIIRS")
+        mensual["origen"].append(etiqueta(m))
         mensual["incompleto"].append(m == hoy.strftime("%Y-%m"))  # el mes en curso aún no termina
     mensual["actualizado_hasta"] = hoy.isoformat()
     mensual["metodo"]["nota_anio_en_curso"] = (
-        f"{args.anio}: VIIRS S-NPP desde la API de FIRMS (SP donde existe, NRT en los días recientes), "
+        f"{args.anio}: VIIRS S-NPP desde la API de FIRMS (SP donde existe, NRT en los días recientes); desde el "
+        f"{CORTE_SNPP} VIIRS NOAA-20 × g(mes), {origen_g}, porque S-NPP dejó de operar. "
         f"filtrado al polígono de {args.pais}. NRT no trae 'type': se excluyen las celdas que en 2012-2025 "
         "fueron industria, volcán o mar adentro. El mes en curso va marcado como incompleto.")
     ruta_mensual.write_text(json.dumps(mensual, ensure_ascii=False), encoding="utf-8")
@@ -223,9 +255,9 @@ def main():
         por_celda[(c["lat"], c["lon"])] = v
     finas = finas.assign(gi=np.floor(finas["latitude"] / CELDA_GRILLA).astype(int),
                          gj=np.floor(finas["longitude"] / CELDA_GRILLA).astype(int))
-    for (gi, gj, mes), n in finas.groupby(["gi", "gj", finas["mes"].astype(str)]).size().items():
+    for (gi, gj, mes), n in finas.groupby(["gi", "gj", finas["mes"].astype(str)])["peso"].sum().items():
         clave = (round(gi * CELDA_GRILLA, 2), round(gj * CELDA_GRILLA, 2))
-        por_celda.setdefault(clave, []).append([idx_nuevo[mes], float(n)])
+        por_celda.setdefault(clave, []).append([idx_nuevo[mes], round(float(n), 1)])
     grilla["meses"] = mensual["meses"]
     grilla["celdas"] = [{"lat": la, "lon": lo, "v": sorted(v)} for (la, lo), v in sorted(por_celda.items()) if v]
     ruta_grilla.write_text(json.dumps(grilla, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
@@ -247,7 +279,7 @@ def main():
         v = cuenta.get(m, 0)
         normal = med[int(m[5:]) - 1]
         extra = " (mes en curso, incompleto)" if m == hoy.strftime("%Y-%m") else ""
-        print(f"  {m}: {v:>6}  normal {normal:>7.0f}  -> {v / normal if normal else 0:4.1f} veces lo normal{extra}")
+        print(f"  {m}: {float(v):>7.0f}  normal {normal:>7.0f}  -> {v / normal if normal else 0:4.1f} veces lo normal{extra}")
     print(f"Archivos actualizados: {slug}-mensual.json, {slug}-grilla.json, {slug}-{args.anio}.json")
 
 

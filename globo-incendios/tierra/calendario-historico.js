@@ -72,13 +72,19 @@ function textoCelda(c) {
 
 export class CalendarioHistorico {
   // nodo: contenedor; tip: elemento del tooltip compartido; onAnio(anio): abrir ese año en detalle.
-  constructor({ nodo, tip, onAnio }) {
-    Object.assign(this, { nodo, tip, onAnio });
+  // detalle: si al tocar un año se abre su detalle diario (solo países con detecciones guardadas).
+  // onSeleccion({anio, mes}): países sin detalle diario; el mapa muestra el año o mes elegido.
+  constructor({ nodo, tip, onAnio, onSeleccion, detalle = true }) {
+    Object.assign(this, { nodo, tip, onAnio, onSeleccion, detalle });
+    this.seleccion = null;
     this.modo = 'anomalia';
     nodo.addEventListener('click', e => {
       const modo = e.target.closest('[data-modo-cal]')?.dataset.modoCal;
-      if (modo) { this.modo = modo; this.pintar(); return; }
+      if (modo) { this.modo = modo; this.pintar(); if (this.seleccion) this.seleccionar(this.seleccion.anio, this.seleccion.mes, false); return; }
+      const celda = e.target.closest('.hc-celda:not(.vacia)');
+      if (celda && this.onSeleccion) { this.seleccionar(+celda.dataset.anioCelda, +celda.dataset.mes); return; }
       const anio = e.target.closest('[data-anio]')?.dataset.anio;
+      if (anio && this.onSeleccion) { this.seleccionar(+anio, null); return; }
       if (anio) this.onAnio?.(+anio);
     });
     const mostrar = celda => {
@@ -100,6 +106,18 @@ export class CalendarioHistorico {
     this.anioActivo = anioActivo;
     this.pintar();
   }
+  seleccionar(anio, mes, avisar = true) {
+    this.seleccion = { anio, mes };
+    this.anioActivo = anio;
+    for (const f of this.nodo.querySelectorAll('.hc-fila')) f.classList.toggle('activa', +f.dataset.fila === anio && mes === null);
+    for (const c of this.nodo.querySelectorAll('.hc-celda.elegida')) c.classList.remove('elegida');
+    if (mes !== null) this.nodo.querySelector(`.hc-celda[data-anio-celda="${anio}"][data-mes="${mes}"]`)?.classList.add('elegida');
+    if (avisar) this.onSeleccion?.(this.seleccion);
+  }
+  // Último año con los 12 meses completos (lo que muestra el mapa al abrir el país).
+  ultimoAnioCompleto() {
+    return this.datos?.anios.find(a => this.datos.porAnio.get(a).every(c => c && !c.incompleto)) ?? this.datos?.anios[0];
+  }
   marcarAnio(anio) {
     this.anioActivo = anio;
     for (const f of this.nodo.querySelectorAll('.hc-fila')) f.classList.toggle('activa', +f.dataset.fila === anio);
@@ -119,10 +137,10 @@ export class CalendarioHistorico {
         // El mes en curso no se colorea por anomalía: con pocos días siempre parecería "bajo lo normal".
         const nivel = c === enCurso && anomalia ? 'curso' : anomalia ? (c.razon == null ? 0 : nivelAnomalia(c.razon)) : d.nivelConteo(c.valor);
         const clases = ['hc-celda', c.incompleto ? 'incompleta' : '', c === enCurso ? 'en-curso' : ''].join(' ');
-        return `<button type="button" class="${clases}" data-${anomalia ? 'anom' : 'nivel'}="${nivel}" data-anio-celda="${anio}" data-mes="${mes}" data-anio="${anio}" aria-label="${textoCelda(c)}"></button>`;
+        return `<button type="button" class="${clases}${this.detalle || this.onSeleccion ? '' : ' sin-detalle'}" data-${anomalia ? 'anom' : 'nivel'}="${nivel}" data-anio-celda="${anio}" data-mes="${mes}" data-anio="${anio}" aria-label="${textoCelda(c)}"></button>`;
       }).join('');
       return `<div class="hc-fila${anio === this.anioActivo ? ' activa' : ''}" data-fila="${anio}">
-        <button type="button" class="hc-anio" data-anio="${anio}" aria-label="Ver el detalle de ${anio}">${anio}</button>${celdas}</div>`;
+        ${this.detalle ? `<button type="button" class="hc-anio" data-anio="${anio}" aria-label="Ver el detalle de ${anio}">${anio}</button>` : `${this.onSeleccion ? `<button type="button" class="hc-anio" data-anio="${anio}" aria-label="Ver ${anio} en el mapa">${anio}</button>` : `<span class="hc-anio">${anio}</span>`}`}${celdas}</div>`;
     }).join('');
 
     const leyenda = anomalia
@@ -130,8 +148,23 @@ export class CalendarioHistorico {
       : `<span>Menos</span>${[1, 2, 3, 4, 5].map((n, i) => `<i data-nivel="${n}" title="${i === 0 ? `hasta ${numero.format(d.cortes[0])}` : i === 4 ? `más de ${numero.format(d.cortes[3])}` : `${numero.format(d.cortes[i - 1])}–${numero.format(d.cortes[i])}`}"></i>`).join('')}<span>Más</span>`;
 
     const u = ind.ultimoCompleto;
-    const curso = enCurso
-      ? `<li><span>Mes en curso</span><strong>${MESES[enCurso.mes]}: ${numero.format(enCurso.valor)}</strong><small>hasta ${serie.actualizado_hasta ?? 'hoy'}; aún incompleto</small></li>` : '';
+    // Mes en curso: se compara con lo esperado a esta fecha (la mediana del mes, proporcional a los días con datos).
+    let curso = '';
+    if (enCurso) {
+      const hasta = serie.actualizado_hasta ? new Date(`${serie.actualizado_hasta}T12:00:00Z`) : null;
+      const delMes = hasta && hasta.getUTCFullYear() === enCurso.anio && hasta.getUTCMonth() === enCurso.mes;
+      const dias = delMes ? hasta.getUTCDate() : null;
+      const total = new Date(Date.UTC(enCurso.anio, enCurso.mes + 1, 0)).getUTCDate();
+      const esperado = dias ? enCurso.normal * dias / total : null;
+      curso = `<li><span>Mes en curso${dias ? ` (${dias} de ${total} días)` : ''}</span>
+        <strong>${MESES[enCurso.mes]}: ${esperado ? `${decimal.format(enCurso.valor / esperado)} × lo esperado` : numero.format(enCurso.valor)}</strong>
+        <small>${numero.format(enCurso.valor)}${esperado ? ` frente a ${numero.format(esperado)} esperados a esta fecha` : '; aún incompleto'}</small></li>`;
+    }
+    const calidad = metodo.calidad_reconstruccion;
+    const avisoCalidad = calidad === 'baja'
+      ? `<p class="hc-calidad baja"><strong>Reconstrucción 2000–2011 poco confiable.</strong> Hay pocos datos o muchas detecciones podrían no ser incendios de vegetación (antorchas de gas, volcanes). Desde 2012 los datos son medidos por VIIRS.</p>`
+      : calidad === 'media'
+        ? `<p class="hc-calidad"><strong>Reconstrucción 2000–2011 aproximada</strong> (error anual típico ±${decimal.format(metodo.error_anual_mediano_pct)} %).</p>` : '';
 
     this.nodo.innerHTML = `
       <div class="bloque-cabeza">
@@ -150,12 +183,13 @@ export class CalendarioHistorico {
         ${ind.peorAnio ? `<li><span>Año con más actividad</span><strong>${ind.peorAnio}</strong><small>${numero.format(ind.totalPeor)} celdas con fuego</small></li>` : ''}
         <li><span>Mes más activo habitualmente</span><strong>${MESES[ind.mesTipico]}</strong><small>mediana ${numero.format(serie.por_mes_calendario.mediana[ind.mesTipico])}</small></li>
       </ul>
+      ${avisoCalidad}
       <div class="hc-rejilla" role="group" aria-labelledby="titulo-historico">
         <div class="hc-fila hc-cabeza" aria-hidden="true"><span></span>${INICIALES.map(m => `<span>${m}</span>`).join('')}</div>
         ${filas}
       </div>
       <div class="leyenda hc-leyenda">${leyenda}</div>
-      <p class="hc-nota">Toca un año para ver sus detecciones día a día. Las casillas rayadas tienen datos incompletos.
+      <p class="hc-nota">${this.detalle ? 'Toca un año para ver sus detecciones día a día. ' : this.onSeleccion ? 'Toca un año o un mes para verlo en el mapa. ' : ''}Las casillas rayadas tienen datos incompletos.
         ${metodo.error_anual_mediano_pct != null ? `${metodo.anios_traslape ? `Antes de ${metodo.anios_traslape[0]}` : 'Los años sin VIIRS'} se reconstruyen desde MODIS (error anual típico ±${decimal.format(metodo.error_anual_mediano_pct)} %).` : ''}</p>`;
   }
 }
