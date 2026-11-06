@@ -1,0 +1,1208 @@
+{
+  "fuente": "Natural Earth 5.1.1",
+  "licencia": "Dominio público",
+  "admin0": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.1/geojson/ne_10m_admin_0_countries.geojson",
+  "admin1": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.1/geojson/ne_10m_admin_1_states_provinces.geojson",
+  "paises": {
+    "100": {
+      "escala": "1:10m",
+      "regiones": 28,
+      "segmentos": 1270
+    },
+    "104": {
+      "escala": "1:10m",
+      "regiones": 14,
+      "segmentos": 2820
+    },
+    "108": {
+      "escala": "1:10m",
+      "regiones": 17,
+      "segmentos": 428
+    },
+    "112": {
+      "escala": "1:10m",
+      "regiones": 7,
+      "segmentos": 2290
+    },
+    "116": {
+      "escala": "1:10m",
+      "regiones": 24,
+      "segmentos": 1704
+    },
+    "120": {
+      "escala": "1:10m",
+      "regiones": 10,
+      "segmentos": 1131
+    },
+    "124": {
+      "escala": "1:10m",
+      "regiones": 13,
+      "segmentos": 4250
+    },
+    "132": {
+      "escala": "1:10m",
+      "regiones": 22,
+      "segmentos": 88
+    },
+    "136": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "140": {
+      "escala": "1:10m",
+      "regiones": 17,
+      "segmentos": 2624
+    },
+    "144": {
+      "escala": "1:10m",
+      "regiones": 25,
+      "segmentos": 1102
+    },
+    "148": {
+      "escala": "1:10m",
+      "regiones": 22,
+      "segmentos": 1842
+    },
+    "152": {
+      "escala": "1:10m",
+      "regiones": 16,
+      "segmentos": 837
+    },
+    "156": {
+      "escala": "1:10m",
+      "regiones": 32,
+      "segmentos": 19557
+    },
+    "158": {
+      "escala": "1:10m",
+      "regiones": 21,
+      "segmentos": 606
+    },
+    "170": {
+      "escala": "1:10m",
+      "regiones": 34,
+      "segmentos": 4787
+    },
+    "174": {
+      "escala": "1:10m",
+      "regiones": 3,
+      "segmentos": 0
+    },
+    "178": {
+      "escala": "1:10m",
+      "regiones": 12,
+      "segmentos": 1544
+    },
+    "180": {
+      "escala": "1:10m",
+      "regiones": 11,
+      "segmentos": 2960
+    },
+    "184": {
+      "escala": "1:10m",
+      "regiones": 11,
+      "segmentos": 0
+    },
+    "188": {
+      "escala": "1:10m",
+      "regiones": 7,
+      "segmentos": 887
+    },
+    "191": {
+      "escala": "1:10m",
+      "regiones": 21,
+      "segmentos": 1727
+    },
+    "192": {
+      "escala": "1:10m",
+      "regiones": 16,
+      "segmentos": 1328
+    },
+    "196": {
+      "escala": "1:10m",
+      "regiones": 5,
+      "segmentos": 266
+    },
+    "203": {
+      "escala": "1:10m",
+      "regiones": 14,
+      "segmentos": 1658
+    },
+    "204": {
+      "escala": "1:10m",
+      "regiones": 12,
+      "segmentos": 370
+    },
+    "208": {
+      "escala": "1:10m",
+      "regiones": 5,
+      "segmentos": 146
+    },
+    "212": {
+      "escala": "1:10m",
+      "regiones": 10,
+      "segmentos": 145
+    },
+    "214": {
+      "escala": "1:10m",
+      "regiones": 32,
+      "segmentos": 643
+    },
+    "218": {
+      "escala": "1:10m",
+      "regiones": 24,
+      "segmentos": 2384
+    },
+    "222": {
+      "escala": "1:10m",
+      "regiones": 14,
+      "segmentos": 944
+    },
+    "226": {
+      "escala": "1:10m",
+      "regiones": 7,
+      "segmentos": 219
+    },
+    "231": {
+      "escala": "1:10m",
+      "regiones": 11,
+      "segmentos": 1856
+    },
+    "232": {
+      "escala": "1:10m",
+      "regiones": 6,
+      "segmentos": 170
+    },
+    "233": {
+      "escala": "1:10m",
+      "regiones": 15,
+      "segmentos": 852
+    },
+    "234": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "238": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "239": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "242": {
+      "escala": "1:10m",
+      "regiones": 5,
+      "segmentos": 119
+    },
+    "246": {
+      "escala": "1:10m",
+      "regiones": 18,
+      "segmentos": 2018
+    },
+    "248": {
+      "escala": "1:10m",
+      "regiones": 11,
+      "segmentos": 3
+    },
+    "250": {
+      "escala": "1:10m",
+      "regiones": 102,
+      "segmentos": 9070
+    },
+    "258": {
+      "escala": "1:10m",
+      "regiones": 5,
+      "segmentos": 0
+    },
+    "260": {
+      "escala": "1:10m",
+      "regiones": 4,
+      "segmentos": 0
+    },
+    "262": {
+      "escala": "1:10m",
+      "regiones": 6,
+      "segmentos": 49
+    },
+    "266": {
+      "escala": "1:10m",
+      "regiones": 9,
+      "segmentos": 712
+    },
+    "268": {
+      "escala": "1:10m",
+      "regiones": 12,
+      "segmentos": 422
+    },
+    "270": {
+      "escala": "1:10m",
+      "regiones": 6,
+      "segmentos": 63
+    },
+    "275": {
+      "escala": "1:10m",
+      "regiones": 2,
+      "segmentos": 0
+    },
+    "276": {
+      "escala": "1:10m",
+      "regiones": 16,
+      "segmentos": 5698
+    },
+    "288": {
+      "escala": "1:10m",
+      "regiones": 10,
+      "segmentos": 1988
+    },
+    "296": {
+      "escala": "1:10m",
+      "regiones": 2,
+      "segmentos": 0
+    },
+    "300": {
+      "escala": "1:10m",
+      "regiones": 14,
+      "segmentos": 439
+    },
+    "304": {
+      "escala": "1:10m",
+      "regiones": 6,
+      "segmentos": 1749
+    },
+    "308": {
+      "escala": "1:10m",
+      "regiones": 7,
+      "segmentos": 24
+    },
+    "316": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "320": {
+      "escala": "1:10m",
+      "regiones": 22,
+      "segmentos": 1524
+    },
+    "324": {
+      "escala": "1:10m",
+      "regiones": 34,
+      "segmentos": 1276
+    },
+    "328": {
+      "escala": "1:10m",
+      "regiones": 10,
+      "segmentos": 681
+    },
+    "332": {
+      "escala": "1:10m",
+      "regiones": 10,
+      "segmentos": 238
+    },
+    "334": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "336": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "340": {
+      "escala": "1:10m",
+      "regiones": 18,
+      "segmentos": 1263
+    },
+    "344": {
+      "escala": "1:10m",
+      "regiones": 18,
+      "segmentos": 90
+    },
+    "348": {
+      "escala": "1:10m",
+      "regiones": 43,
+      "segmentos": 1247
+    },
+    "352": {
+      "escala": "1:10m",
+      "regiones": 9,
+      "segmentos": 471
+    },
+    "356": {
+      "escala": "1:10m",
+      "regiones": 36,
+      "segmentos": 12555
+    },
+    "360": {
+      "escala": "1:10m",
+      "regiones": 33,
+      "segmentos": 2148
+    },
+    "364": {
+      "escala": "1:10m",
+      "regiones": 31,
+      "segmentos": 1667
+    },
+    "368": {
+      "escala": "1:10m",
+      "regiones": 18,
+      "segmentos": 1997
+    },
+    "372": {
+      "escala": "1:10m",
+      "regiones": 34,
+      "segmentos": 2785
+    },
+    "376": {
+      "escala": "1:10m",
+      "regiones": 6,
+      "segmentos": 408
+    },
+    "380": {
+      "escala": "1:10m",
+      "regiones": 110,
+      "segmentos": 7899
+    },
+    "384": {
+      "escala": "1:10m",
+      "regiones": 19,
+      "segmentos": 2388
+    },
+    "388": {
+      "escala": "1:10m",
+      "regiones": 14,
+      "segmentos": 315
+    },
+    "392": {
+      "escala": "1:10m",
+      "regiones": 47,
+      "segmentos": 2811
+    },
+    "398": {
+      "escala": "1:10m",
+      "regiones": 17,
+      "segmentos": 1114
+    },
+    "400": {
+      "escala": "1:10m",
+      "regiones": 12,
+      "segmentos": 338
+    },
+    "404": {
+      "escala": "1:10m",
+      "regiones": 8,
+      "segmentos": 1738
+    },
+    "408": {
+      "escala": "1:10m",
+      "regiones": 11,
+      "segmentos": 1292
+    },
+    "410": {
+      "escala": "1:10m",
+      "regiones": 17,
+      "segmentos": 735
+    },
+    "414": {
+      "escala": "1:10m",
+      "regiones": 6,
+      "segmentos": 26
+    },
+    "417": {
+      "escala": "1:10m",
+      "regiones": 8,
+      "segmentos": 1165
+    },
+    "418": {
+      "escala": "1:10m",
+      "regiones": 17,
+      "segmentos": 955
+    },
+    "422": {
+      "escala": "1:10m",
+      "regiones": 6,
+      "segmentos": 360
+    },
+    "426": {
+      "escala": "1:10m",
+      "regiones": 10,
+      "segmentos": 718
+    },
+    "428": {
+      "escala": "1:10m",
+      "regiones": 119,
+      "segmentos": 2959
+    },
+    "430": {
+      "escala": "1:10m",
+      "regiones": 15,
+      "segmentos": 1308
+    },
+    "434": {
+      "escala": "1:10m",
+      "regiones": 22,
+      "segmentos": 617
+    },
+    "438": {
+      "escala": "1:10m",
+      "regiones": 11,
+      "segmentos": 84
+    },
+    "440": {
+      "escala": "1:10m",
+      "regiones": 10,
+      "segmentos": 1317
+    },
+    "442": {
+      "escala": "1:10m",
+      "regiones": 3,
+      "segmentos": 71
+    },
+    "446": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "450": {
+      "escala": "1:10m",
+      "regiones": 22,
+      "segmentos": 2496
+    },
+    "454": {
+      "escala": "1:10m",
+      "regiones": 28,
+      "segmentos": 1254
+    },
+    "458": {
+      "escala": "1:10m",
+      "regiones": 16,
+      "segmentos": 1786
+    },
+    "462": {
+      "escala": "1:10m",
+      "regiones": 21,
+      "segmentos": 0
+    },
+    "466": {
+      "escala": "1:10m",
+      "regiones": 9,
+      "segmentos": 503
+    },
+    "470": {
+      "escala": "1:10m",
+      "regiones": 68,
+      "segmentos": 545
+    },
+    "478": {
+      "escala": "1:10m",
+      "regiones": 13,
+      "segmentos": 370
+    },
+    "480": {
+      "escala": "1:10m",
+      "regiones": 16,
+      "segmentos": 112
+    },
+    "484": {
+      "escala": "1:10m",
+      "regiones": 33,
+      "segmentos": 6970
+    },
+    "492": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "496": {
+      "escala": "1:10m",
+      "regiones": 22,
+      "segmentos": 2110
+    },
+    "498": {
+      "escala": "1:10m",
+      "regiones": 40,
+      "segmentos": 971
+    },
+    "499": {
+      "escala": "1:10m",
+      "regiones": 21,
+      "segmentos": 320
+    },
+    "500": {
+      "escala": "1:10m",
+      "regiones": 3,
+      "segmentos": 8
+    },
+    "504": {
+      "escala": "1:10m",
+      "regiones": 16,
+      "segmentos": 818
+    },
+    "508": {
+      "escala": "1:10m",
+      "regiones": 11,
+      "segmentos": 1756
+    },
+    "512": {
+      "escala": "1:10m",
+      "regiones": 11,
+      "segmentos": 75
+    },
+    "516": {
+      "escala": "1:10m",
+      "regiones": 13,
+      "segmentos": 1268
+    },
+    "520": {
+      "escala": "1:10m",
+      "regiones": 14,
+      "segmentos": 31
+    },
+    "524": {
+      "escala": "1:10m",
+      "regiones": 14,
+      "segmentos": 1131
+    },
+    "528": {
+      "escala": "1:10m",
+      "regiones": 15,
+      "segmentos": 740
+    },
+    "531": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "533": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "534": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "540": {
+      "escala": "1:10m",
+      "regiones": 3,
+      "segmentos": 60
+    },
+    "548": {
+      "escala": "1:10m",
+      "regiones": 6,
+      "segmentos": 0
+    },
+    "554": {
+      "escala": "1:10m",
+      "regiones": 24,
+      "segmentos": 930
+    },
+    "558": {
+      "escala": "1:10m",
+      "regiones": 17,
+      "segmentos": 1012
+    },
+    "562": {
+      "escala": "1:10m",
+      "regiones": 8,
+      "segmentos": 445
+    },
+    "566": {
+      "escala": "1:10m",
+      "regiones": 37,
+      "segmentos": 2328
+    },
+    "570": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "574": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "578": {
+      "escala": "1:10m",
+      "regiones": 21,
+      "segmentos": 1499
+    },
+    "580": {
+      "escala": "1:10m",
+      "regiones": 4,
+      "segmentos": 0
+    },
+    "583": {
+      "escala": "1:10m",
+      "regiones": 4,
+      "segmentos": 0
+    },
+    "584": {
+      "escala": "1:10m",
+      "regiones": 2,
+      "segmentos": 0
+    },
+    "585": {
+      "escala": "1:10m",
+      "regiones": 16,
+      "segmentos": 27
+    },
+    "586": {
+      "escala": "1:10m",
+      "regiones": 8,
+      "segmentos": 2308
+    },
+    "591": {
+      "escala": "1:10m",
+      "regiones": 12,
+      "segmentos": 799
+    },
+    "598": {
+      "escala": "1:10m",
+      "regiones": 20,
+      "segmentos": 718
+    },
+    "600": {
+      "escala": "1:10m",
+      "regiones": 18,
+      "segmentos": 1616
+    },
+    "604": {
+      "escala": "1:10m",
+      "regiones": 26,
+      "segmentos": 3337
+    },
+    "608": {
+      "escala": "1:10m",
+      "regiones": 118,
+      "segmentos": 2173
+    },
+    "612": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "616": {
+      "escala": "1:10m",
+      "regiones": 16,
+      "segmentos": 1053
+    },
+    "620": {
+      "escala": "1:10m",
+      "regiones": 20,
+      "segmentos": 1529
+    },
+    "624": {
+      "escala": "1:10m",
+      "regiones": 9,
+      "segmentos": 492
+    },
+    "626": {
+      "escala": "1:10m",
+      "regiones": 13,
+      "segmentos": 214
+    },
+    "630": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "634": {
+      "escala": "1:10m",
+      "regiones": 7,
+      "segmentos": 52
+    },
+    "642": {
+      "escala": "1:10m",
+      "regiones": 42,
+      "segmentos": 3333
+    },
+    "643": {
+      "escala": "1:10m",
+      "regiones": 86,
+      "segmentos": 48479
+    },
+    "646": {
+      "escala": "1:10m",
+      "regiones": 5,
+      "segmentos": 295
+    },
+    "652": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "654": {
+      "escala": "1:10m",
+      "regiones": 3,
+      "segmentos": 0
+    },
+    "659": {
+      "escala": "1:10m",
+      "regiones": 14,
+      "segmentos": 57
+    },
+    "660": {
+      "escala": "1:10m",
+      "regiones": 15,
+      "segmentos": 47
+    },
+    "662": {
+      "escala": "1:10m",
+      "regiones": 11,
+      "segmentos": 64
+    },
+    "663": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "666": {
+      "escala": "1:10m",
+      "regiones": 2,
+      "segmentos": 0
+    },
+    "670": {
+      "escala": "1:10m",
+      "regiones": 6,
+      "segmentos": 32
+    },
+    "674": {
+      "escala": "1:10m",
+      "regiones": 9,
+      "segmentos": 63
+    },
+    "678": {
+      "escala": "1:10m",
+      "regiones": 2,
+      "segmentos": 0
+    },
+    "682": {
+      "escala": "1:10m",
+      "regiones": 13,
+      "segmentos": 1338
+    },
+    "686": {
+      "escala": "1:10m",
+      "regiones": 14,
+      "segmentos": 951
+    },
+    "688": {
+      "escala": "1:10m",
+      "regiones": 25,
+      "segmentos": 6375
+    },
+    "690": {
+      "escala": "1:10m",
+      "regiones": 26,
+      "segmentos": 73
+    },
+    "694": {
+      "escala": "1:10m",
+      "regiones": 4,
+      "segmentos": 380
+    },
+    "702": {
+      "escala": "1:10m",
+      "regiones": 5,
+      "segmentos": 62
+    },
+    "703": {
+      "escala": "1:10m",
+      "regiones": 8,
+      "segmentos": 1475
+    },
+    "704": {
+      "escala": "1:10m",
+      "regiones": 63,
+      "segmentos": 2575
+    },
+    "705": {
+      "escala": "1:10m",
+      "regiones": 193,
+      "segmentos": 3098
+    },
+    "706": {
+      "escala": "1:10m",
+      "regiones": 13,
+      "segmentos": 116
+    },
+    "710": {
+      "escala": "1:10m",
+      "regiones": 9,
+      "segmentos": 2007
+    },
+    "716": {
+      "escala": "1:10m",
+      "regiones": 10,
+      "segmentos": 2390
+    },
+    "724": {
+      "escala": "1:10m",
+      "regiones": 52,
+      "segmentos": 5732
+    },
+    "728": {
+      "escala": "1:10m",
+      "regiones": 10,
+      "segmentos": 589
+    },
+    "729": {
+      "escala": "1:10m",
+      "regiones": 17,
+      "segmentos": 825
+    },
+    "732": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "740": {
+      "escala": "1:10m",
+      "regiones": 10,
+      "segmentos": 418
+    },
+    "748": {
+      "escala": "1:10m",
+      "regiones": 4,
+      "segmentos": 259
+    },
+    "752": {
+      "escala": "1:10m",
+      "regiones": 21,
+      "segmentos": 1680
+    },
+    "756": {
+      "escala": "1:10m",
+      "regiones": 26,
+      "segmentos": 2074
+    },
+    "760": {
+      "escala": "1:10m",
+      "regiones": 15,
+      "segmentos": 1514
+    },
+    "762": {
+      "escala": "1:10m",
+      "regiones": 5,
+      "segmentos": 559
+    },
+    "764": {
+      "escala": "1:10m",
+      "regiones": 77,
+      "segmentos": 11545
+    },
+    "768": {
+      "escala": "1:10m",
+      "regiones": 5,
+      "segmentos": 312
+    },
+    "776": {
+      "escala": "1:10m",
+      "regiones": 5,
+      "segmentos": 0
+    },
+    "780": {
+      "escala": "1:10m",
+      "regiones": 16,
+      "segmentos": 183
+    },
+    "784": {
+      "escala": "1:10m",
+      "regiones": 9,
+      "segmentos": 386
+    },
+    "788": {
+      "escala": "1:10m",
+      "regiones": 23,
+      "segmentos": 1442
+    },
+    "792": {
+      "escala": "1:10m",
+      "regiones": 81,
+      "segmentos": 3059
+    },
+    "795": {
+      "escala": "1:10m",
+      "regiones": 5,
+      "segmentos": 400
+    },
+    "796": {
+      "escala": "1:10m",
+      "regiones": 6,
+      "segmentos": 0
+    },
+    "800": {
+      "escala": "1:10m",
+      "regiones": 112,
+      "segmentos": 2202
+    },
+    "804": {
+      "escala": "1:10m",
+      "regiones": 25,
+      "segmentos": 8481
+    },
+    "807": {
+      "escala": "1:10m",
+      "regiones": 84,
+      "segmentos": 3208
+    },
+    "818": {
+      "escala": "1:10m",
+      "regiones": 27,
+      "segmentos": 1372
+    },
+    "826": {
+      "escala": "1:10m",
+      "regiones": 232,
+      "segmentos": 6430
+    },
+    "831": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "832": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "833": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "834": {
+      "escala": "1:10m",
+      "regiones": 30,
+      "segmentos": 1831
+    },
+    "840": {
+      "escala": "1:10m",
+      "regiones": 51,
+      "segmentos": 8641
+    },
+    "850": {
+      "escala": "1:10m",
+      "regiones": 3,
+      "segmentos": 0
+    },
+    "854": {
+      "escala": "1:10m",
+      "regiones": 45,
+      "segmentos": 2243
+    },
+    "858": {
+      "escala": "1:10m",
+      "regiones": 19,
+      "segmentos": 1729
+    },
+    "860": {
+      "escala": "1:10m",
+      "regiones": 14,
+      "segmentos": 1010
+    },
+    "862": {
+      "escala": "1:10m",
+      "regiones": 26,
+      "segmentos": 3715
+    },
+    "876": {
+      "escala": "1:10m",
+      "regiones": 3,
+      "segmentos": 4
+    },
+    "882": {
+      "escala": "1:10m",
+      "regiones": 11,
+      "segmentos": 42
+    },
+    "887": {
+      "escala": "1:10m",
+      "regiones": 21,
+      "segmentos": 1045
+    },
+    "894": {
+      "escala": "1:10m",
+      "regiones": 10,
+      "segmentos": 2328
+    },
+    "016": {
+      "escala": "1:10m",
+      "regiones": 5,
+      "segmentos": 4
+    },
+    "086": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "060": {
+      "escala": "1:10m",
+      "regiones": 11,
+      "segmentos": 22
+    },
+    "092": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "territory-somaliland": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "090": {
+      "escala": "1:10m",
+      "regiones": 10,
+      "segmentos": 8
+    },
+    "territory-kosovo": {
+      "escala": "1:10m",
+      "regiones": 30,
+      "segmentos": 444
+    },
+    "territory-n-cyprus": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "096": {
+      "escala": "1:10m",
+      "regiones": 4,
+      "segmentos": 28
+    },
+    "076": {
+      "escala": "1:10m",
+      "regiones": 27,
+      "segmentos": 11637
+    },
+    "072": {
+      "escala": "1:10m",
+      "regiones": 15,
+      "segmentos": 296
+    },
+    "070": {
+      "escala": "1:10m",
+      "regiones": 18,
+      "segmentos": 733
+    },
+    "068": {
+      "escala": "1:10m",
+      "regiones": 9,
+      "segmentos": 1378
+    },
+    "064": {
+      "escala": "1:10m",
+      "regiones": 20,
+      "segmentos": 1160
+    },
+    "084": {
+      "escala": "1:10m",
+      "regiones": 6,
+      "segmentos": 241
+    },
+    "056": {
+      "escala": "1:10m",
+      "regiones": 11,
+      "segmentos": 542
+    },
+    "052": {
+      "escala": "1:10m",
+      "regiones": 11,
+      "segmentos": 164
+    },
+    "050": {
+      "escala": "1:10m",
+      "regiones": 7,
+      "segmentos": 512
+    },
+    "048": {
+      "escala": "1:10m",
+      "regiones": 5,
+      "segmentos": 13
+    },
+    "044": {
+      "escala": "1:10m",
+      "regiones": 30,
+      "segmentos": 18
+    },
+    "031": {
+      "escala": "1:10m",
+      "regiones": 78,
+      "segmentos": 1734
+    },
+    "040": {
+      "escala": "1:10m",
+      "regiones": 9,
+      "segmentos": 700
+    },
+    "036": {
+      "escala": "1:10m",
+      "regiones": 15,
+      "segmentos": 1096
+    },
+    "territory-indian-ocean-ter-": {
+      "escala": "1:10m",
+      "regiones": 2,
+      "segmentos": 0
+    },
+    "051": {
+      "escala": "1:10m",
+      "regiones": 11,
+      "segmentos": 599
+    },
+    "032": {
+      "escala": "1:10m",
+      "regiones": 24,
+      "segmentos": 3018
+    },
+    "028": {
+      "escala": "1:10m",
+      "regiones": 8,
+      "segmentos": 33
+    },
+    "024": {
+      "escala": "1:10m",
+      "regiones": 18,
+      "segmentos": 2638
+    },
+    "020": {
+      "escala": "1:10m",
+      "regiones": 7,
+      "segmentos": 67
+    },
+    "012": {
+      "escala": "1:10m",
+      "regiones": 48,
+      "segmentos": 3340
+    },
+    "008": {
+      "escala": "1:10m",
+      "regiones": 12,
+      "segmentos": 950
+    },
+    "004": {
+      "escala": "1:10m",
+      "regiones": 34,
+      "segmentos": 4807
+    },
+    "territory-siachen-glacier": {
+      "escala": "1:10m",
+      "regiones": 1,
+      "segmentos": 0
+    },
+    "010": {
+      "escala": "1:10m",
+      "regiones": 2,
+      "segmentos": 0
+    }
+  }
+}

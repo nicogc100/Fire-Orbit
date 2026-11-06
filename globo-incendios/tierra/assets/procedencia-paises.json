@@ -1,0 +1,29 @@
+{
+  "purpose": "Atlas del fuego: country picking, highlighting and bilingual search",
+  "geography": {
+    "asset": "paises-50m.geo.json",
+    "source": "https://github.com/topojson/world-atlas",
+    "version": "2.0.2",
+    "detail": "Natural Earth 1:50m",
+    "license": "World Atlas ISC; Natural Earth public domain",
+    "identities": 240,
+    "sha256": "fc83961a4f838d318342814a5f60aad975c38901d84664369a012fa2f9455b9e"
+  },
+  "names": {
+    "source": "https://github.com/mledoze/countries",
+    "license": "ODbL 1.0",
+    "retrieved": "2026-11-04",
+    "processing": "Derived English/Spanish names and aliases; original English names retained as aliases; Democratic Republic of the Congo and Russian Federation display overrides."
+  },
+  "font": {
+    "asset": "Anton-Regular.ttf",
+    "source": "https://github.com/google/fonts/tree/main/ofl/anton",
+    "license": "SIL Open Font License 1.1",
+    "sha256": "a4ba3a92350ebb031da0cb47630ac49eb265082ca1bc0450442f4a83ab947cab",
+    "note": "Provisional substitute; no Tusker Grotesk web license is included."
+  },
+  "libraries": [
+    "d3-geo 3.1.1 ISC; bundled d3-array and internmap with local licenses",
+    "topojson-client 3.1.0 ISC: build time only"
+  ]
+}

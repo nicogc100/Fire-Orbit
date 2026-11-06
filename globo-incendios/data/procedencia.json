@@ -1,0 +1,51 @@
+{
+  "fuente": "NASA FIRMS, archivos anuales por país",
+  "anio": 2023,
+  "filtros": [
+    "type == 0 (categoría de fuego de vegetación del producto)",
+    "Coordenadas válidas y fecha de adquisición en 2023"
+  ],
+  "interpretacion": "Detecciones originales, sin armonización. No equivalen a incendios independientes ni área quemada.",
+  "archivos": [
+    {
+      "original": "investigacion/datos/Chile/modis_2023_Chile.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2023/modis_2023_Chile.csv",
+      "sha256": "75224614c69d06d3c10c07f19d3ca65db4cd62c9614f4771fc37d04eff3efc64",
+      "pais": "Chile",
+      "sensor": "MODIS",
+      "filas_originales": 16473,
+      "filas_incluidas": 13819,
+      "filas_excluidas": 2654
+    },
+    {
+      "original": "investigacion/datos/Chile/viirs-snpp_2023_Chile.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2023/viirs-snpp_2023_Chile.csv",
+      "sha256": "ced287dac1f1dd4503a5649dbf92afb719595eefbb69e78f6cddd3a81cbc14af",
+      "pais": "Chile",
+      "sensor": "VIIRS",
+      "filas_originales": 54947,
+      "filas_incluidas": 50205,
+      "filas_excluidas": 4742
+    },
+    {
+      "original": "investigacion/datos/Portugal/modis_2023_Portugal.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2023/modis_2023_Portugal.csv",
+      "sha256": "ec571c1ad891a2394efe2ba68ea5d1cd19b9fecce03655bcf271caaf2f8b4522",
+      "pais": "Portugal",
+      "sensor": "MODIS",
+      "filas_originales": 1062,
+      "filas_incluidas": 1049,
+      "filas_excluidas": 13
+    },
+    {
+      "original": "investigacion/datos/Portugal/viirs-snpp_2023_Portugal.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2023/viirs-snpp_2023_Portugal.csv",
+      "sha256": "9814ab8bbd6466a529ade2357fa26eae6c900510c674f1d365ba3777db120500",
+      "pais": "Portugal",
+      "sensor": "VIIRS",
+      "filas_originales": 2953,
+      "filas_incluidas": 2695,
+      "filas_excluidas": 258
+    }
+  ]
+}
