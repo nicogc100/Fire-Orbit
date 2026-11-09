@@ -171,7 +171,7 @@ export class PanelDatos {
     const enlace = document.createElement('a');
     enlace.href = url;
     const sufijo = [e.dia !== null ? fechaDeDia(e.dia, this.datos.anio) : e.mes ? MESES[e.mes - 1].toLowerCase() : null, e.sensor !== 'todos' ? e.sensor.toLowerCase() : null].filter(Boolean).join('-');
-    enlace.download = `atlas-${CATALOGO[e.id].nombre.toLowerCase()}-${this.datos.anio}${sufijo ? `-${sufijo}` : ''}.csv`;
+    enlace.download = `fire-sat-${CATALOGO[e.id].nombre.toLowerCase()}-${this.datos.anio}${sufijo ? `-${sufijo}` : ''}.csv`;
     enlace.click();
     setTimeout(() => URL.revokeObjectURL(url), 2000);
   }

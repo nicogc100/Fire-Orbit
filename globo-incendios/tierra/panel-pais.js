@@ -96,7 +96,7 @@ export class PanelPais {
     const nombre = this.titulo.textContent;
     this.cuerpo.innerHTML = `<div class="panel-vacio">
       <p class="vacio-texto"></p>
-      <p class="vacio-nota">El atlas guarda por ahora estos conjuntos de NASA FIRMS. Mientras tanto, puedes recorrer este territorio y sus regiones en el mapa.</p>
+      <p class="vacio-nota">Fire Sat guarda por ahora estos conjuntos de NASA FIRMS. Mientras tanto, puedes recorrer este territorio y sus regiones en el mapa.</p>
       <div class="vacio-acciones">${Object.values(CATALOGO).map(c => `<button type="button" class="enlace" data-pais="${c.id}">Ver ${c.nombre}</button>`).join('')}</div>
     </div>`;
     this.cuerpo.querySelector('.vacio-texto').textContent = `Todavía no hay detecciones guardadas de ${nombre}.`;
