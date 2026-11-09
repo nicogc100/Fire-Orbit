@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { elegirRango, claveRango, metrosPorPixel } from './teselas.js?v=1';
+import { elegirRango, claveRango, metrosPorPixel } from './teselas.js?v=4fe52f38';
 
 // Imagen satelital por niveles para la pieza del país. Dos mosaicos en Web Mercator:
 // «grueso» cubre el país entero y «fino» la zona a la vista con el nivel que pide el
@@ -18,8 +18,10 @@ export class CapaSatelital {
     vacia.needsUpdate = true;
     this.vacia = vacia;
     this.uniforms = {
-      uSatGrueso: { value: vacia }, uCajaGrueso: { value: new THREE.Vector4(0, 0, 1, 1) },
-      uSatFino: { value: vacia }, uCajaFino: { value: new THREE.Vector4(0, 0, 1, 1) },
+      uSatGrueso: { value: vacia },
+      uCajaGrueso: { value: new THREE.Vector4(0, 0, 1, 1) },
+      uSatFino: { value: vacia },
+      uCajaFino: { value: new THREE.Vector4(0, 0, 1, 1) },
       uSat: { value: 0 },
     };
     this.activo = false;
@@ -32,7 +34,9 @@ export class CapaSatelital {
     this.sinCobertura = { grueso: false, fino: false };
     this.latitud = 0;
   }
-  hayImagen() { return this.uniforms.uSatGrueso.value !== this.vacia || this.uniforms.uSatFino.value !== this.vacia; }
+  hayImagen() {
+    return this.uniforms.uSatGrueso.value !== this.vacia || this.uniforms.uSatFino.value !== this.vacia;
+  }
 
   activar(activo) {
     this.activo = activo;
@@ -67,7 +71,7 @@ export class CapaSatelital {
     this.worker.postMessage({ tipo: 'mosaico', pedido, capa, limites, z: r.z });
   }
   crearWorker() {
-    const worker = new Worker(new URL('./satelite-worker.js?v=2', import.meta.url), { type: 'module' });
+    const worker = new Worker(new URL('./satelite-worker.js?v=afb39488', import.meta.url), { type: 'module' });
     worker.onmessage = ({ data }) => this.recibir(data);
     worker.onerror = error => {
       console.warn('Worker satelital:', error.message);
@@ -80,12 +84,22 @@ export class CapaSatelital {
   }
   recibir(data) {
     const { capa, pedido } = data;
-    if (pedido !== this.pendiente[capa]) { data.imagen?.close(); return; }
+    if (pedido !== this.pendiente[capa]) {
+      data.imagen?.close();
+      return;
+    }
     this.pendiente[capa] = 0;
-    if (data.cancelado) { this.avisar(); return; }
+    if (data.cancelado) {
+      this.avisar();
+      return;
+    }
     // Zona sin datos Sentinel-2 (interior antártico): no es un fallo, queda el mapa base.
     this.sinCobertura[capa] = Boolean(data.vacio);
-    if (data.vacio) { this.fallo[capa] = this.parcial[capa] = false; this.avisar(); return; }
+    if (data.vacio) {
+      this.fallo[capa] = this.parcial[capa] = false;
+      this.avisar();
+      return;
+    }
     if (data.error) {
       // Sin respuesta del proveedor: se queda lo que hubiera y se reintenta en la próxima vista.
       this.clave[capa] = null;

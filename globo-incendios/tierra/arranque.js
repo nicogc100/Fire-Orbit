@@ -3,12 +3,13 @@
 (() => {
   const script = document.createElement('script');
   script.type = 'module';
-  script.src = 'tierra.js?v=58';
+  script.src = 'tierra.js?v=e863d09f';
   script.onerror = () => {
     document.querySelector('#carga').hidden = true;
     document.querySelector('#portada').hidden = true;
     document.querySelector('#error-datos').hidden = true;
-    document.querySelector('#mensaje-error').textContent = 'La descarga se interrumpió. Comprueba que el servidor local sigue abierto y vuelve a intentarlo.';
+    document.querySelector('#mensaje-error').textContent =
+      'La descarga se interrumpió. Comprueba que el servidor local sigue abierto y vuelve a intentarlo.';
     document.querySelector('#error').hidden = false;
     document.querySelector('#escena').dataset.state = 'error';
     document.querySelector('#reintentar').addEventListener('click', () => location.reload());

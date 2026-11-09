@@ -21,17 +21,17 @@ const LIMITE = 85.05112878;
 const RAD = Math.PI / 180;
 export const mercatorY = lat => {
   const a = Math.max(-LIMITE, Math.min(LIMITE, lat)) * RAD;
-  return .5 - Math.asinh(Math.tan(a)) / (2 * Math.PI);
+  return 0.5 - Math.asinh(Math.tan(a)) / (2 * Math.PI);
 };
 // Metros por píxel de tesela a una latitud y un nivel.
-export const metrosPorPixel = (lat, z) => 156543.034 * Math.cos(lat * RAD) / 2 ** z;
+export const metrosPorPixel = (lat, z) => (156543.034 * Math.cos(lat * RAD)) / 2 ** z;
 
 // Teselas que cubren unos límites [oeste, sur, este, norte]. Las longitudes pueden salir
 // de ±180 (países que cruzan el antimeridiano): la columna se repliega al pedirla.
 export function rango([oeste, sur, este, norte], z) {
   const n = 2 ** z;
-  const izq = Math.floor((oeste + 180) / 360 * n);
-  const der = Math.min(izq + n, Math.ceil((este + 180) / 360 * n));
+  const izq = Math.floor(((oeste + 180) / 360) * n);
+  const der = Math.min(izq + n, Math.ceil(((este + 180) / 360) * n));
   const arriba = Math.max(0, Math.floor(mercatorY(norte) * n));
   const abajo = Math.min(n, Math.ceil(mercatorY(sur) * n));
   return { z, n, izq, der, arriba, abajo, ancho: Math.max(0, der - izq), alto: Math.max(0, abajo - arriba) };
@@ -47,5 +47,5 @@ export function elegirRango(limites, deseado, ladoMax, teselasMax) {
 }
 
 // Caja del mosaico en coordenadas de textura mundial: [u0, v0 Mercator, ancho, alto].
-export const cajaDe = r => [((r.izq / r.n) % 1 + 1) % 1, r.arriba / r.n, r.ancho / r.n, r.alto / r.n];
+export const cajaDe = r => [(((r.izq / r.n) % 1) + 1) % 1, r.arriba / r.n, r.ancho / r.n, r.alto / r.n];
 export const claveRango = r => `${r.z}/${r.izq}/${r.der}/${r.arriba}/${r.abajo}`;

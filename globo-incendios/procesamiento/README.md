@@ -7,7 +7,7 @@ Estos scripts generan los datos que usa la app a partir de los CSV anuales de NA
 Desde la carpeta `globo-incendios`:
 
 ```bash
-pip install requests pandas numpy
+pip install -r procesamiento/requirements.txt
 python procesamiento/1_descargar.py                  # baja Chile: MODIS 2000-2025 y VIIRS 2012-2025
 python procesamiento/2_armonizar.py --anuales        # harmoniza y escribe los archivos en data/
 python procesamiento/3_actualizar.py --key MAP_KEY   # agrega los meses del año en curso desde la API
@@ -21,11 +21,11 @@ Los CSV crudos quedan en `procesamiento/crudos/` y **no se suben a GitHub** (est
 
 ## Archivos que genera en `data/`
 
-| Archivo | Qué tiene | Para qué sirve en la app |
-|---|---|---|
-| `chile-mensual.json` | Serie mensual de 2000 a hoy: MODIS, VIIRS y la serie harmonizada, más mediana, p25, p75 y máximo de cada mes | Calendario meses × años y anomalías |
-| `chile-grilla.json` | Conteos harmonizados por celda de 0,25° y por mes | Calendario de un área elegida por el usuario |
-| `chile-AAAA.json` | Detecciones crudas de un año (con `--anuales`), mismo formato que `chile-2023.json` | Tabla y descarga del CSV |
+| Archivo              | Qué tiene                                                                                                    | Para qué sirve en la app                     |
+| -------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------- |
+| `chile-mensual.json` | Serie mensual de 2000 a hoy: MODIS, VIIRS y la serie harmonizada, más mediana, p25, p75 y máximo de cada mes | Calendario meses × años y anomalías          |
+| `chile-grilla.json`  | Conteos harmonizados por celda de 0,25° y por mes                                                            | Calendario de un área elegida por el usuario |
+| `chile-AAAA.json`    | Detecciones crudas de un año (con `--anuales`), mismo formato que `chile-2023.json`                          | Tabla y descarga del CSV                     |
 
 ### Formato de `chile-mensual.json`
 

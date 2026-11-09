@@ -1,13 +1,23 @@
 import * as THREE from 'three';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { HandFlow } from './nubes-interactivas.js?v=9';
+import { HandFlow } from './nubes-interactivas.js?v=e3537923';
 import { createCloudNoiseTexture } from './cloud-volume.js';
-import { CloudLayer } from './capa-nubes.js?v=24';
-import { Countries } from './paises.js?v=7';
-import { ModoPais } from './modo-pais.js?v=22';
-import { PanelPais } from './panel-pais.js?v=14';
-import { PanelDatos } from './panel-datos.js?v=7';
-import { entradaCatalogo, cargarDatos, cargarIndice, cargarCeldas, sumarCeldas, diaDelAnio, fechaDeDia, etiquetaConfianza, etiquetaSatelite } from './datos-pais.js?v=4';
+import { CloudLayer } from './capa-nubes.js?v=7cce1e27';
+import { Countries } from './paises.js?v=f21d253e';
+import { ModoPais } from './modo-pais.js?v=7e41116e';
+import { PanelPais } from './panel-pais.js?v=412a6080';
+import { PanelDatos } from './panel-datos.js?v=53991f55';
+import {
+  entradaCatalogo,
+  cargarDatos,
+  cargarIndice,
+  cargarCeldas,
+  sumarCeldas,
+  fechaDeDia,
+} from './datos-pais.js?v=cdc22085';
+import { vertexShader, surfaceShader } from './globo-shaders.js?v=0ee3774b';
+import { actualizarURL, leerInicial } from './estado-url.js?v=02c2ba0c';
+import { crearFichaPunto } from './ficha-punto.js?v=2b4b3a79';
 
 const canvas = document.querySelector('#tierra');
 const loading = document.querySelector('#carga');
@@ -22,29 +32,13 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let renderer;
 
 // Los datos guardados no dependen de WebGL: siguen disponibles si la escena no abre.
-function actualizarURL(cambios) {
-  const parametros = new URLSearchParams(location.search);
-  for (const [clave, valor] of Object.entries(cambios)) {
-    if (valor === null || valor === undefined) parametros.delete(clave);
-    else parametros.set(clave, valor);
-  }
-  const texto = parametros.toString();
-  history.replaceState(null, '', `${location.pathname}${texto ? `?${texto}` : ''}`);
-}
 const parametrosIniciales = new URLSearchParams(location.search);
-function leerInicial(parametros) {
-  const fecha = parametros.get('dia');
-  const sensor = parametros.get('sensor');
-  const anio = parametros.get('anio');
-  return {
-    anio: /^\d{4}-/.test(fecha || '') ? +fecha.slice(0, 4) : /^\d{4}$/.test(anio || '') ? +anio : null,
-    dia: /^\d{4}-\d{2}-\d{2}$/.test(fecha || '') ? diaDelAnio(fecha, +fecha.slice(0, 4)) : null,
-    sensor: ['MODIS', 'VIIRS'].includes(sensor) ? sensor : null,
-  };
-}
 let paisPendiente = parametrosIniciales.get('pais')
-  ? { id: parametrosIniciales.get('pais'), inicial: leerInicial(parametrosIniciales) } : null;
-let solicitarPais = (id, inicial) => { paisPendiente = { id, inicial }; };
+  ? { id: parametrosIniciales.get('pais'), inicial: leerInicial(parametrosIniciales) }
+  : null;
+let solicitarPais = (id, inicial) => {
+  paisPendiente = { id, inicial };
+};
 const panelDatos = new PanelDatos({
   dialogo: document.querySelector('#datos-guardados'),
   onVerPais: (id, inicial) => solicitarPais(id, inicial),
@@ -56,8 +50,10 @@ for (const boton of document.querySelectorAll('#abrir-datos, #error-datos')) {
 if (parametrosIniciales.get('datos')) panelDatos.abrir({ id: parametrosIniciales.get('datos') });
 
 document.querySelector('#reintentar').addEventListener('click', () => location.reload());
-const ICONO_PAUSA = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
-const ICONO_REANUDAR = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M7 4.8v14.4c0 .8.9 1.3 1.5.8l11-7.2c.6-.4.6-1.2 0-1.6l-11-7.2c-.6-.5-1.5 0-1.5.8Z"/></svg>';
+const ICONO_PAUSA =
+  '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+const ICONO_REANUDAR =
+  '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M7 4.8v14.4c0 .8.9 1.3 1.5.8l11-7.2c.6-.4.6-1.2 0-1.6l-11-7.2c-.6-.5-1.5 0-1.5.8Z"/></svg>';
 
 function showError(message) {
   loading.hidden = true;
@@ -67,97 +63,6 @@ function showError(message) {
   hero.hidden = true;
   document.querySelector('#escena').dataset.state = 'error';
 }
-
-// All lighting is calculated in linear color, then converted to the display color space.
-const vertexShader = /* glsl */`
-  varying vec2 vUv;
-  varying vec3 vWorldPosition;
-  varying vec3 vWorldNormal;
-  varying vec3 vLocalNormal;
-  void main() {
-    vUv = uv;
-    vLocalNormal = normalize(normal);
-    vWorldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
-    vWorldNormal = normalize(mat3(modelMatrix) * normal);
-    gl_Position = projectionMatrix * viewMatrix * vec4(vWorldPosition, 1.0);
-  }
-`;
-
-const surfaceShader = /* glsl */`
-  uniform sampler2D dayMap;
-  uniform sampler2D nightMap;
-  uniform sampler2D normalMap;
-  uniform sampler2D oceanMap;
-  uniform sampler2D bathymetryMap;
-  uniform sampler2D cloudShadowMap;
-  uniform sampler2D countryMap;
-  uniform vec3 countryColor;
-  uniform float countryActive;
-  uniform float countryOpacity;
-  uniform vec3 sunDirection;
-  uniform vec3 localSunDirection;
-  varying vec2 vUv;
-  varying vec3 vWorldPosition;
-  varying vec3 vWorldNormal;
-  varying vec3 vLocalNormal;
-  const float PI = 3.14159265359;
-
-  vec2 sphereUv(vec3 p) {
-    p = normalize(p);
-    return vec2(atan(-p.z, p.x) / (2.0 * PI) + 0.5,
-                asin(clamp(p.y, -1.0, 1.0)) / PI + 0.5);
-  }
-
-  void main() {
-    vec3 normal = normalize(vWorldNormal);
-    vec3 viewDirection = normalize(cameraPosition - vWorldPosition);
-    vec3 tangent = normalize(vec3(-normal.z, 0.00001, normal.x));
-    vec3 bitangent = normalize(cross(normal, tangent));
-    vec3 terrain = texture2D(normalMap, vUv).xyz * 2.0 - 1.0;
-    vec3 reliefNormal = normalize(normal + tangent * terrain.x * 0.08 + bitangent * terrain.y * 0.08);
-    float sun = dot(normal, sunDirection);
-    float diffuse = max(dot(reliefNormal, sunDirection), 0.0);
-    float daylight = smoothstep(-0.16, 0.24, sun);
-    float ocean = texture2D(oceanMap, vUv).r;
-    vec3 albedo = texture2D(dayMap, vUv, 0.6).rgb;
-    // NASA's geographic bathymetry supplies the shelves, ridges and deep water.
-    // Apply it only inside the existing water mask, preserving the land map.
-    vec3 seafloor = texture2D(bathymetryMap, vUv, 0.5).rgb;
-    albedo = mix(albedo, seafloor, smoothstep(0.20, 0.95, ocean) * 0.92);
-
-    // Shadows are prepared from the same volume and hand field on a global map.
-    vec3 p = normalize(vLocalNormal);
-    float shadow=texture2D(cloudShadowMap,sphereUv(p)).r;
-    vec3 color = albedo * (0.028 + 1.38 * pow(diffuse, 0.82) * shadow);
-    color += vec3(0.002, 0.009, 0.024) * ocean * daylight;
-
-    vec3 halfDirection = normalize(sunDirection + viewDirection);
-    float glint = pow(max(dot(normal, halfDirection), 0.0), 95.0);
-    color += vec3(0.54, 0.68, 0.75) * glint * ocean * daylight * 0.20 * shadow;
-
-    vec3 lights = texture2D(nightMap, vUv).rgb;
-    color += lights * vec3(1.0, 0.72, 0.38) * (1.0 - smoothstep(-0.18, 0.15, sun)) * 1.3;
-
-    if(countryActive>.5){
-      vec2 uv=sphereUv(p),pixel=vec2(1.0/4096.0,1.0/2048.0);
-      vec3 identity=texture2D(countryMap,uv).rgb;
-      float inside=1.0-step(.003,length(identity-countryColor));
-      if(inside>.5){
-      float edge=0.0;
-      edge=max(edge,step(.003,length(texture2D(countryMap,uv+vec2(pixel.x,0.0)).rgb-countryColor)));
-      edge=max(edge,step(.003,length(texture2D(countryMap,uv-vec2(pixel.x,0.0)).rgb-countryColor)));
-      edge=max(edge,step(.003,length(texture2D(countryMap,uv+vec2(0.0,pixel.y)).rgb-countryColor)));
-      edge=max(edge,step(.003,length(texture2D(countryMap,uv-vec2(0.0,pixel.y)).rgb-countryColor)));
-      vec3 tint=vec3(.94,.34,.13)*(.48+.52*daylight);
-      color=mix(color,tint,inside*countryOpacity*(.31+edge*.35));
-      color+=vec3(.65,.36,.14)*edge*inside*countryOpacity*.35;
-      }
-    }
-
-    gl_FragColor = vec4(color, 1.0);
-    #include <colorspace_fragment>
-  }
-`;
 
 async function main() {
   renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
@@ -177,40 +82,52 @@ async function main() {
   const initialDirection = direction(5, 135);
   const introDirection = direction(1, 193);
   const right = new THREE.Vector3().crossVectors(camera.up, initialDirection).normalize();
-  const sunDirection = initialDirection.clone().multiplyScalar(0.48)
-    .addScaledVector(right, -0.9).add(new THREE.Vector3(0, 0.65, 0)).normalize();
+  const sunDirection = initialDirection
+    .clone()
+    .multiplyScalar(0.48)
+    .addScaledVector(right, -0.9)
+    .add(new THREE.Vector3(0, 0.65, 0))
+    .normalize();
   const solInicial = sunDirection.clone();
 
   const manager = new THREE.LoadingManager();
-  manager.onProgress = (_url, loaded, total) => { loadingMessage.textContent = `Preparando la Tierra… ${Math.round(loaded / total * 100)} %`; };
+  manager.onProgress = (_url, loaded, total) => {
+    loadingMessage.textContent = `Preparando la Tierra… ${Math.round((loaded / total) * 100)} %`;
+  };
   const loader = new THREE.TextureLoader(manager);
   const noiseRequest = fetch('./assets/cloud-billows-128.rg.bin').then(response => {
     if (!response.ok) throw new Error('No se pudo cargar el volumen de nubes');
     return response.arrayBuffer();
   });
-  const normalGuideRequest=fetch('./assets/nubes-relieve.rgba.gz?v=24').then(async response=>{
-    if(!response.ok)throw new Error('No se pudo cargar el relieve de las nubes');
-    const stream=response.body.pipeThrough(new DecompressionStream('gzip'));
-    const bytes=new Uint8Array(await new Response(stream).arrayBuffer());
-    if(bytes.length!==1024*512*4)throw new Error('Relieve de nubes incompleto');
-    if(new URLSearchParams(location.search).has('revision')){
-      const hash=await crypto.subtle.digest('SHA-256',bytes);
-      canvas.dataset.cloudNormalHash=Array.from(new Uint8Array(hash),b=>b.toString(16).padStart(2,'0')).join('');
+  const normalGuideRequest = fetch('./assets/nubes-relieve.rgba.gz?v=d5ac9af0').then(async response => {
+    if (!response.ok) throw new Error('No se pudo cargar el relieve de las nubes');
+    const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
+    const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+    if (bytes.length !== 1024 * 512 * 4) throw new Error('Relieve de nubes incompleto');
+    if (new URLSearchParams(location.search).has('revision')) {
+      const hash = await crypto.subtle.digest('SHA-256', bytes);
+      canvas.dataset.cloudNormalHash = Array.from(new Uint8Array(hash), b => b.toString(16).padStart(2, '0')).join('');
     }
     return bytes;
   });
-  const volumeRequest=fetch('./assets/nubes-esfericas.rg.gz?v=24').then(async response=>{
-    if(!response.ok)throw new Error('No se pudo cargar el volumen de nubes');
-    const stream=response.body.pipeThrough(new DecompressionStream('gzip'));
-    const bytes=new Uint8Array(await new Response(stream).arrayBuffer());
-    if(bytes.length!==2048*1024*32*2)throw new Error('Volumen de nubes incompleto');
-    if(new URLSearchParams(location.search).has('revision')){
-      const hash=await crypto.subtle.digest('SHA-256',bytes);
-      canvas.dataset.cloudHash=Array.from(new Uint8Array(hash),b=>b.toString(16).padStart(2,'0')).join('');
+  const volumeRequest = fetch('./assets/nubes-esfericas.rg.gz?v=c2b40b6e').then(async response => {
+    if (!response.ok) throw new Error('No se pudo cargar el volumen de nubes');
+    const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
+    const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+    if (bytes.length !== 2048 * 1024 * 32 * 2) throw new Error('Volumen de nubes incompleto');
+    if (new URLSearchParams(location.search).has('revision')) {
+      const hash = await crypto.subtle.digest('SHA-256', bytes);
+      canvas.dataset.cloudHash = Array.from(new Uint8Array(hash), b => b.toString(16).padStart(2, '0')).join('');
     }
     return bytes;
   });
-  const paths = ['earth-day-4k.webp', 'earth-night-2k.webp', 'earth-normal-2k.png', 'earth-specular-2k.png', 'earth-bathymetry-4k.webp'];
+  const paths = [
+    'earth-day-4k.webp',
+    'earth-night-2k.webp',
+    'earth-normal-2k.png',
+    'earth-specular-2k.png',
+    'earth-bathymetry-4k.webp',
+  ];
   const textures = await Promise.all(paths.map(file => loader.loadAsync(`./assets/${file}`)));
   textures.forEach(texture => {
     texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
@@ -218,36 +135,48 @@ async function main() {
   });
   const [dayMap, nightMap, normalMap, oceanMap, bathymetryMap] = textures;
   dayMap.colorSpace = nightMap.colorSpace = bathymetryMap.colorSpace = THREE.SRGBColorSpace;
-  loadingMessage.textContent='Preparando las nubes…';
+  loadingMessage.textContent = 'Preparando las nubes…';
   const cloudBrush = new HandFlow(canvas, camera);
   const cloudNoise = createCloudNoiseTexture(new Uint8Array(await noiseRequest));
-  const cloudVolume=new THREE.Data3DTexture(await volumeRequest,2048,1024,32);
-  cloudVolume.format=THREE.RGFormat;cloudVolume.type=THREE.UnsignedByteType;
-  cloudVolume.wrapS=THREE.RepeatWrapping;
-  cloudVolume.minFilter=cloudVolume.magFilter=THREE.LinearFilter;
-  cloudVolume.generateMipmaps=false;cloudVolume.unpackAlignment=1;cloudVolume.needsUpdate=true;
-  const cloudSurfaceNormals=new THREE.DataTexture(await normalGuideRequest,1024,512,THREE.RGBAFormat);
-  cloudSurfaceNormals.wrapS=THREE.RepeatWrapping;
-  cloudSurfaceNormals.minFilter=cloudSurfaceNormals.magFilter=THREE.LinearFilter;
-  cloudSurfaceNormals.generateMipmaps=false;cloudSurfaceNormals.unpackAlignment=1;
-  cloudSurfaceNormals.colorSpace=THREE.NoColorSpace;cloudSurfaceNormals.needsUpdate=true;
+  const cloudVolume = new THREE.Data3DTexture(await volumeRequest, 2048, 1024, 32);
+  cloudVolume.format = THREE.RGFormat;
+  cloudVolume.type = THREE.UnsignedByteType;
+  cloudVolume.wrapS = THREE.RepeatWrapping;
+  cloudVolume.minFilter = cloudVolume.magFilter = THREE.LinearFilter;
+  cloudVolume.generateMipmaps = false;
+  cloudVolume.unpackAlignment = 1;
+  cloudVolume.needsUpdate = true;
+  const cloudSurfaceNormals = new THREE.DataTexture(await normalGuideRequest, 1024, 512, THREE.RGBAFormat);
+  cloudSurfaceNormals.wrapS = THREE.RepeatWrapping;
+  cloudSurfaceNormals.minFilter = cloudSurfaceNormals.magFilter = THREE.LinearFilter;
+  cloudSurfaceNormals.generateMipmaps = false;
+  cloudSurfaceNormals.unpackAlignment = 1;
+  cloudSurfaceNormals.colorSpace = THREE.NoColorSpace;
+  cloudSurfaceNormals.needsUpdate = true;
   const uniforms = {
-    dayMap: { value: dayMap }, nightMap: { value: nightMap }, normalMap: { value: normalMap },
-    oceanMap: { value: oceanMap }, cloudVolume: { value: cloudVolume },
+    dayMap: { value: dayMap },
+    nightMap: { value: nightMap },
+    normalMap: { value: normalMap },
+    oceanMap: { value: oceanMap },
+    cloudVolume: { value: cloudVolume },
     bathymetryMap: { value: bathymetryMap },
     cloudDisturbance: { value: cloudBrush.texture },
     cloudNoise: { value: cloudNoise },
     cloudSurfaceNormals: { value: cloudSurfaceNormals },
-    sunDirection: { value: sunDirection }, localSunDirection: { value: sunDirection.clone() },
+    sunDirection: { value: sunDirection },
+    localSunDirection: { value: sunDirection.clone() },
     localCameraPosition: { value: camera.position.clone() },
     cloudOffset: { value: 0 },
   };
   const geometry = new THREE.SphereGeometry(1, 192, 128);
-  const cloudLayer=new CloudLayer(renderer,camera,globe,geometry,uniforms);
-  uniforms.cloudShadowMap={value:cloudLayer.shadowTexture};
-  const surface = new THREE.Mesh(geometry, new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader: surfaceShader }));
+  const cloudLayer = new CloudLayer(renderer, camera, globe, geometry, uniforms);
+  uniforms.cloudShadowMap = { value: cloudLayer.shadowTexture };
+  const surface = new THREE.Mesh(
+    geometry,
+    new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader: surfaceShader }),
+  );
   globe.add(surface);
-  function renderEarth(){
+  function renderEarth() {
     cloudLayer.prepare();
     cloudLayer.compose(scene);
   }
@@ -270,40 +199,63 @@ async function main() {
   let introPose;
   let fullPose;
   let countries;
-  let framing=0;
-  const encuadre={x:0,y:0};
+  let framing = 0;
+  const encuadre = { x: 0, y: 0 };
   // A repeatable initial pose for visual comparisons; normal visits still rotate.
   const revision = new URLSearchParams(location.search).has('revision');
   let rotating = !reduceMotion.matches && !revision;
-  if(revision){
+  if (revision) {
     // Solo revisión visual: la misma cámara para comparar capturas.
-    window.__atlas={ver(lat,lon,distancia,elevar=0){
-      controls.enabled=false;frameGlobe(0);
-      const d=direction(lat,lon);
-      const arriba=new THREE.Vector3(0,1,0).addScaledVector(d,-d.y).normalize();
-      const objetivo=arriba.multiplyScalar(elevar);
-      camera.position.copy(d).multiplyScalar(distancia).add(objetivo);
-      controls.target.copy(objetivo);camera.lookAt(objetivo);
-      globe.quaternion.identity();cloudTime=0;
-    },bloqueada:()=>seleccionBloqueada(),seleccionar:id=>{
-      const c=countries.countries.find(x=>x.id===id);return countries.select(c,true);
-    },limbo:()=>geometriaLateral().limbo,congelar:t=>{if(vuelo)vuelo.congelado=t;},soltar:()=>{if(vuelo){delete vuelo.congelado;vuelo.ultimo=performance.now();}}};
+    window.__atlas = {
+      ver(lat, lon, distancia, elevar = 0) {
+        controls.enabled = false;
+        frameGlobe(0);
+        const d = direction(lat, lon);
+        const arriba = new THREE.Vector3(0, 1, 0).addScaledVector(d, -d.y).normalize();
+        const objetivo = arriba.multiplyScalar(elevar);
+        camera.position.copy(d).multiplyScalar(distancia).add(objetivo);
+        controls.target.copy(objetivo);
+        camera.lookAt(objetivo);
+        globe.quaternion.identity();
+        cloudTime = 0;
+      },
+      bloqueada: () => seleccionBloqueada(),
+      seleccionar: id => {
+        const c = countries.countries.find(x => x.id === id);
+        return countries.select(c, true);
+      },
+      limbo: () => geometriaLateral().limbo,
+      congelar: t => {
+        if (vuelo) vuelo.congelado = t;
+      },
+      soltar: () => {
+        if (vuelo) {
+          delete vuelo.congelado;
+          vuelo.ultimo = performance.now();
+        }
+      },
+    };
     // Opt-in visual QA only: G exercises the real pointer listener and flow.
-    canvas.addEventListener('keydown',event=>{
-      if(event.key.toLowerCase()!=='g'||canvas.dataset.gesture==='active')return;
-      const rect=canvas.getBoundingClientRect(),start=performance.now();
-      canvas.dataset.gesture='active';
-      const gesture=now=>{
-        const t=Math.min((now-start)/800,1);
-        canvas.dispatchEvent(new PointerEvent('pointermove',{
-          clientX:rect.left+rect.width*(.46+t*.22),
-          clientY:rect.top+rect.height*(.78+Math.sin(t*Math.PI)*.035),
-          buttons:0,pointerType:'mouse',bubbles:true,
-        }));
-        if(t<1)requestAnimationFrame(gesture);
-        else{
+    canvas.addEventListener('keydown', event => {
+      if (event.key.toLowerCase() !== 'g' || canvas.dataset.gesture === 'active') return;
+      const rect = canvas.getBoundingClientRect(),
+        start = performance.now();
+      canvas.dataset.gesture = 'active';
+      const gesture = now => {
+        const t = Math.min((now - start) / 800, 1);
+        canvas.dispatchEvent(
+          new PointerEvent('pointermove', {
+            clientX: rect.left + rect.width * (0.46 + t * 0.22),
+            clientY: rect.top + rect.height * (0.78 + Math.sin(t * Math.PI) * 0.035),
+            buttons: 0,
+            pointerType: 'mouse',
+            bubbles: true,
+          }),
+        );
+        if (t < 1) requestAnimationFrame(gesture);
+        else {
           canvas.dispatchEvent(new PointerEvent('pointerleave'));
-          canvas.dataset.gesture='settling';
+          canvas.dataset.gesture = 'settling';
         }
       };
       requestAnimationFrame(gesture);
@@ -316,7 +268,8 @@ async function main() {
   let paisAbierto = null;
   let modo;
   let lastFrame;
-  let frameCount=0,frameSampleStart=performance.now();
+  let frameCount = 0,
+    frameSampleStart = performance.now();
   const inverseRotation = new THREE.Quaternion();
   const cameraTransitionRotation = new THREE.Quaternion();
   const introRight = new THREE.Vector3().crossVectors(camera.up, introDirection).normalize();
@@ -339,22 +292,23 @@ async function main() {
   }
   // El encuadre mueve la imagen sin mover la cámara: el mismo globo puede estar
   // centrado o a un lado, y OrbitControls sigue orbitando el centro de la Tierra.
-  function ponerEncuadre(x,y){
-    encuadre.x=x;encuadre.y=y;
-    const {width,height}=canvas.getBoundingClientRect();
-    if(x||y)camera.setViewOffset(width,height,x,y,width,height);
+  function ponerEncuadre(x, y) {
+    encuadre.x = x;
+    encuadre.y = y;
+    const { width, height } = canvas.getBoundingClientRect();
+    if (x || y) camera.setViewOffset(width, height, x, y, width, height);
     else camera.clearViewOffset();
   }
   // En móvil el buscador ocupa la parte baja: el globo no baja como en escritorio.
-  function desplazamientoGlobo(){
-    const {width,height}=canvas.getBoundingClientRect();
-    return -height*(width<=720?.015:.11);
+  function desplazamientoGlobo() {
+    const { width, height } = canvas.getBoundingClientRect();
+    return -height * (width <= 720 ? 0.015 : 0.11);
   }
-  function frameGlobe(value){
-    framing=value;
+  function frameGlobe(value) {
+    framing = value;
     // Preserve the intro camera. The full view reserves space above the globe
     // for the country typography while OrbitControls still orbit Earth's centre.
-    ponerEncuadre(0,desplazamientoGlobo()*value);
+    ponerEncuadre(0, desplazamientoGlobo() * value);
   }
   function finishTransition() {
     transition = null;
@@ -388,17 +342,21 @@ async function main() {
     controls.enableDamping = true;
     if (reduceMotion.matches) {
       applyPose(pose);
-      frameGlobe(view==='globe'?1:0);
+      frameGlobe(view === 'globe' ? 1 : 0);
       sunDirection.copy(solInicial);
       finishTransition();
     } else {
       const fromOffset = camera.position.clone().sub(controls.target);
       const toOffset = pose.position.clone().sub(pose.target);
       transition = {
-        start: performance.now(), duration: 2600,
-        fromFraming:framing,toFraming:view==='globe'?1:0,
-        fromTarget: controls.target.clone(), toTarget: pose.target.clone(),
-        fromDistance: fromOffset.length(), toDistance: toOffset.length(),
+        start: performance.now(),
+        duration: 2600,
+        fromFraming: framing,
+        toFraming: view === 'globe' ? 1 : 0,
+        fromTarget: controls.target.clone(),
+        toTarget: pose.target.clone(),
+        fromDistance: fromOffset.length(),
+        toDistance: toOffset.length(),
         fromDirection: fromOffset.clone().normalize(),
         orbit: new THREE.Quaternion().setFromUnitVectors(fromOffset.normalize(), toOffset.normalize()),
         fromSol: sunDirection.clone(),
@@ -410,10 +368,10 @@ async function main() {
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
-    cloudLayer.resize(width,height);
+    cloudLayer.resize(width, height);
     // Two compositions share the same globe: a low horizon and the whole Earth.
-    const fill = Math.min(0.80, camera.aspect * 0.84);
-    stage.style.setProperty('--globe-top',`${((width<=720?.515:.61)-fill/2)*100}%`);
+    const fill = Math.min(0.8, camera.aspect * 0.84);
+    stage.style.setProperty('--globe-top', `${((width <= 720 ? 0.515 : 0.61) - fill / 2) * 100}%`);
     const previousDistance = fullDistance;
     fullDistance = Math.sqrt(1 + 1 / (fill * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))) ** 2);
     const landscape = THREE.MathUtils.smoothstep(camera.aspect, 0.6, 1.6);
@@ -422,16 +380,22 @@ async function main() {
     const angle = Math.atan((1 - horizon * 2) * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
     const lift = (1 - closeDistance * Math.sin(angle)) / Math.cos(angle);
     const introTarget = initialUp.clone().multiplyScalar(lift);
-    introPose = { target: introTarget, position: introDirection.clone().multiplyScalar(closeDistance).add(introTarget) };
+    introPose = {
+      target: introTarget,
+      position: introDirection.clone().multiplyScalar(closeDistance).add(introTarget),
+    };
     fullPose = { target: new THREE.Vector3(), position: initialDirection.clone().multiplyScalar(fullDistance) };
     controls.maxDistance = Math.max(5.5, fullDistance * 1.3);
     if (transition) {
       applyPose(view === 'intro' ? introPose : fullPose);
       finishTransition();
     } else if (view === 'intro') applyPose(introPose);
-    else if (previousDistance) { camera.position.multiplyScalar(fullDistance / previousDistance); controls.update(); }
+    else if (previousDistance) {
+      camera.position.multiplyScalar(fullDistance / previousDistance);
+      controls.update();
+    }
     if (paisAbierto) reencuadrarLateral();
-    else frameGlobe(view==='globe'?1:0);
+    else frameGlobe(view === 'globe' ? 1 : 0);
     countries?.fitName();
   }
   // ---------- Modo país ----------
@@ -441,8 +405,6 @@ async function main() {
   const piezaCanvas = document.querySelector('#pieza');
   const panelPaisRaiz = document.querySelector('#panel-pais');
   const tipPunto = document.querySelector('#tip-punto');
-  const numeroTip = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 1 });
-  const fechaTip = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
   document.querySelector('#pieza-ayuda').textContent = window.matchMedia('(hover: none)').matches
     ? 'Toca una región · Pellizca para acercar'
     : 'Haz clic en una región · Rueda para acercar';
@@ -466,41 +428,54 @@ async function main() {
   function solDe(dir) {
     const derecha = new THREE.Vector3().crossVectors(camera.up, dir).normalize();
     const arriba = new THREE.Vector3().crossVectors(dir, derecha).normalize();
-    return derecha.multiplyScalar(.72).addScaledVector(arriba, .38).addScaledVector(dir, .58).normalize();
+    return derecha.multiplyScalar(0.72).addScaledVector(arriba, 0.38).addScaledVector(dir, 0.58).normalize();
   }
   // Globo parcialmente fuera de pantalla a la izquierda; en móvil, en la esquina.
   function geometriaLateral() {
     const { width: W, height: H } = canvas.getBoundingClientRect();
     const movil = W <= 720;
-    const R = movil ? Math.min(W * .4, H * .2) : Math.min(H * .62, W * .34);
-    const cx = movil ? W * .06 : W * .24 - R;
-    const cy = movil ? H * .1 : H * .5;
+    const R = movil ? Math.min(W * 0.4, H * 0.2) : Math.min(H * 0.62, W * 0.34);
+    const cx = movil ? W * 0.06 : W * 0.24 - R;
+    const cy = movil ? H * 0.1 : H * 0.5;
     const fill = (R * 2) / H;
     return {
       dist: Math.sqrt(1 + 1 / (fill * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))) ** 2),
-      ox: W / 2 - cx, oy: H / 2 - cy, limbo: movil ? 0 : cx + R,
+      ox: W / 2 - cx,
+      oy: H / 2 - cy,
+      limbo: movil ? 0 : cx + R,
     };
   }
   function estadoCamara() {
     const offset = camera.position.clone().sub(controls.target);
-    return { target: controls.target.clone(), dir: offset.clone().normalize(), dist: offset.length(), ox: encuadre.x, oy: encuadre.y, sol: sunDirection.clone() };
+    return {
+      target: controls.target.clone(),
+      dir: offset.clone().normalize(),
+      dist: offset.length(),
+      ox: encuadre.x,
+      oy: encuadre.y,
+      sol: sunDirection.clone(),
+    };
   }
   function aplicarVuelo(t) {
     const { A, B, orbita, solFinal } = vuelo;
-    const e = suave(t), lado = suave(tramo(.14, 1, t));
+    const e = suave(t),
+      lado = suave(tramo(0.14, 1, t));
     qVuelo.identity().slerp(orbita, e);
     dirVuelo.copy(A.dir).applyQuaternion(qVuelo);
     controls.target.lerpVectors(A.target, B.target, e);
-    camera.position.copy(dirVuelo).multiplyScalar(THREE.MathUtils.lerp(A.dist, B.dist, e)).add(controls.target);
+    camera.position
+      .copy(dirVuelo)
+      .multiplyScalar(THREE.MathUtils.lerp(A.dist, B.dist, e))
+      .add(controls.target);
     camera.lookAt(controls.target);
     ponerEncuadre(THREE.MathUtils.lerp(A.ox, B.ox, lado), THREE.MathUtils.lerp(A.oy, B.oy, lado));
     // La luz acompaña a la cámara: el país nunca se abre desde el lado nocturno.
     sunDirection.copy(A.sol).applyQuaternion(qVuelo).lerp(solFinal, lado).normalize();
     // El país despega cuando la cámara ya lo tiene de frente, no desde el borde del globo.
-    avanceMapa = suave(tramo(.48, 1, t));
-    modo.uOpacidad.value = THREE.MathUtils.smoothstep(t, .48, .56);
+    avanceMapa = suave(tramo(0.48, 1, t));
+    modo.uOpacidad.value = THREE.MathUtils.smoothstep(t, 0.48, 0.56);
     // Panel y mapa entran juntos, dentro del mismo gesto.
-    if (vuelo.sentido > 0 && t >= .46 && stage.dataset.modo !== 'pais') {
+    if (vuelo.sentido > 0 && t >= 0.46 && stage.dataset.modo !== 'pais') {
       stage.dataset.modo = 'pais';
       panelPaisRaiz.focus({ preventScroll: true });
     }
@@ -508,8 +483,14 @@ async function main() {
   function iniciarVuelo(A, B, t, sentido) {
     const duracion = THREE.MathUtils.clamp(1700 + A.dir.angleTo(B.dir) * 420, 1800, 2700);
     vuelo = {
-      A, B, t, sentido, duracion, ultimo: performance.now(),
-      orbita: new THREE.Quaternion().setFromUnitVectors(A.dir, B.dir), solFinal: solDe(B.dir),
+      A,
+      B,
+      t,
+      sentido,
+      duracion,
+      ultimo: performance.now(),
+      orbita: new THREE.Quaternion().setFromUnitVectors(A.dir, B.dir),
+      solFinal: solDe(B.dir),
     };
     stage.dataset.transition = 'moving';
     controls.enabled = false;
@@ -519,11 +500,19 @@ async function main() {
     }
   }
   function avanzarVuelo() {
-    if (vuelo.congelado !== undefined) { vuelo.t = vuelo.congelado; aplicarVuelo(vuelo.t); return; }
+    if (vuelo.congelado !== undefined) {
+      vuelo.t = vuelo.congelado;
+      aplicarVuelo(vuelo.t);
+      return;
+    }
     const ahora = performance.now();
     // La vuelta es más ágil que la ida: la decisión de salir ya está tomada.
     const rapidez = vuelo.sentido > 0 ? 1 : 1.35;
-    vuelo.t = THREE.MathUtils.clamp(vuelo.t + vuelo.sentido * rapidez * Math.min(120, ahora - vuelo.ultimo) / vuelo.duracion, 0, 1);
+    vuelo.t = THREE.MathUtils.clamp(
+      vuelo.t + (vuelo.sentido * rapidez * Math.min(120, ahora - vuelo.ultimo)) / vuelo.duracion,
+      0,
+      1,
+    );
     vuelo.ultimo = ahora;
     aplicarVuelo(vuelo.t);
     if (vuelo.t === 1 && vuelo.sentido > 0) terminarEntrada();
@@ -576,56 +565,42 @@ async function main() {
   function reencuadrarLateral() {
     const g = geometriaLateral();
     modo.fijarLimbo(g.limbo);
-    if (vuelo) { vuelo.B.ox = g.ox; vuelo.B.oy = g.oy; vuelo.B.dist = g.dist; return; }
+    if (vuelo) {
+      vuelo.B.ox = g.ox;
+      vuelo.B.oy = g.oy;
+      vuelo.B.dist = g.dist;
+      return;
+    }
     ponerEncuadre(g.ox, g.oy);
     camera.position.setLength(g.dist);
     camera.lookAt(0, 0, 0);
     modo.medir();
   }
-  function mostrarPunto(registro, x, y, indice) {
-    if (!registro) { tipPunto.hidden = true; return; }
-    tipPunto.replaceChildren();
-    if (registro.celda) {
-      const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-      const t = document.createElement('strong');
-      t.textContent = `${numeroTip.format(Math.round(registro.valor))} celdas-día con fuego`;
-      const km = Math.round(registro.tam * 111);
-      const lineas = [registro.sel.mes === null ? `Todo ${registro.sel.anio}` : `${meses[registro.sel.mes]} de ${registro.sel.anio}`,
-        `Zona de ~${km} km (${registro.tam}°)`, 'Serie harmonizada MODIS / VIIRS'];
-      tipPunto.append(t, ...lineas.map(texto => { const s = document.createElement('span'); s.textContent = texto; return s; }));
-      tipPunto.hidden = false;
-      const r = tipPunto.getBoundingClientRect();
-      tipPunto.style.left = `${Math.max(8, Math.min(innerWidth - r.width - 8, x + 14))}px`;
-      tipPunto.style.top = `${Math.max(8, y - r.height - 12)}px`;
-      return;
-    }
-    const region = panelPais.regionDe(indice);
-    const titulo = document.createElement('strong');
-    titulo.textContent = region || `${numeroTip.format(registro.frp)} MW`;
-    const lineas = [
-      ...(region ? [`${numeroTip.format(registro.frp)} MW`] : []),
-      `${fechaTip.format(new Date(`${registro.fecha}T00:00:00Z`))} · ${registro.hora.slice(0, 2)}:${registro.hora.slice(2)} UTC`,
-      `${registro.sensor} · ${etiquetaSatelite(registro.satelite)} · ${registro.periodo === 'D' ? 'Día' : 'Noche'}`,
-      `Confianza: ${etiquetaConfianza(registro.confianza)}`,
-    ];
-    tipPunto.append(titulo, ...lineas.map(texto => { const s = document.createElement('span'); s.textContent = texto; return s; }));
-    tipPunto.hidden = false;
-    const r = tipPunto.getBoundingClientRect();
-    tipPunto.style.left = `${Math.max(8, Math.min(innerWidth - r.width - 8, x + 14))}px`;
-    tipPunto.style.top = `${Math.max(8, y - r.height - 12)}px`;
-  }
+  const mostrarPunto = crearFichaPunto({ tip: tipPunto, regionDe: indice => panelPais.regionDe(indice) });
   modo = new ModoPais({
-    canvas: piezaCanvas, stage, camera, globe, imagenMapa: dayMap.image, panel: panelPaisRaiz, reduceMotion, onPunto: mostrarPunto,
-    capaEtiquetas: document.querySelector('#etiquetas-regiones'), leyenda: document.querySelector('#pieza-leyenda'),
+    canvas: piezaCanvas,
+    stage,
+    camera,
+    globe,
+    imagenMapa: dayMap.image,
+    panel: panelPaisRaiz,
+    reduceMotion,
+    onPunto: mostrarPunto,
+    capaEtiquetas: document.querySelector('#etiquetas-regiones'),
+    leyenda: document.querySelector('#pieza-leyenda'),
     atribucion: document.querySelector('#atribucion-satelital'),
     onVista: vista => {
       panelPais.mostrarVista(vista);
-      if (vista) { giroLado = false; pintarGiro(false); }
+      if (vista) {
+        giroLado = false;
+        pintarGiro(false);
+      }
     },
     onSatelite: estado => panelPais.estadoSatelital(estado),
   });
   const panelPais = new PanelPais({
-    raiz: panelPaisRaiz, reduceMotion,
+    raiz: panelPaisRaiz,
+    reduceMotion,
     onCerrar: cerrarPais,
     onPais: id => solicitarPais(id, {}),
     onReintentar: () => abrirPais(panelPais.feature),
@@ -663,34 +638,55 @@ async function main() {
   });
   // Países sin detecciones guardadas: un punto por celda con fuego en el período elegido.
   function ponerMapaSerie(sel) {
-    const entrada = panelPais.entrada, pedido = pedidoPais;
+    const entrada = panelPais.entrada,
+      pedido = pedidoPais;
     if (!entrada?.soloSerie) return;
-    cargarCeldas(entrada.id).then(mapa => {
-      if (pedido !== pedidoPais) return;
-      const suma = sumarCeldas(mapa, sel.anio, sel.mes);
-      const positivos = Array.from(suma).filter(v => v > 0).sort((a, b) => a - b);
-      const ref = positivos[Math.floor(positivos.length * .98)] || 1;
-      const lado = mapa.celda_grados;
-      // Mapa de densidad: cada zona recibe más puntos cuanto más fuego tuvo, repartidos al azar
-      // dentro de ella (siempre en el mismo lugar). Las zonas casi sin fuego no se dibujan.
-      const MAX_PUNTOS = 14;
-      const azar = semilla => { let t = semilla >>> 0; return () => { t += 0x6D2B79F5; let r = Math.imul(t ^ (t >>> 15), 1 | t); r ^= r + Math.imul(r ^ (r >>> 7), 61 | r); return ((r ^ (r >>> 14)) >>> 0) / 4294967296; }; };
-      const registros = [];
-      mapa.celdas.forEach(([lat, lon], i) => {
-        const r = suma[i] / ref;
-        if (r < .02) return;
-        const n = Math.max(1, Math.round(MAX_PUNTOS * Math.sqrt(Math.min(1, r))));
-        const aleatorio = azar(i * 7919 + 17);
-        // Intensidad del color: proporcional a la raíz (la escala del mapa es logarítmica en FRP).
-        const frp = 10 ** (3 * Math.min(1, Math.sqrt(r))) - 1;
-        for (let k = 0; k < n; k++) {
-          registros.push({ lat: lat + aleatorio() * lado, lon: lon + aleatorio() * lado, frp, sensor: 'VIIRS',
-            celda: true, valor: suma[i], tam: lado, sel });
-        }
-      });
-      modo.ponerPuntos({ registros, dias: new Int16Array(registros.length) });
-      modo.filtrar({ ini: 0, fin: 400, cola: 0, sensor: 'todos', visibles: registros.length });
-    }).catch(error => console.warn('Mapa del país no disponible:', error));
+    cargarCeldas(entrada.id)
+      .then(mapa => {
+        if (pedido !== pedidoPais) return;
+        const suma = sumarCeldas(mapa, sel.anio, sel.mes);
+        const positivos = Array.from(suma)
+          .filter(v => v > 0)
+          .sort((a, b) => a - b);
+        const ref = positivos[Math.floor(positivos.length * 0.98)] || 1;
+        const lado = mapa.celda_grados;
+        // Mapa de densidad: cada zona recibe más puntos cuanto más fuego tuvo, repartidos al azar
+        // dentro de ella (siempre en el mismo lugar). Las zonas casi sin fuego no se dibujan.
+        const MAX_PUNTOS = 14;
+        const azar = semilla => {
+          let t = semilla >>> 0;
+          return () => {
+            t += 0x6d2b79f5;
+            let r = Math.imul(t ^ (t >>> 15), 1 | t);
+            r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+            return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+          };
+        };
+        const registros = [];
+        mapa.celdas.forEach(([lat, lon], i) => {
+          const r = suma[i] / ref;
+          if (r < 0.02) return;
+          const n = Math.max(1, Math.round(MAX_PUNTOS * Math.sqrt(Math.min(1, r))));
+          const aleatorio = azar(i * 7919 + 17);
+          // Intensidad del color: proporcional a la raíz (la escala del mapa es logarítmica en FRP).
+          const frp = 10 ** (3 * Math.min(1, Math.sqrt(r))) - 1;
+          for (let k = 0; k < n; k++) {
+            registros.push({
+              lat: lat + aleatorio() * lado,
+              lon: lon + aleatorio() * lado,
+              frp,
+              sensor: 'VIIRS',
+              celda: true,
+              valor: suma[i],
+              tam: lado,
+              sel,
+            });
+          }
+        });
+        modo.ponerPuntos({ registros, dias: new Int16Array(registros.length) });
+        modo.filtrar({ ini: 0, fin: 400, cola: 0, sensor: 'todos', visibles: registros.length });
+      })
+      .catch(error => console.warn('Mapa del país no disponible:', error));
   }
   function cargarDatosPais(country, entrada, inicial, pedido) {
     if (!entrada) return;
@@ -700,20 +696,22 @@ async function main() {
       if (pedido === pedidoPais) panelPais.ponerSoloSerie();
       return;
     }
-    cargarDatos(entrada).then(async datos => {
-      if (pedido !== pedidoPais) return;
-      panelPais.ponerDatos(datos, modo.ponerPuntos(datos), inicial);
-      const detalle = await modo.promesaDetalle;
-      if (pedido !== pedidoPais || !detalle) return;
-      // El contorno detallado puede dejar fuera otras islas que el general.
-      panelPais.omitidos = modo.datosPuntos?.omitidos ?? panelPais.omitidos;
-      panelPais.actualizar();
-      const indices = await modo.regionesDe(datos, country.id);
-      if (pedido === pedidoPais && indices) panelPais.ponerRegiones(detalle.nombresRegion, indices);
-    }).catch(error => {
-      console.error('Datos del país:', error);
-      if (pedido === pedidoPais) panelPais.error();
-    });
+    cargarDatos(entrada)
+      .then(async datos => {
+        if (pedido !== pedidoPais) return;
+        panelPais.ponerDatos(datos, modo.ponerPuntos(datos), inicial);
+        const detalle = await modo.promesaDetalle;
+        if (pedido !== pedidoPais || !detalle) return;
+        // El contorno detallado puede dejar fuera otras islas que el general.
+        panelPais.omitidos = modo.datosPuntos?.omitidos ?? panelPais.omitidos;
+        panelPais.actualizar();
+        const indices = await modo.regionesDe(datos, country.id);
+        if (pedido === pedidoPais && indices) panelPais.ponerRegiones(detalle.nombresRegion, indices);
+      })
+      .catch(error => {
+        console.error('Datos del país:', error);
+        if (pedido === pedidoPais) panelPais.error();
+      });
   }
   function abrirPais(country) {
     if (transition) return;
@@ -727,20 +725,38 @@ async function main() {
     stage.dataset.conDatos = !entrada ? 'no' : entrada.soloSerie ? 'serie' : 'si';
     actualizarURL({ pais: country.id, dia: null, sensor: null, anio: null });
     const nombre = country.properties.spanish || country.properties.name;
-    piezaCanvas.setAttribute('aria-label', `Mapa de ${nombre}. Selecciona una región con un clic o con su nombre. Usa la rueda para acercar. Escape vuelve a la vista anterior.`);
+    piezaCanvas.setAttribute(
+      'aria-label',
+      `Mapa de ${nombre}. Selecciona una región con un clic o con su nombre. Usa la rueda para acercar. Escape vuelve a la vista anterior.`,
+    );
     if (paisAbierto) {
       // Ya hay un país abierto: solo cambia el mapa y el globo gira hacia el nuevo.
       paisAbierto = country;
-      if (vuelo && vuelo.sentido < 0) { vuelo.sentido = 1; vuelo.ultimo = performance.now(); stage.dataset.modo = 'pais'; }
+      if (vuelo && vuelo.sentido < 0) {
+        vuelo.sentido = 1;
+        vuelo.ultimo = performance.now();
+        stage.dataset.modo = 'pais';
+      }
       modo.cambiar(country);
       datosAlAterrizar = null;
       if (!vuelo) {
-        const desde = camera.position.clone().normalize(), hacia = direccionPais(country);
-        cambioOrbita = reduceMotion.matches ? null : {
-          desde, dist: camera.position.length(), t: 0, duracion: 900, ultimo: performance.now(),
-          orbita: new THREE.Quaternion().setFromUnitVectors(desde, hacia),
-        };
-        if (reduceMotion.matches) { camera.position.copy(hacia).multiplyScalar(camera.position.length()); camera.lookAt(0, 0, 0); sunDirection.copy(solDe(hacia)); }
+        const desde = camera.position.clone().normalize(),
+          hacia = direccionPais(country);
+        cambioOrbita = reduceMotion.matches
+          ? null
+          : {
+              desde,
+              dist: camera.position.length(),
+              t: 0,
+              duracion: 900,
+              ultimo: performance.now(),
+              orbita: new THREE.Quaternion().setFromUnitVectors(desde, hacia),
+            };
+        if (reduceMotion.matches) {
+          camera.position.copy(hacia).multiplyScalar(camera.position.length());
+          camera.lookAt(0, 0, 0);
+          sunDirection.copy(solDe(hacia));
+        }
       }
       cargarDatosPais(country, entrada, inicial, pedido);
       panelPaisRaiz.focus({ preventScroll: true });
@@ -772,12 +788,25 @@ async function main() {
     delete stage.dataset.modo;
     modo.salir();
     actualizarURL({ pais: null, dia: null, sensor: null, anio: null });
-    if (vuelo) { vuelo.sentido = -1; vuelo.ultimo = performance.now(); return; }
+    if (vuelo) {
+      vuelo.sentido = -1;
+      vuelo.ultimo = performance.now();
+      return;
+    }
     // Vuelve al planeta completo mirando el país, aunque el globo haya seguido girando.
     const dirRegreso = direccionPais(paisAbierto);
     // De regreso, el planeta se ve iluminado como al principio, mirando este país.
-    const solRegreso = solInicial.clone().applyQuaternion(new THREE.Quaternion().setFromUnitVectors(initialDirection, dirRegreso));
-    const A = { target: new THREE.Vector3(), dir: dirRegreso, dist: fullDistance, ox: 0, oy: desplazamientoGlobo(), sol: solRegreso };
+    const solRegreso = solInicial
+      .clone()
+      .applyQuaternion(new THREE.Quaternion().setFromUnitVectors(initialDirection, dirRegreso));
+    const A = {
+      target: new THREE.Vector3(),
+      dir: dirRegreso,
+      dist: fullDistance,
+      ox: 0,
+      oy: desplazamientoGlobo(),
+      sol: solRegreso,
+    };
     iniciarVuelo(A, estadoCamara(), 1, -1);
   }
   document.addEventListener('keydown', evento => {
@@ -788,8 +817,15 @@ async function main() {
   });
   // El índice mundial dice qué países tienen serie harmonizada (marca "Con datos" y panel).
   await cargarIndice();
-  countries=await Countries.create({canvas,camera,globe,stage,uniforms,onSelect:country=>abrirPais(country)});
-  countries.update(0,0,true);
+  countries = await Countries.create({
+    canvas,
+    camera,
+    globe,
+    stage,
+    uniforms,
+    onSelect: country => abrirPais(country),
+  });
+  countries.update(0, 0, true);
   // Abrir un país desde «Datos guardados» o un enlace directo es una petición explícita:
   // no pasa por la selección en el globo, que sigue bloqueada en la portada.
   solicitarPais = (id, inicial = {}) => {
@@ -799,31 +835,46 @@ async function main() {
     abrirPais(country);
   };
   for (const boton of document.querySelectorAll('[data-pais-rapido]')) {
-    boton.addEventListener('click', () => { if (!seleccionBloqueada()) solicitarPais(boton.dataset.paisRapido, {}); });
+    boton.addEventListener('click', () => {
+      if (!seleccionBloqueada()) solicitarPais(boton.dataset.paisRapido, {});
+    });
   }
   window.addEventListener('resize', resize);
   rotationButton.addEventListener('click', () => {
-    if (paisAbierto) { giroLado = !giroLado; pintarGiro(giroLado); }
-    else setRotation(!rotating);
+    if (paisAbierto) {
+      giroLado = !giroLado;
+      pintarGiro(giroLado);
+    } else setRotation(!rotating);
   });
   exploreButton.addEventListener('click', () => changeView('globe'));
   resetButton.addEventListener('click', () => changeView('intro'));
   reduceMotion.addEventListener('change', () => setRotation(!reduceMotion.matches));
-  controls.addEventListener('start', () => { dragging = true; canvas.classList.add('arrastrando'); setRotation(false); });
-  controls.addEventListener('end', () => { dragging = false; canvas.classList.remove('arrastrando'); });
+  controls.addEventListener('start', () => {
+    dragging = true;
+    canvas.classList.add('arrastrando');
+    setRotation(false);
+  });
+  controls.addEventListener('end', () => {
+    dragging = false;
+    canvas.classList.remove('arrastrando');
+  });
   canvas.addEventListener('keydown', event => {
     const angle = 0.07;
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '+', '=', '-', ' '].includes(event.key)) return;
     event.preventDefault();
-    if (event.key === ' ') { setRotation(!rotating); return; }
+    if (event.key === ' ') {
+      setRotation(!rotating);
+      return;
+    }
     if (view === 'intro' || transition) return;
     setRotation(false);
     if (event.key === '+' || event.key === '=') camera.position.multiplyScalar(0.92);
     else if (event.key === '-') camera.position.multiplyScalar(1.08);
     else {
-      const axis = event.key.includes('Left') || event.key.includes('Right')
-        ? new THREE.Vector3(0, 1, 0)
-        : new THREE.Vector3().crossVectors(camera.up, camera.position).normalize();
+      const axis =
+        event.key.includes('Left') || event.key.includes('Right')
+          ? new THREE.Vector3(0, 1, 0)
+          : new THREE.Vector3().crossVectors(camera.up, camera.position).normalize();
       camera.position.applyAxisAngle(axis, ['ArrowRight', 'ArrowUp'].includes(event.key) ? angle : -angle);
     }
     camera.position.clampLength(controls.minDistance, controls.maxDistance);
@@ -841,7 +892,12 @@ async function main() {
   let shaderFailed = false;
   renderer.debug.onShaderError = (gl, program, vertex, fragment) => {
     shaderFailed = true;
-    console.error('Efecto 3D:', gl.getProgramInfoLog(program), gl.getShaderInfoLog(vertex), gl.getShaderInfoLog(fragment));
+    console.error(
+      'Efecto 3D:',
+      gl.getProgramInfoLog(program),
+      gl.getShaderInfoLog(vertex),
+      gl.getShaderInfoLog(fragment),
+    );
   };
   await renderer.compileAsync(scene, camera);
   await cloudLayer.compile();
@@ -854,8 +910,10 @@ async function main() {
   rotationButton.disabled = resetButton.disabled = exploreButton.disabled = false;
   document.querySelector('#escena').dataset.state = 'ready';
   setRotation(rotating);
-  let arranqueHecho=false;
-  document.addEventListener('visibilitychange', () => { lastFrame = undefined; });
+  let arranqueHecho = false;
+  document.addEventListener('visibilitychange', () => {
+    lastFrame = undefined;
+  });
   renderer.setAnimationLoop(time => {
     if (document.hidden) return;
     const delta = lastFrame === undefined ? 0 : Math.min((time - lastFrame) / 1000, 0.05);
@@ -876,11 +934,13 @@ async function main() {
       const t = THREE.MathUtils.clamp((time - transition.start) / transition.duration, 0, 1);
       const eased = t * t * t * (10 + t * (-15 + t * 6));
       controls.target.lerpVectors(transition.fromTarget, transition.toTarget, eased);
-      frameGlobe(THREE.MathUtils.lerp(transition.fromFraming,transition.toFraming,eased));
-      sunDirection.copy(transition.fromSol).lerp(solInicial,eased).normalize();
+      frameGlobe(THREE.MathUtils.lerp(transition.fromFraming, transition.toFraming, eased));
+      sunDirection.copy(transition.fromSol).lerp(solInicial, eased).normalize();
       // Follow an orbital arc, so returning from the far side never crosses Earth.
       cameraTransitionRotation.identity().slerp(transition.orbit, eased);
-      camera.position.copy(transition.fromDirection).applyQuaternion(cameraTransitionRotation)
+      camera.position
+        .copy(transition.fromDirection)
+        .applyQuaternion(cameraTransitionRotation)
         .multiplyScalar(THREE.MathUtils.lerp(transition.fromDistance, transition.toDistance, eased))
         .add(controls.target);
       camera.lookAt(controls.target);
@@ -895,18 +955,20 @@ async function main() {
     uniforms.cloudOffset.value = cloudTime;
     cloudBrush.update(delta, inverseRotation, cloudTime, !dragging && !transition && !paisAbierto);
     // La selección de países solo existe con el planeta completo a la vista.
-    countries.update(time,delta,seleccionBloqueada(),1-avanceMapa);
+    countries.update(time, delta, seleccionBloqueada(), 1 - avanceMapa);
     modo.update(avanceMapa, Boolean(vuelo || cambioOrbita));
     renderEarth();
     frameCount++;
-    if(!arranqueHecho&&paisPendiente){
-      arranqueHecho=true;
-      const pendiente=paisPendiente;paisPendiente=null;
-      solicitarPais(pendiente.id,pendiente.inicial);
+    if (!arranqueHecho && paisPendiente) {
+      arranqueHecho = true;
+      const pendiente = paisPendiente;
+      paisPendiente = null;
+      solicitarPais(pendiente.id, pendiente.inicial);
     }
-    if(time-frameSampleStart>2000){
-      canvas.dataset.fps=String(Math.round(frameCount*1000/(time-frameSampleStart)));
-      frameCount=0;frameSampleStart=time;
+    if (time - frameSampleStart > 2000) {
+      canvas.dataset.fps = String(Math.round((frameCount * 1000) / (time - frameSampleStart)));
+      frameCount = 0;
+      frameSampleStart = time;
     }
   });
 }
@@ -914,7 +976,9 @@ async function main() {
 main().catch(error => {
   console.error('No se pudo preparar la Tierra:', error);
   renderer?.setAnimationLoop(null);
-  showError(error.message === 'shader'
-    ? 'No se pudieron preparar los efectos de luz en este navegador. Prueba con Chrome o Edge actualizado.'
-    : 'La descarga pudo interrumpirse o la aceleración gráfica no está disponible. Comprueba que el servidor local sigue abierto y vuelve a intentarlo.');
+  showError(
+    error.message === 'shader'
+      ? 'No se pudieron preparar los efectos de luz en este navegador. Prueba con Chrome o Edge actualizado.'
+      : 'La descarga pudo interrumpirse o la aceleración gráfica no está disponible. Comprueba que el servidor local sigue abierto y vuelve a intentarlo.',
+  );
 });

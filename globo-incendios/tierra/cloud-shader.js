@@ -1,7 +1,7 @@
-import {CLOUD_SETTINGS} from './cloud-settings.js?v=24';
-const glslFloat=value=>Number.isInteger(value)?`${value}.0`:String(value);
+import { CLOUD_SETTINGS } from './cloud-settings.js?v=0d22a1e4';
+const glslFloat = value => (Number.isInteger(value) ? `${value}.0` : String(value));
 // One density field drives volumetric clouds, their transparency and shadows.
-export const cloudField = /* glsl */`
+export const cloudField = /* glsl */ `
   precision highp sampler3D;
   uniform sampler3D cloudVolume;
   uniform sampler3D cloudNoise;
@@ -10,7 +10,7 @@ export const cloudField = /* glsl */`
   const float CLOUD_PI=3.14159265359;
   const float CLOUD_BASE=${CLOUD_SETTINGS.base};
   const float CLOUD_TOP=${CLOUD_SETTINGS.top};
-  const float CLOUD_LIGHT_SCALE=${glslFloat((CLOUD_SETTINGS.top-CLOUD_SETTINGS.base)/.0075)};
+  const float CLOUD_LIGHT_SCALE=${glslFloat((CLOUD_SETTINGS.top - CLOUD_SETTINGS.base) / 0.0075)};
   vec2 cloudUv(vec3 p){
     p=normalize(p);
     return vec2(atan(-p.z,p.x)/(2.0*CLOUD_PI)+.5+cloudOffset,
@@ -44,14 +44,14 @@ export const cloudField = /* glsl */`
     return d;
   }
 `;
-export const cloudVertexShader = /* glsl */`
+export const cloudVertexShader = /* glsl */ `
   varying vec3 vCloudPosition;
   void main(){
     vCloudPosition=position*${CLOUD_SETTINGS.top};
     gl_Position=projectionMatrix*modelViewMatrix*vec4(vCloudPosition,1.0);
   }
 `;
-export const cloudShader = /* glsl */`
+export const cloudShader = /* glsl */ `
   ${cloudField}
   uniform vec3 localSunDirection;
   uniform vec3 localCameraPosition;

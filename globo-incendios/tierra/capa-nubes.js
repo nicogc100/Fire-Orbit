@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import {cloudField,cloudShader,cloudVertexShader} from './cloud-shader.js?v=24';
+import { cloudField, cloudShader, cloudVertexShader } from './cloud-shader.js?v=967535a3';
 
-const quadVertex=/* glsl */`
+const quadVertex = /* glsl */ `
   varying vec2 vUv;
   void main(){vUv=uv;gl_Position=vec4(position.xy,0.0,1.0);}
 `;
-const solarFragment=/* glsl */`
+const solarFragment = /* glsl */ `
   ${cloudField}
   uniform vec3 localSunDirection;
   uniform float lightSlice;
@@ -22,7 +22,7 @@ const solarFragment=/* glsl */`
     gl_FragColor=vec4(vec3(depth*CLOUD_LIGHT_SCALE*64.0),1.0);
   }
 `;
-const shadowFragment=/* glsl */`
+const shadowFragment = /* glsl */ `
   ${cloudField}
   uniform vec3 localSunDirection;
   varying vec2 vUv;
@@ -39,7 +39,7 @@ const shadowFragment=/* glsl */`
     gl_FragColor=vec4(vec3(shadow),1.0);
   }
 `;
-const compositeFragment=/* glsl */`
+const compositeFragment = /* glsl */ `
   uniform sampler2D cloudColor;
   uniform sampler2D surfaceColor;
   uniform mat4 inverseProjection;
@@ -101,81 +101,138 @@ const compositeFragment=/* glsl */`
 `;
 
 export class CloudLayer {
-  constructor(renderer,camera,globe,geometry,uniforms){
-    this.renderer=renderer;this.camera=camera;this.globe=globe;
-    const colorType=renderer.extensions.has('EXT_color_buffer_float')?THREE.HalfFloatType:THREE.UnsignedByteType;
-    this.target=new THREE.WebGLRenderTarget(1,1,{type:colorType,depthBuffer:false,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter});
-    this.surfaceTarget=new THREE.WebGLRenderTarget(1,1,{type:colorType,depthBuffer:true});
-    this.solarTarget=new THREE.WebGL3DRenderTarget(512,256,16,{
-      type:colorType,depthBuffer:false,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,
+  constructor(renderer, camera, globe, geometry, uniforms) {
+    this.renderer = renderer;
+    this.camera = camera;
+    this.globe = globe;
+    const colorType = renderer.extensions.has('EXT_color_buffer_float') ? THREE.HalfFloatType : THREE.UnsignedByteType;
+    this.target = new THREE.WebGLRenderTarget(1, 1, {
+      type: colorType,
+      depthBuffer: false,
+      minFilter: THREE.LinearFilter,
+      magFilter: THREE.LinearFilter,
     });
-    this.solarTarget.texture.wrapS=THREE.RepeatWrapping;
-    uniforms.solarDepth={value:this.solarTarget.texture};
-    this.lightUniforms={...uniforms,lightSlice:{value:0}};
-    this.lightSlice=0;this.lightReady=false;
-    this.shadowTarget=new THREE.WebGLRenderTarget(1024,512,{depthBuffer:false,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter});
-    this.shadowTarget.texture.wrapS=THREE.RepeatWrapping;
-    this.shadowTexture=this.shadowTarget.texture;
-    this.cloudScene=new THREE.Scene();
-    this.cloudGroup=new THREE.Group();this.cloudScene.add(this.cloudGroup);
-    this.cloudGroup.add(new THREE.Mesh(geometry,new THREE.ShaderMaterial({
-      uniforms,vertexShader:cloudVertexShader,fragmentShader:cloudShader,
-      transparent:true,depthWrite:false,depthTest:false,
-    })));
-    this.screenCamera=new THREE.Camera();
-    const quad=new THREE.PlaneGeometry(2,2);
-    this.solarScene=new THREE.Scene();
-    this.solarScene.add(new THREE.Mesh(quad,new THREE.ShaderMaterial({
-      uniforms:this.lightUniforms,vertexShader:quadVertex,fragmentShader:solarFragment,depthTest:false,depthWrite:false,
-    })));
-    this.shadowScene=new THREE.Scene();
-    this.shadowScene.add(new THREE.Mesh(quad,new THREE.ShaderMaterial({
-      uniforms,vertexShader:quadVertex,fragmentShader:shadowFragment,depthTest:false,depthWrite:false,
-    })));
-    this.compositeScene=new THREE.Scene();
-    this.compositeScene.add(new THREE.Mesh(quad,new THREE.ShaderMaterial({
-      uniforms:{cloudColor:{value:this.target.texture},surfaceColor:{value:this.surfaceTarget.texture},
-        inverseProjection:{value:camera.projectionMatrixInverse},cameraWorld:{value:camera.matrixWorld},
-        worldCameraPosition:{value:camera.position},sunDirection:uniforms.sunDirection},vertexShader:quadVertex,
-      fragmentShader:compositeFragment,transparent:true,depthTest:false,depthWrite:false,
-    })));
+    this.surfaceTarget = new THREE.WebGLRenderTarget(1, 1, { type: colorType, depthBuffer: true });
+    this.solarTarget = new THREE.WebGL3DRenderTarget(512, 256, 16, {
+      type: colorType,
+      depthBuffer: false,
+      minFilter: THREE.LinearFilter,
+      magFilter: THREE.LinearFilter,
+    });
+    this.solarTarget.texture.wrapS = THREE.RepeatWrapping;
+    uniforms.solarDepth = { value: this.solarTarget.texture };
+    this.lightUniforms = { ...uniforms, lightSlice: { value: 0 } };
+    this.lightSlice = 0;
+    this.lightReady = false;
+    this.shadowTarget = new THREE.WebGLRenderTarget(1024, 512, {
+      depthBuffer: false,
+      minFilter: THREE.LinearFilter,
+      magFilter: THREE.LinearFilter,
+    });
+    this.shadowTarget.texture.wrapS = THREE.RepeatWrapping;
+    this.shadowTexture = this.shadowTarget.texture;
+    this.cloudScene = new THREE.Scene();
+    this.cloudGroup = new THREE.Group();
+    this.cloudScene.add(this.cloudGroup);
+    this.cloudGroup.add(
+      new THREE.Mesh(
+        geometry,
+        new THREE.ShaderMaterial({
+          uniforms,
+          vertexShader: cloudVertexShader,
+          fragmentShader: cloudShader,
+          transparent: true,
+          depthWrite: false,
+          depthTest: false,
+        }),
+      ),
+    );
+    this.screenCamera = new THREE.Camera();
+    const quad = new THREE.PlaneGeometry(2, 2);
+    this.solarScene = new THREE.Scene();
+    this.solarScene.add(
+      new THREE.Mesh(
+        quad,
+        new THREE.ShaderMaterial({
+          uniforms: this.lightUniforms,
+          vertexShader: quadVertex,
+          fragmentShader: solarFragment,
+          depthTest: false,
+          depthWrite: false,
+        }),
+      ),
+    );
+    this.shadowScene = new THREE.Scene();
+    this.shadowScene.add(
+      new THREE.Mesh(
+        quad,
+        new THREE.ShaderMaterial({
+          uniforms,
+          vertexShader: quadVertex,
+          fragmentShader: shadowFragment,
+          depthTest: false,
+          depthWrite: false,
+        }),
+      ),
+    );
+    this.compositeScene = new THREE.Scene();
+    this.compositeScene.add(
+      new THREE.Mesh(
+        quad,
+        new THREE.ShaderMaterial({
+          uniforms: {
+            cloudColor: { value: this.target.texture },
+            surfaceColor: { value: this.surfaceTarget.texture },
+            inverseProjection: { value: camera.projectionMatrixInverse },
+            cameraWorld: { value: camera.matrixWorld },
+            worldCameraPosition: { value: camera.position },
+            sunDirection: uniforms.sunDirection,
+          },
+          vertexShader: quadVertex,
+          fragmentShader: compositeFragment,
+          transparent: true,
+          depthTest: false,
+          depthWrite: false,
+        }),
+      ),
+    );
   }
-  resize(width,height){
+  resize(width, height) {
     // Keep the terrain at the native canvas resolution. Only the costly volume
     // pass has a bounded pixel count; the full 2048×1024×32 density stays intact.
-    const scale=Math.min(this.renderer.getPixelRatio(),Math.sqrt(700000/(width*height)));
-    this.target.setSize(Math.max(1,Math.round(width*scale)),Math.max(1,Math.round(height*scale)));
-    const ratio=this.renderer.getPixelRatio();
-    this.surfaceTarget.setSize(Math.max(1,Math.round(width*ratio)),Math.max(1,Math.round(height*ratio)));
+    const scale = Math.min(this.renderer.getPixelRatio(), Math.sqrt(700000 / (width * height)));
+    this.target.setSize(Math.max(1, Math.round(width * scale)), Math.max(1, Math.round(height * scale)));
+    const ratio = this.renderer.getPixelRatio();
+    this.surfaceTarget.setSize(Math.max(1, Math.round(width * ratio)), Math.max(1, Math.round(height * ratio)));
   }
-  async compile(){
-    await this.renderer.compileAsync(this.cloudScene,this.camera);
-    await this.renderer.compileAsync(this.solarScene,this.screenCamera);
-    await this.renderer.compileAsync(this.shadowScene,this.screenCamera);
-    await this.renderer.compileAsync(this.compositeScene,this.screenCamera);
+  async compile() {
+    await this.renderer.compileAsync(this.cloudScene, this.camera);
+    await this.renderer.compileAsync(this.solarScene, this.screenCamera);
+    await this.renderer.compileAsync(this.shadowScene, this.screenCamera);
+    await this.renderer.compileAsync(this.compositeScene, this.screenCamera);
   }
-  prepare(){
+  prepare() {
     this.cloudGroup.quaternion.copy(this.globe.quaternion);
     // Fill once, then refresh two radial slices per frame. No temporal image
     // accumulation: camera motion cannot leave colour trails or stale geometry.
-    const slices=this.lightReady?2:16;
-    for(let i=0;i<slices;i++){
-      this.lightUniforms.lightSlice.value=this.lightSlice/15;
-      this.renderer.setRenderTarget(this.solarTarget,this.lightSlice);
-      this.renderer.render(this.solarScene,this.screenCamera);
-      this.lightSlice=(this.lightSlice+1)%16;
+    const slices = this.lightReady ? 2 : 16;
+    for (let i = 0; i < slices; i++) {
+      this.lightUniforms.lightSlice.value = this.lightSlice / 15;
+      this.renderer.setRenderTarget(this.solarTarget, this.lightSlice);
+      this.renderer.render(this.solarScene, this.screenCamera);
+      this.lightSlice = (this.lightSlice + 1) % 16;
     }
-    this.lightReady=true;
+    this.lightReady = true;
     this.renderer.setRenderTarget(this.shadowTarget);
-    this.renderer.render(this.shadowScene,this.screenCamera);
+    this.renderer.render(this.shadowScene, this.screenCamera);
     this.renderer.setRenderTarget(this.target);
-    this.renderer.render(this.cloudScene,this.camera);
+    this.renderer.render(this.cloudScene, this.camera);
     this.renderer.setRenderTarget(null);
   }
-  compose(scene){
+  compose(scene) {
     this.renderer.setRenderTarget(this.surfaceTarget);
-    this.renderer.render(scene,this.camera);
+    this.renderer.render(scene, this.camera);
     this.renderer.setRenderTarget(null);
-    this.renderer.render(this.compositeScene,this.screenCamera);
+    this.renderer.render(this.compositeScene, this.screenCamera);
   }
 }

@@ -1,0 +1,13 @@
+# Dependencias de desarrollo (npm install las restaura).
+node_modules/
+
+# Registros y cachés.
+*.log
+__pycache__/
+.playwright-cli/
+
+# Sistema operativo y editores.
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -2,7 +2,7 @@
 // ninguna de estas tareas puede competir con la cámara mientras el país se abre.
 import { ShapeUtils, Vector2 } from './vendor/three.core.js';
 import { geoContains } from './vendor/d3-geo.js';
-import { construirGeometria, indicesRegion } from './pieza-geo.js?v=3';
+import { construirGeometria, indicesRegion } from './pieza-geo.js?v=7359ea78';
 import { cargarRelieve } from './relieve-pais.js';
 
 const vectores = puntos => puntos.map(p => new Vector2(p.x, p.y));
@@ -25,19 +25,35 @@ self.onmessage = async ({ data }) => {
       regionesPorPais.set(id, detalle.regiones);
       const g = construirGeometria(null, triangular, detalle);
       self.postMessage({ tipo, pedido, id, geometria: g }, [
-        g.esfera.buffer, g.plano.buffer, g.normal.buffer, g.lado.buffer,
-        g.contornoEsfera.buffer, g.contornoPlano.buffer, g.limitesEsfera.buffer, g.limitesPlano.buffer,
+        g.esfera.buffer,
+        g.plano.buffer,
+        g.normal.buffer,
+        g.lado.buffer,
+        g.contornoEsfera.buffer,
+        g.contornoPlano.buffer,
+        g.limitesEsfera.buffer,
+        g.limitesPlano.buffer,
       ]);
     } else if (tipo === 'ciudades') {
       const region = regionesPorPais.get(id)?.[data.indice];
       if (!region) throw new Error('Región no disponible');
-      ciudades ||= fetch('assets/cartografia/ciudades.json').then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      }).catch(error => { ciudades = null; throw error; });
+      ciudades ||= fetch('assets/cartografia/ciudades.json')
+        .then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json();
+        })
+        .catch(error => {
+          ciudades = null;
+          throw error;
+        });
       const [[w, s], [e, n]] = region.properties.bounds;
-      const localidades = (await ciudades).filter(([, lon, lat]) =>
-        lat >= s && lat <= n && (w <= e ? lon >= w && lon <= e : lon >= w || lon <= e) && geoContains(region, [lon, lat]));
+      const localidades = (await ciudades).filter(
+        ([, lon, lat]) =>
+          lat >= s &&
+          lat <= n &&
+          (w <= e ? lon >= w && lon <= e : lon >= w || lon <= e) &&
+          geoContains(region, [lon, lat]),
+      );
       self.postMessage({ tipo, pedido, id, localidades });
     } else if (tipo === 'cancelarRelieve') {
       cargaRelieve?.abort();
