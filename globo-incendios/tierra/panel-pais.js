@@ -15,22 +15,37 @@ const ICONO_PLAY = '<svg viewBox="0 0 24 24" width="14" height="14" fill="curren
 const ICONO_PAUSA = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
 
 export class PanelPais {
-  constructor({ raiz, reduceMotion, onCerrar, onFiltro, onRegistros, onPais, onReintentar, onAnio, onPeriodo }) {
-    Object.assign(this, { raiz, reduceMotion, onCerrar, onFiltro, onRegistros, onPais, onReintentar, onAnio, onPeriodo });
+  constructor({ raiz, reduceMotion, onCerrar, onFiltro, onRegistros, onPais, onReintentar, onAnio, onPeriodo, onVolverVista, onSatelital }) {
+    Object.assign(this, { raiz, reduceMotion, onCerrar, onFiltro, onRegistros, onPais, onReintentar, onAnio, onPeriodo, onVolverVista, onSatelital });
+    this.satelital = false;
     raiz.innerHTML = `
       <button type="button" class="panel-asa" data-accion="hoja" aria-expanded="false" aria-label="Mostrar más datos"><span aria-hidden="true"></span></button>
       <div class="panel-contenido" data-parte="contenido">
         <div class="panel-acciones">
           <button type="button" class="volver" data-accion="cerrar"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Volver a la Tierra</button>
-          <button type="button" class="enlace" data-accion="registros" hidden>Ver registros</button>
+          <div class="panel-herramientas">
+            <button type="button" class="interruptor" role="switch" aria-checked="false" data-accion="satelital" aria-describedby="estado-satelital">
+              <span class="interruptor-pista" aria-hidden="true"><span class="interruptor-perilla"></span></span>
+              <span>Detalle satelital</span>
+              <span class="interruptor-estado" aria-hidden="true">OFF</span>
+            </button>
+            <button type="button" class="enlace" data-accion="registros" hidden>Ver registros</button>
+            <button type="button" class="enlace" data-accion="volver-vista" hidden>País completo</button>
+          </div>
         </div>
         <h2 id="panel-titulo" class="panel-titulo"></h2>
+        <p class="vista-local" data-vista-local aria-live="polite" hidden></p>
+        <p class="estado-satelital" id="estado-satelital" role="status" hidden></p>
         <div data-parte="cuerpo"></div>
       </div>`;
     this.titulo = raiz.querySelector('.panel-titulo');
     this.contenido = raiz.querySelector('[data-parte="contenido"]');
     this.cuerpo = raiz.querySelector('[data-parte="cuerpo"]');
     this.botonRegistros = raiz.querySelector('[data-accion="registros"]');
+    this.botonVista = raiz.querySelector('[data-accion="volver-vista"]');
+    this.vistaLocal = raiz.querySelector('[data-vista-local]');
+    this.botonSatelital = raiz.querySelector('[data-accion="satelital"]');
+    this.estadoSat = raiz.querySelector('#estado-satelital');
     raiz.addEventListener('click', e => this.alHacerClic(e));
     this.tip = document.createElement('div');
     this.tip.className = 'tip-calendario'; this.tip.hidden = true; this.tip.setAttribute('role', 'tooltip');
@@ -84,6 +99,7 @@ export class PanelPais {
 
   preparar(feature, entrada) {
     this.detener();
+    this.mostrarVista(null);
     this.feature = feature; this.entrada = entrada; this.datos = null; this.regiones = null; this.parte = null;
     this.dia = null; this.sensor = 'todos'; this.omitidos = 0;
     this.titulo.textContent = feature.properties.spanish || feature.properties.name;
@@ -93,6 +109,35 @@ export class PanelPais {
     if (!entrada) { this.estadoVacio(); return; }
     this.cuerpo.innerHTML = `<div class="panel-cargando" role="status"><span class="solo-lectores">Cargando detecciones…</span>
       <div class="esqueleto alto"></div><div class="esqueleto"></div><div class="esqueleto calendario"></div></div>`;
+  }
+  mostrarVista(vista) {
+    this.botonVista.hidden = !vista;
+    this.vistaLocal.hidden = !vista;
+    if (!vista) { this.vistaLocal.textContent = ''; return; }
+    this.botonVista.textContent = vista.ciudad ? 'Volver a la región' : 'País completo';
+    this.vistaLocal.textContent = vista.ciudad ? `${vista.region.nombreCompleto} › ${vista.ciudad.nombre}` : vista.region.nombreCompleto;
+  }
+  // ---------- Detalle satelital ----------
+  fijarSatelital(activo) {
+    this.satelital = activo;
+    this.botonSatelital.setAttribute('aria-checked', String(activo));
+    this.botonSatelital.querySelector('.interruptor-estado').textContent = activo ? 'ON' : 'OFF';
+    this.onSatelital?.(activo);
+  }
+  estadoSatelital({ estado, metros }) {
+    const nodo = this.estadoSat;
+    const resolucion = metros ? ` · ~${metros < 100 ? Math.round(metros) : numero.format(Math.round(metros / 10) * 10)} m por píxel` : '';
+    const textos = {
+      cargando: `Cargando imagen Sentinel-2…${resolucion}`,
+      listo: `Imagen Sentinel-2${resolucion}`,
+      parcial: `Imagen Sentinel-2 incompleta${resolucion}. Se reintentará al mover el mapa.`,
+      esperando: 'Imagen Sentinel-2 lista al llegar al mapa.',
+      'sin-conexion': 'El proveedor de imágenes no responde. Se mantiene el mapa base.',
+      'sin-cobertura': 'Sentinel-2 no cubre esta zona. Se mantiene el mapa base.',
+    };
+    nodo.hidden = estado === 'apagado';
+    nodo.dataset.estado = estado;
+    nodo.textContent = textos[estado] ?? '';
   }
   estadoVacio() {
     const nombre = this.titulo.textContent;
@@ -365,7 +410,9 @@ export class PanelPais {
   alHacerClic(e) {
     const accion = e.target.closest('[data-accion]')?.dataset.accion;
     if (accion === 'hoja') return;
+    if (accion === 'satelital') { this.fijarSatelital(!this.satelital); return; }
     if (accion === 'cerrar') { this.onCerrar?.(); return; }
+    if (accion === 'volver-vista') { this.onVolverVista(); return; }
     if (accion === 'reintentar') { this.onReintentar?.(); return; }
     const pais = e.target.closest('[data-pais]')?.dataset.pais;
     if (pais) { this.onPais?.(pais); return; }

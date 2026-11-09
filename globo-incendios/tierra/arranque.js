@@ -3,7 +3,7 @@
 (() => {
   const script = document.createElement('script');
   script.type = 'module';
-  script.src = 'tierra.js?v=47';
+  script.src = 'tierra.js?v=58';
   script.onerror = () => {
     document.querySelector('#carga').hidden = true;
     document.querySelector('#portada').hidden = true;

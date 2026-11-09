@@ -4,8 +4,8 @@ import { HandFlow } from './nubes-interactivas.js?v=9';
 import { createCloudNoiseTexture } from './cloud-volume.js';
 import { CloudLayer } from './capa-nubes.js?v=24';
 import { Countries } from './paises.js?v=7';
-import { ModoPais } from './modo-pais.js?v=11';
-import { PanelPais } from './panel-pais.js?v=9';
+import { ModoPais } from './modo-pais.js?v=22';
+import { PanelPais } from './panel-pais.js?v=14';
 import { PanelDatos } from './panel-datos.js?v=7';
 import { entradaCatalogo, cargarDatos, cargarIndice, cargarCeldas, sumarCeldas, diaDelAnio, fechaDeDia, etiquetaConfianza, etiquetaSatelite } from './datos-pais.js?v=4';
 
@@ -444,8 +444,8 @@ async function main() {
   const numeroTip = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 1 });
   const fechaTip = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
   document.querySelector('#pieza-ayuda').textContent = window.matchMedia('(hover: none)').matches
-    ? 'Arrastra para girar · Pellizca para acercar'
-    : 'Arrastra para girar · Rueda para acercar';
+    ? 'Toca una región · Pellizca para acercar'
+    : 'Haz clic en una región · Rueda para acercar';
   const suave = t => t * t * t * (10 + t * (-15 + t * 6));
   const tramo = (a, b, t) => THREE.MathUtils.clamp((t - a) / (b - a), 0, 1);
   const qVuelo = new THREE.Quaternion();
@@ -617,6 +617,12 @@ async function main() {
   modo = new ModoPais({
     canvas: piezaCanvas, stage, camera, globe, imagenMapa: dayMap.image, panel: panelPaisRaiz, reduceMotion, onPunto: mostrarPunto,
     capaEtiquetas: document.querySelector('#etiquetas-regiones'), leyenda: document.querySelector('#pieza-leyenda'),
+    atribucion: document.querySelector('#atribucion-satelital'),
+    onVista: vista => {
+      panelPais.mostrarVista(vista);
+      if (vista) { giroLado = false; pintarGiro(false); }
+    },
+    onSatelite: estado => panelPais.estadoSatelital(estado),
   });
   const panelPais = new PanelPais({
     raiz: panelPaisRaiz, reduceMotion,
@@ -625,6 +631,16 @@ async function main() {
     onReintentar: () => abrirPais(panelPais.feature),
     onRegistros: filtro => panelDatos.abrir(filtro),
     onPeriodo: sel => ponerMapaSerie(sel),
+    onVolverVista: () => {
+      modo.volverVista();
+      piezaCanvas.focus({ preventScroll: true });
+    },
+    // Solo cambia el dibujo del mapa: fecha, sensor, región, ciudad y zoom quedan igual.
+    onSatelital: activo => {
+      stage.dataset.detalle = activo ? 'si' : 'no';
+      tipPunto.hidden = true;
+      modo.ponerSatelital(activo);
+    },
     onAnio: anio => {
       // Cambiar de año recarga solo el detalle diario y los puntos del mapa.
       if (!paisAbierto) return;
@@ -711,7 +727,7 @@ async function main() {
     stage.dataset.conDatos = !entrada ? 'no' : entrada.soloSerie ? 'serie' : 'si';
     actualizarURL({ pais: country.id, dia: null, sensor: null, anio: null });
     const nombre = country.properties.spanish || country.properties.name;
-    piezaCanvas.setAttribute('aria-label', `Mapa de ${nombre}. Arrastra para girar y usa la rueda para acercar. Las flechas giran el mapa; más y menos cambian el zoom. Escape vuelve a la Tierra.`);
+    piezaCanvas.setAttribute('aria-label', `Mapa de ${nombre}. Selecciona una región con un clic o con su nombre. Usa la rueda para acercar. Escape vuelve a la vista anterior.`);
     if (paisAbierto) {
       // Ya hay un país abierto: solo cambia el mapa y el globo gira hacia el nuevo.
       paisAbierto = country;
@@ -765,7 +781,10 @@ async function main() {
     iniciarVuelo(A, estadoCamara(), 1, -1);
   }
   document.addEventListener('keydown', evento => {
-    if (evento.key === 'Escape' && paisAbierto && !panelDatos.dialogo.open) cerrarPais();
+    if (evento.key === 'Escape' && paisAbierto && !panelDatos.dialogo.open) {
+      if (modo.vista) modo.volverVista();
+      else cerrarPais();
+    }
   });
   // El índice mundial dice qué países tienen serie harmonizada (marca "Con datos" y panel).
   await cargarIndice();

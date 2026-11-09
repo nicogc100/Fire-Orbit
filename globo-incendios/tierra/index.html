@@ -8,11 +8,11 @@
   <meta name="application-name" content="Fire Sat">
   <title>Fire Sat · Nuestro planeta</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="tierra.css?v=32">
+  <link rel="stylesheet" href="tierra.css?v=41">
   <link rel="preload" href="assets/InterTight-variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/Archivo-variable.woff2" as="font" type="font/woff2" crossorigin>
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
-  <script src="arranque.js?v=19" defer></script>
+  <script src="arranque.js?v=30" defer></script>
 </head>
 <body>
   <main id="escena" data-view="intro" aria-label="Tierra tridimensional interactiva">
@@ -36,11 +36,15 @@
     </section>
     <canvas id="tierra" tabindex="0" aria-label="Tierra 3D. Arrastra para girar y usa la rueda para acercarte. Las flechas giran la vista; más y menos cambian el zoom."></canvas>
     <canvas id="pieza" hidden></canvas>
-    <div id="etiquetas-regiones" class="etiquetas-regiones" aria-hidden="true"></div>
+    <div id="etiquetas-regiones" class="etiquetas-regiones" aria-label="Regiones y ciudades en el mapa"></div>
     <div class="pieza-leyenda" id="pieza-leyenda" aria-hidden="true" hidden>
       <div class="leyenda-frp"><span class="ley-frp">Potencia del fuego (FRP)</span><span class="ley-serie">Actividad de fuego en el período</span><div class="frp-escala"><small>Baja</small><i></i><small>Alta</small></div></div>
+      <div class="leyenda-detalle">
+        <span class="ley-cuadro"><i></i>Detección<span class="ley-extra">&nbsp;· huella del píxel (MODIS 1 km, VIIRS 375 m)</span></span>
+      </div>
       <p class="pieza-ayuda" id="pieza-ayuda"></p>
     </div>
+    <p class="atribucion-satelital" id="atribucion-satelital">Imagen satelital: EOxCloudless 2016 <a href="https://cloudless.eox.at" target="_blank" rel="noopener">https://cloudless.eox.at</a> by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 &amp; 2017) · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></p>
     <aside id="panel-pais" class="panel-pais" aria-labelledby="panel-titulo" hidden></aside>
     <div id="tip-punto" class="tip-punto" role="tooltip" hidden></div>
     <aside id="buscador-paises" class="buscador-paises" aria-label="Buscar y seleccionar un país" inert>
@@ -78,7 +82,9 @@
           <p>Las nubes y la iluminación son ilustrativas: no representan el clima real ni la hora actual.</p>
           <p>Detecciones de incendios: <a href="https://firms.modaps.eosdis.nasa.gov/" target="_blank" rel="noopener">NASA FIRMS</a>, MODIS y VIIRS.</p>
           <p>Mapas: <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope / INOVE</a>, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. Relieve submarino: <a href="https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-topography-bathymetry/" target="_blank" rel="noopener">NASA Blue Marble</a>.</p>
-          <p>Países y regiones: Natural Earth, dominio público. Nombres: <a href="https://github.com/mledoze/countries" target="_blank" rel="noopener">Countries</a>, ODbL. Gráficos: Three.js y D3 Geo. Tipografías: Inter Tight y Archivo (SIL OFL).</p>
+          <p>Países, regiones y ciudades: Natural Earth, dominio público. Nombres: <a href="https://github.com/mledoze/countries" target="_blank" rel="noopener">Countries</a>, ODbL. Gráficos: Three.js y D3 Geo. Tipografías: Inter Tight y Archivo (SIL OFL).</p>
+          <p>Relieve regional: <a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">Mapzen Terrain Tiles</a>. <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noopener">Fuentes y créditos de elevación</a>.</p>
+          <p>Detalle satelital: EOxCloudless 2016 <a href="https://cloudless.eox.at" target="_blank" rel="noopener">https://cloudless.eox.at</a> by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 &amp; 2017), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. Solo se descarga con el interruptor activado.</p>
         </div>
       </details>
     </div>

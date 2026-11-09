@@ -3,6 +3,26 @@
   "licencia": "Dominio público",
   "admin0": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.1/geojson/ne_10m_admin_0_countries.geojson",
   "admin1": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.1/geojson/ne_10m_admin_1_states_provinces.geojson",
+  "ciudades": {
+    "fuente": "Natural Earth Populated Places 5.1.2",
+    "licencia": "Dominio público",
+    "origen": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_populated_places.geojson",
+    "asset": "ciudades.json"
+  },
+  "detalle_satelital": {
+    "fuente": "EOxCloudless 2016 (Sentinel-2 cloudless, 10 m)",
+    "licencia": "CC BY 4.0",
+    "servicio": "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/{z}/{y}/{x}.jpg",
+    "licencia_detalle": "https://cloudless.eox.at/license-non-commercial",
+    "atribucion": "EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 & 2017)",
+    "procesamiento": "Teselas Web Mercator hasta el nivel 14, pedidas solo con el interruptor activo y compuestas en el navegador sobre la pieza del país. No se guardan en el repositorio."
+  },
+  "relieve_regional": {
+    "fuente": "Mapzen Terrain Tiles",
+    "datos": "https://registry.opendata.aws/terrain-tiles/",
+    "atribucion": "https://github.com/tilezen/joerd/blob/master/docs/attribution.md",
+    "procesamiento": "Sombreado de elevación Terrarium aplicado a la textura existente solo durante el enfoque regional."
+  },
   "paises": {
     "100": {
       "escala": "1:10m",

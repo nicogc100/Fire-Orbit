@@ -71,6 +71,13 @@ export function proyectar(marco, lon, lat) {
 }
 const alturaEsfera = (x, y) => Math.sqrt(Math.max(0, 1 - x * x - y * y));
 
+export function desproyectar(marco, x, y) {
+  if (x * x + y * y >= 1) return null;
+  const z = alturaEsfera(x, y);
+  const [a, b, c] = marco.centro.map((v, i) => v * z + marco.este[i] * x + marco.norte[i] * y);
+  return [Math.atan2(-c, a) / RAD, Math.asin(Math.max(-1, Math.min(1, b))) / RAD];
+}
+
 export function fueraDePieza(marco, lon, lat) {
   return marco.omitidos.some(({ limites: [w, s, e, n] }) => lon >= w - .2 && lon <= e + .2 && lat >= s - .2 && lat <= n + .2);
 }
@@ -205,12 +212,21 @@ export function construirGeometria(feature, triangular, detalle = null) {
       if (fueraDePieza(marco, lon, lat)) return;
       const [x, y] = proyectar(marco, lon, lat);
       // Ancho de la región: si el nombre no cabe dentro, va al costado y no tapa los focos.
-      let oeste = Infinity, este = -Infinity;
+      let oeste = Infinity, este = -Infinity, sur = Infinity, norte = -Infinity;
+      let lonMin = Infinity, lonMax = -Infinity, latMin = Infinity, latMax = -Infinity;
       for (const [plon, plat] of mayor[0]) {
-        const [px] = proyectar(marco, plon, plat);
+        const [px, py] = proyectar(marco, plon, plat);
         oeste = Math.min(oeste, px); este = Math.max(este, px);
+        sur = Math.min(sur, py); norte = Math.max(norte, py);
+        const longitud = lon + ((plon - lon + 540) % 360) - 180;
+        lonMin = Math.min(lonMin, longitud); lonMax = Math.max(lonMax, longitud);
+        latMin = Math.min(latMin, plat); latMax = Math.max(latMax, plat);
       }
-      etiquetas.push({ indice, nombre: nombreCorto(region.properties.nombre), x: x - cx, y: y - cy, oeste: oeste - cx, este: este - cx, area: polys.reduce((t, p) => t + areaAnillo(p[0]), 0) });
+      etiquetas.push({
+        indice, nombre: nombreCorto(region.properties.nombre), nombreCompleto: region.properties.nombre,
+        x: x - cx, y: y - cy, oeste: oeste - cx, este: este - cx, sur: sur - cy, norte: norte - cy,
+        limites: [lonMin, latMin, lonMax, latMax], area: polys.reduce((t, p) => t + areaAnillo(p[0]), 0),
+      });
     });
   }
   return {

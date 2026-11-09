@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { construirGeometria, construirPuntos } from './pieza-geo.js';
+import { construirGeometria, construirPuntos, desproyectar, fueraDePieza, proyectar } from './pieza-geo.js?v=3';
+import { CapaSatelital } from './capa-satelital.js?v=2';
 
 // El mapa del país se dibuja en su propio lienzo, sobre el globo. El pase de nubes
 // no cambia y el globo sigue vivo al lado. La cámara del mapa copia la del globo,
@@ -25,21 +26,35 @@ const verticePieza = /* glsl */`
     gl_Position = projectionMatrix * modelViewMatrix * vec4(mix(aEsfera, position, uMorph), 1.0);
   }`;
 const fragmentoPieza = /* glsl */`
-  uniform sampler2D uMapa;
+  uniform sampler2D uMapa, uRelieve, uSatGrueso, uSatFino;
   uniform mat3 uBase;
-  uniform float uMorph, uOpacidad, uAltoMapa;
-  uniform vec4 uCaja;
+  uniform float uMorph, uOpacidad, uAltoMapa, uMostrarRelieve, uSat, uDetalle;
+  uniform vec4 uCaja, uCajaRelieve, uCajaGrueso, uCajaFino;
   varying vec3 vEsfera;
   varying float vLado;
   varying vec3 vNormal;
   const float PI = 3.14159265;
+  // Mosaico satelital en Web Mercator. Alfa 0 donde falta la tesela: ahí sigue el mapa base.
+  vec4 satelite(sampler2D t, vec4 caja, float u, float mercator) {
+    vec2 l = vec2(fract(u - caja.x), mercator - caja.y) / caja.zw;
+    vec4 c = texture2D(t, clamp(l, 0.0, 1.0));
+    float dentro = step(0.0, l.x) * step(l.x, 1.0) * step(0.0, l.y) * step(l.y, 1.0);
+    return vec4(c.rgb, smoothstep(.96, 1.0, c.a) * dentro);
+  }
   void main() {
     vec3 color;
     float luz = clamp(dot(normalize(vNormal), normalize(vec3(-.35, .55, .75))), 0.0, 1.0);
     if (vLado < .5) {
-      vec3 d = normalize(uBase * vEsfera);
-      float v = asin(clamp(d.y, -1.0, 1.0)) / PI + .5;
-      vec2 uv = vec2(fract(atan(-d.z, d.x) / (2.0 * PI) + .5 - uCaja.x) / uCaja.z, (v - uCaja.y) / uCaja.w);
+      // En detalle, punto exacto de la esfera a partir del plano. Interpolar la posición
+      // esférica entre vértices la desplaza cientos de metros: invisible con el mapa
+      // mundial, pero no con imágenes de 10 m ni junto a focos en coordenadas exactas.
+      vec3 d = uDetalle > 0.0
+        ? uBase * vec3(vEsfera.xy, sqrt(max(0.0, 1.0 - dot(vEsfera.xy, vEsfera.xy))))
+        : normalize(uBase * vEsfera);
+      float lat = asin(clamp(d.y, -1.0, 1.0));
+      float u = atan(-d.z, d.x) / (2.0 * PI) + .5;
+      float v = lat / PI + .5;
+      vec2 uv = vec2(fract(u - uCaja.x) / uCaja.z, (v - uCaja.y) / uCaja.w);
       // El nivel de detalle sale de la latitud, continua incluso en el antimeridiano.
       float nivel = max(0.0, log2(max(fwidth(v), 1e-6) * uAltoMapa));
       vec3 mapa = textureLod(uMapa, uv, nivel).rgb;
@@ -47,6 +62,26 @@ const fragmentoPieza = /* glsl */`
       // Terreno contenido: el color intenso queda reservado para los focos.
       vec3 sobrio = mix(vec3(gris), mapa, .62) * vec3(.6, .7, .78) + vec3(.012, .03, .05);
       color = mix(mapa, sobrio, uMorph) * (.8 + .24 * luz);
+      float pesoSat = 0.0;
+      if (uSat > 0.0) {
+        float mercator = .5 - log(tan(PI * .25 + clamp(lat, -1.4844, 1.4844) * .5)) / (2.0 * PI);
+        vec4 grueso = satelite(uSatGrueso, uCajaGrueso, u, mercator);
+        vec4 fino = satelite(uSatFino, uCajaFino, u, mercator);
+        // Color natural de Sentinel-2: costa, ciudades, valles y cumbres se leen como son.
+        vec3 imagen = mix(grueso.rgb, fino.rgb, fino.a);
+        // Web Mercator no llega más allá de ±85,05°: ahí (Antártida, norte de Groenlandia) sigue el mapa base.
+        pesoSat = max(grueso.a, fino.a) * uSat * (1.0 - smoothstep(1.482, 1.4844, abs(lat)));
+        color = mix(color, imagen * (.9 + .14 * luz), pesoSat);
+      }
+      if (uMostrarRelieve > 0.0 && abs(lat) < 1.4844) {
+        float mercator = .5 - log(tan(PI * .25 + lat * .5)) / (2.0 * PI);
+        vec2 local = vec2(fract(u - uCajaRelieve.x), mercator - uCajaRelieve.y) / uCajaRelieve.zw;
+        vec2 borde = min(local, 1.0 - local);
+        float fundido = smoothstep(0.0, .035, min(borde.x, borde.y));
+        float sombra = texture2D(uRelieve, clamp(local, 0.0, 1.0)).r - (128.0 / 255.0);
+        // Sobre la imagen satelital el sombreado solo acompaña: la foto ya trae sus sombras.
+        color *= 1.0 + sombra * fundido * uMostrarRelieve * (1.0 - .5 * pesoSat);
+      }
     } else if (vLado < 2.5) {
       color = mix(vec3(.16, .3, .42), vec3(.03, .085, .14), vLado - 1.0) * (.6 + .55 * luz);
     } else color = vec3(.02, .055, .09);
@@ -108,7 +143,42 @@ const fragmentoPuntos = /* glsl */`
     calor = mix(calor, vec3(1.0, .92, .68), smoothstep(.55, .95, vFrp));
     gl_FragColor = vec4(calor + nucleo * .35, halo * uIntensidad * vFuerza);
   }`;
-
+// Detalle satelital: cada detección es un cuadrado con la huella real del píxel del
+// sensor (MODIS 1 km, VIIRS 375 m), nunca menor que un símbolo legible. Pequeño, es
+// sólido y con contorno oscuro; grande, solo contorno y relleno tenue: deja ver el terreno.
+const verticeCuadros = /* glsl */`
+  attribute vec3 aEsfera;
+  attribute float aDia, aFrp, aSensor;
+  uniform float uMorph, uDiaIni, uDiaFin, uCola, uAparicion, uPxPorMetro, uTamMin, uTamMax;
+  uniform vec2 uSensores;
+  varying float vFrp, vFuerza, vTam;
+  void main() {
+    float activo = aSensor < .5 ? uSensores.x : uSensores.y;
+    float dentro = step(uDiaIni - uCola, aDia) * step(aDia, uDiaFin) * activo;
+    float cola = uCola > 0.0 && aDia < uDiaIni ? 1.0 - (uDiaIni - aDia) / (uCola + 1.0) : 1.0;
+    vFrp = aFrp;
+    vFuerza = cola * uAparicion;
+    vTam = clamp((aSensor < .5 ? 1000.0 : 375.0) * uPxPorMetro, uTamMin, uTamMax);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(mix(aEsfera, position, uMorph), 1.0);
+    gl_PointSize = dentro * vTam;
+    if (dentro < .5) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+  }`;
+const fragmentoCuadros = /* glsl */`
+  uniform float uPR;
+  varying float vFrp, vFuerza, vTam;
+  void main() {
+    if (vFuerza <= 0.0) discard;
+    vec2 q = abs(gl_PointCoord - .5) * vTam;
+    float borde = vTam * .5 - max(q.x, q.y);
+    // Muy pequeños, sin contorno: sería todo borde.
+    float contorno = (1.0 - smoothstep(uPR * .55, uPR * 1.15, borde)) * smoothstep(3.5, 5.5, vTam / uPR);
+    vec3 calor = mix(vec3(1.0, .24, .06), vec3(1.0, .56, .1), smoothstep(.15, .55, vFrp));
+    calor = mix(calor, vec3(1.0, .86, .34), smoothstep(.55, .95, vFrp));
+    float grande = smoothstep(16.0, 36.0, vTam / uPR);
+    vec3 color = mix(calor, mix(vec3(.18, .03, 0.0), calor, grande), contorno);
+    float alfa = mix(mix(.96, .26, grande), 1.0, contorno) * clamp(vFuerza, 0.0, 1.0);
+    gl_FragColor = vec4(color, alfa);
+  }`;
 const cuadro = () => {
   const g = new THREE.InstancedBufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, -1, 0, 1, -1, 0, 1, 1, 0, 0, -1, 0, 1, 1, 0, 0, 1, 0]), 3));
@@ -116,8 +186,8 @@ const cuadro = () => {
 };
 
 export class ModoPais {
-  constructor({ canvas, stage, camera, globe, imagenMapa, panel, capaEtiquetas, leyenda, reduceMotion, onPunto }) {
-    Object.assign(this, { canvas, stage, cameraGlobo: camera, globe, panel, capaEtiquetas, leyenda, reduceMotion, onPunto });
+  constructor({ canvas, stage, camera, globe, imagenMapa, panel, capaEtiquetas, leyenda, atribucion, reduceMotion, onPunto, onVista, onSatelite }) {
+    Object.assign(this, { canvas, stage, cameraGlobo: camera, globe, panel, capaEtiquetas, leyenda, atribucion, reduceMotion, onPunto, onVista, onSatelite });
     this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
@@ -131,6 +201,11 @@ export class ModoPais {
     this.uOpacidad = { value: 1 };
     this.uCaja = { value: new THREE.Vector4(0, 0, 1, 1) };
     this.uAltoMapa = { value: imagenMapa.height };
+    this.uRelieve = { value: null };
+    this.uCajaRelieve = { value: new THREE.Vector4(0, 0, 1, 1) };
+    this.uMostrarRelieve = { value: 0 };
+    this.vista = null;
+    this.localidades = [];
     this.uMapa = { value: this.mapa };
     this.uPantalla = { value: new THREE.Vector2(1, 1) };
     this.uniformesPuntos = {
@@ -148,10 +223,23 @@ export class ModoPais {
     this.pedido = 0;
     this.respuestas = new Map();
     this.uBase = { value: new THREE.Matrix3() };
+    // Detalle satelital: apagado al empezar. uDetalle es el modo; uSat, la imagen ya llegada.
+    this.satelital = false;
+    this.uDetalle = { value: 0 };
+    this.satelite = new CapaSatelital({
+      renderer: this.renderer,
+      onCambio: () => { this.sucio = true; },
+      onEstado: estado => this.onSatelite?.(estado),
+    });
     this.materialPieza = new THREE.ShaderMaterial({
       vertexShader: verticePieza, fragmentShader: fragmentoPieza, transparent: true, side: THREE.DoubleSide,
       polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1,
-      uniforms: { uMapa: this.uMapa, uBase: this.uBase, uMorph: this.uMorph, uOpacidad: this.uOpacidad, uCaja: this.uCaja, uAltoMapa: this.uAltoMapa },
+      uniforms: {
+        uMapa: this.uMapa, uBase: this.uBase, uMorph: this.uMorph, uOpacidad: this.uOpacidad,
+        uCaja: this.uCaja, uAltoMapa: this.uAltoMapa,
+        uRelieve: this.uRelieve, uCajaRelieve: this.uCajaRelieve, uMostrarRelieve: this.uMostrarRelieve,
+        uDetalle: this.uDetalle, ...this.satelite.uniforms,
+      },
     });
     this.materialCosta = this.crearMaterialLinea(new THREE.Color(.95, .98, 1), .78, 1);
     this.materialLimite = this.crearMaterialLinea(new THREE.Color(.92, .96, 1), .46, .8);
@@ -161,7 +249,17 @@ export class ModoPais {
       // aplanada al acercar, la precisión no alcanza para distinguirlos de ella.
       transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
     });
-    this.worker = new Worker(new URL('./cartografia-worker.js?v=1', import.meta.url), { type: 'module' });
+    const rangoPuntos = this.renderer.getContext().getParameter(this.renderer.getContext().ALIASED_POINT_SIZE_RANGE);
+    this.uPR = { value: this.renderer.getPixelRatio() };
+    this.uPxPorMetro = { value: 0 };
+    this.uTamMin = { value: 6 * this.uPR.value };
+    this.uTamMax = { value: Math.max(8, Math.min(rangoPuntos?.[1] ?? 64, 96 * this.uPR.value)) };
+    this.materialCuadros = new THREE.ShaderMaterial({
+      vertexShader: verticeCuadros, fragmentShader: fragmentoCuadros,
+      uniforms: { ...this.uniformesPuntos, uPR: this.uPR, uPxPorMetro: this.uPxPorMetro, uTamMin: this.uTamMin, uTamMax: this.uTamMax },
+      transparent: true, depthWrite: false, depthTest: false,
+    });
+    this.worker = new Worker(new URL('./cartografia-worker.js?v=4', import.meta.url), { type: 'module' });
     this.worker.onmessage = ({ data }) => {
       const resolver = this.respuestas.get(data.pedido);
       this.respuestas.delete(data.pedido);
@@ -198,7 +296,12 @@ export class ModoPais {
     const linea = cuadro();
     for (const nombre of ['iPlanoA', 'iPlanoB', 'iEsferaA', 'iEsferaB']) linea.setAttribute(nombre, new THREE.InstancedBufferAttribute(new Float32Array(3), 3));
     linea.instanceCount = 1;
-    const objetos = [new THREE.Mesh(pieza, this.materialPieza), new THREE.Mesh(linea, this.materialCosta), new THREE.Points(puntos, this.materialPuntos)];
+    // Los cuadrados del detalle satelital también: activar el
+    // interruptor no debe congelar el mapa mientras se compilan.
+    const objetos = [
+      new THREE.Mesh(pieza, this.materialPieza), new THREE.Mesh(linea, this.materialCosta), new THREE.Points(puntos, this.materialPuntos),
+      new THREE.Points(puntos, this.materialCuadros),
+    ];
     objetos.forEach(o => { o.frustumCulled = false; escena.add(o); });
     this.renderer.setSize(8, 8, false);
     this.renderer.initTexture(this.mapaBase);
@@ -258,6 +361,7 @@ export class ModoPais {
   // El detalle se calcula en el worker. Si aún no llegó al despegar, se muestra el
   // contorno general (1:50m) y se sustituye en cuanto el detallado esté listo.
   preparar(feature) {
+    this.reiniciarVista();
     this.feature = feature;
     this.detalle = null;
     const promesa = this.consultar({ tipo: 'detalle', id: feature.id }).then(respuesta => {
@@ -300,7 +404,7 @@ export class ModoPais {
     this.lineas.forEach(l => this.grupo.add(l));
     this.crearEtiquetas(g);
     this.medir();
-    if (this.llegado) this.ponerMapa(g);
+    if (this.llegado) { this.ponerMapa(g); this.pedirSatelite(); }
     if (this.datos) this.ponerPuntos(this.datos);
     this.sucio = true;
   }
@@ -339,6 +443,11 @@ export class ModoPais {
     this.puntos = null; this.datosPuntos = null;
     if (olvidar) this.datos = null;
   }
+  // Con detalle, todos los focos son cuadrados nítidos, también los de la serie por celdas.
+  aplicarModoPuntos() {
+    if (this.puntos) this.puntos.material = this.satelital ? this.materialCuadros : this.materialPuntos;
+    this.sucio = true;
+  }
   ponerPuntos(datos) {
     this.datos = datos;
     if (!this.geometria) return 0;
@@ -355,6 +464,7 @@ export class ModoPais {
     this.puntos.frustumCulled = false;
     this.puntos.renderOrder = 2;
     this.grupo.add(this.puntos);
+    this.aplicarModoPuntos();
     this.aplicarFiltro();
     this.sucio = true;
     return p.omitidos;
@@ -382,19 +492,207 @@ export class ModoPais {
     const acercado = THREE.MathUtils.clamp(Math.pow(this.zoom, .35), 1, 2);
     u.uTamano.value = escala * espacio * acercado * THREE.MathUtils.clamp(1.9 - densidad * .27, .72, 1.9);
     u.uIntensidad.value = THREE.MathUtils.clamp(1.4 - densidad * .27, .16, 1) * Math.sqrt(espacio);
+    // Cuadrados del detalle: con miles a escala de país, más pequeños para que se vea el terreno.
+    if (this.uTamMin) this.uTamMin.value = escala * Math.min(6, THREE.MathUtils.clamp(7.5 - densidad * 1.1, 2.5, 6) * acercado);
   }
 
-  // ---------- Etiquetas de región ----------
+  // ---------- Selección sobre la misma pieza ----------
+  // Longitud y latitud bajo un punto del lienzo (en píxeles CSS del lienzo).
+  lonLatPantalla(px, py, W, H) {
+    const g = this.geometria;
+    if (!g) return null;
+    const rayo = this.grupo.worldToLocal(new THREE.Vector3(px / W * 2 - 1, 1 - py / H * 2, .5).unproject(this.camara));
+    const ojo = this.grupo.worldToLocal(this.camara.position.clone());
+    const t = -ojo.z / (rayo.z - ojo.z);
+    if (!(t > 0 && Number.isFinite(t))) return null;
+    const punto = ojo.lerp(rayo, t);
+    return desproyectar(g.marco, punto.x + g.cx, punto.y + g.cy);
+  }
+  lonLatEn(x, y) {
+    const rect = this.canvas.getBoundingClientRect();
+    return this.lonLatPantalla(x - rect.left, y - rect.top, rect.width, rect.height);
+  }
+  async seleccionarEn(x, y) {
+    const g = this.geometria;
+    if (!this.llegado || !g?.etiquetas.length) return false;
+    const coord = this.lonLatEn(x, y);
+    if (!coord) return false;
+    const [lon, lat] = coord;
+    const solicitud = this.consultar({ tipo: 'regiones', id: this.feature.id, lons: [lon], lats: [lat] });
+    this.seleccionPendiente = solicitud;
+    const { indices } = await solicitud;
+    if (this.seleccionPendiente !== solicitud || g !== this.geometria || !this.llegado) return false;
+    const indice = indices?.[0];
+    return indice !== this.vista?.region.indice && this.seleccionarRegion(indice);
+  }
+
+  seleccionarRegion(indice) {
+    const g = this.geometria;
+    const region = g?.etiquetas.find(e => e.indice === indice);
+    if (!this.llegado || !region) return false;
+    this.seleccionPendiente = null;
+    if (this.vista?.region !== region) this.localidades = [];
+    this.aplicarVista({ region, limites: region.limites, encuadre: region });
+    this.crearEtiquetas(g);
+    this.consultar({ tipo: 'ciudades', id: this.feature.id, indice }).then(({ localidades }) => {
+      if (!localidades || g !== this.geometria || this.vista?.region !== region || !this.llegado) return;
+      this.localidades = localidades.flatMap(([nombre, lon, lat]) => {
+        if (fueraDePieza(g.marco, lon, lat)) return [];
+        const [x, y] = proyectar(g.marco, lon, lat);
+        return [{ nombre, lon, lat, x: x - g.cx, y: y - g.cy, ciudad: true }];
+      });
+      this.crearEtiquetas(g);
+      this.sucio = true;
+    });
+    return true;
+  }
+
+  seleccionarCiudad(ciudad) {
+    if (!this.llegado || !this.vista) return;
+    const { lon, lat, x, y } = ciudad;
+    const deltaLon = .13 / Math.max(.15, Math.cos(THREE.MathUtils.degToRad(lat)));
+    const deltaLat = .10;
+    const margen = THREE.MathUtils.degToRad(.12);
+    this.aplicarVista({
+      region: this.vista.region, ciudad,
+      limites: [lon - deltaLon, lat - deltaLat, lon + deltaLon, lat + deltaLat],
+      encuadre: { oeste: x - margen, este: x + margen, sur: y - margen, norte: y + margen },
+    });
+  }
+
+  aplicarVista(vista) {
+    this.vista = vista;
+    this.giro = this.cabeceo = this.vGiro = this.vCabeceo = 0;
+    this.onPunto?.(null);
+    this.onVista?.(vista);
+    this.encuadrarVista();
+    this.quitarRelieve();
+    this.consultar({ tipo: 'relieve', id: this.feature.id, limites: vista.limites }).then(({ relieve }) => {
+      if (!relieve || this.vista !== vista || !this.llegado) return;
+      const textura = new THREE.DataTexture(relieve.datos, relieve.ancho, relieve.alto, THREE.RedFormat);
+      textura.minFilter = THREE.LinearMipmapLinearFilter;
+      textura.magFilter = THREE.LinearFilter;
+      textura.generateMipmaps = true;
+      textura.needsUpdate = true;
+      this.uRelieve.value = textura;
+      this.uCajaRelieve.value.fromArray(relieve.caja);
+      this.uMostrarRelieve.value = .9;
+      this.sucio = true;
+    });
+  }
+
+  encuadrarVista(animar = true) {
+    const { oeste, este, sur, norte } = this.vista.encuadre;
+    const { w, h } = this.area;
+    const escala = .78 * this.mpp * Math.min(w / Math.max(este - oeste, 1e-5), h / Math.max(norte - sur, 1e-5));
+    const zoom = THREE.MathUtils.clamp(escala / this.escalaFinal, 1, 160);
+    const porPixel = this.escalaFinal * zoom / this.mpp;
+    const pan = { x: -(oeste + este) / 2 * porPixel, y: (sur + norte) / 2 * porPixel };
+    if (animar && !this.reduceMotion.matches) {
+      this.enfoque = { inicio: performance.now(), zoom: this.zoom, pan: { ...this.pan }, destino: { zoom, pan } };
+    } else {
+      this.enfoque = null;
+      this.zoom = zoom; this.pan = pan;
+      this.ajustarTamano(this.filtro.visibles);
+    }
+    this.sucio = true;
+  }
+
+  quitarRelieve() {
+    this.worker.postMessage({ tipo: 'cancelarRelieve' });
+    this.uRelieve.value?.dispose();
+    this.uRelieve.value = null;
+    this.uMostrarRelieve.value = 0;
+  }
+
+  volverVista() {
+    if (this.vista?.ciudad) this.seleccionarRegion(this.vista.region.indice);
+    else this.reiniciarVista();
+  }
+
+  // ---------- Detalle satelital ----------
+  // Solo cambia cómo se dibuja: encuadre, región, ciudad, zoom, fecha y sensor siguen igual.
+  ponerSatelital(activo) {
+    this.satelital = activo;
+    this.satelite.activar(activo);
+    this.aplicarModoPuntos();
+    this.firmaVista = null;
+    this.pedirSatelite();
+    // Nunca medir() aquí: reencuadra la región o ciudad y perdería el zoom del usuario.
+    this.colocarAtribucion();
+    this.ajustarTamano(this.filtro.visibles);
+    this.sucio = true;
+  }
+  pedirSatelite() {
+    if (!this.satelital || !this.llegado || !this.geometria || !this.area) return;
+    const { oeste, ancho, sur, norte } = this.geometria.caja;
+    this.satelite.actualizar([oeste, sur, oeste + ancho, norte], this.limitesVisibles());
+  }
+  // Zona del país que se ve ahora y nivel de tesela que pide su escala en pantalla.
+  limitesVisibles() {
+    const g = this.geometria;
+    const W = this.canvas.clientWidth, H = this.canvas.clientHeight;
+    if (!W || !H || !this.mpp) return null;
+    this.grupo.updateMatrixWorld();
+    const lateral = this.panel.offsetLeft > W * .4;
+    const x1 = lateral ? this.panel.offsetLeft : W;
+    const y1 = lateral ? H : Math.min(H, this.area.y + this.area.h + 24);
+    const { oeste, ancho, sur, norte } = g.caja;
+    const centro = oeste + ancho / 2;
+    let w = Infinity, e = -Infinity, s = Infinity, n = -Infinity, aciertos = 0;
+    const N = 8;
+    for (let i = 0; i <= N; i++) {
+      for (let j = 0; j <= N; j++) {
+        const c = this.lonLatPantalla(x1 * i / N, y1 * j / N, W, H);
+        if (!c) continue;
+        const lon = centro + ((c[0] - centro + 540) % 360) - 180;
+        w = Math.min(w, lon); e = Math.max(e, lon); s = Math.min(s, c[1]); n = Math.max(n, c[1]);
+        aciertos++;
+      }
+    }
+    // Pocos aciertos: la vista inclinada mira sobre todo cielo. Basta el mosaico del país.
+    if (aciertos < 6) return null;
+    const mw = (e - w) * .06, mh = (n - s) * .06;
+    const limites = [Math.max(oeste, w - mw), Math.max(sur, s - mh), Math.min(oeste + ancho, e + mw), Math.min(norte, n + mh)];
+    if (!(limites[2] > limites[0] && limites[3] > limites[1])) return null;
+    const lat = (limites[1] + limites[3]) / 2;
+    const metrosPorPixelPantalla = 6371000 * this.mpp / (this.grupo.scale.x * this.renderer.getPixelRatio());
+    const z = Math.max(0, Math.ceil(Math.log2(156543.034 * Math.cos(THREE.MathUtils.degToRad(lat)) / metrosPorPixelPantalla) - .25));
+    return { limites, z };
+  }
+  // En detalle se puede acercar hasta ~4 m por píxel de pantalla: lo que da Sentinel-2.
+  zoomMaximo() {
+    const base = this.vista ? 160 : 24;
+    if (!this.satelital || !this.mpp || !this.escalaFinal) return base;
+    return Math.max(base, 6371000 * this.mpp / (4 * this.escalaFinal));
+  }
+  colocarAtribucion() {
+    const a = this.atribucion;
+    if (!a) return;
+    const W = this.canvas.clientWidth;
+    const lateral = this.panel.offsetLeft > W * .4;
+    a.style.right = lateral ? `${Math.max(16, W - this.panel.offsetLeft + 16)}px` : '';
+  }
+
+  // ---------- Etiquetas de región y ciudad ----------
   crearEtiquetas(g) {
     this.capaEtiquetas.replaceChildren();
     this.medidor.font = '600 12px Atlas, Arial, sans-serif';
-    this.etiquetasDom = [...g.etiquetas].sort((a, b) => b.area - a.area).map(e => {
-      const nodo = document.createElement('span');
-      nodo.className = 'etiqueta-region';
+    const regiones = g.etiquetas.filter(e => e !== this.vista?.region).sort((a, b) => b.area - a.area);
+    this.etiquetasDom = [...this.localidades, ...regiones].map(e => {
+      const nodo = document.createElement('button');
+      nodo.type = 'button';
+      nodo.className = e.ciudad ? 'etiqueta-region etiqueta-ciudad' : 'etiqueta-region';
       nodo.textContent = e.nombre;
+      nodo.setAttribute('aria-label', `Acercar a ${e.nombreCompleto ?? e.nombre}`);
       nodo.hidden = true;
+      nodo.addEventListener('click', () => {
+        if (e.ciudad) this.seleccionarCiudad(e);
+        else this.seleccionarRegion(e.indice);
+        this.canvas.focus({ preventScroll: true });
+      });
       this.capaEtiquetas.append(nodo);
-      return { ...e, nodo, ancho: this.medidor.measureText(e.nombre).width + 6 };
+      return { ...e, nodo, ancho: this.medidor.measureText(e.nombre).width + (e.ciudad ? 13 : 6) };
     });
   }
   // Solo se recalcula cuando la vista cambió. Primero las regiones grandes; las que
@@ -415,9 +713,12 @@ export class ModoPais {
     };
     for (const e of this.etiquetasDom) {
       let [sx, sy] = enPantalla(e.x, e.y);
-      const borde = enPantalla(e.este, e.y)[0], opuesto = enPantalla(e.oeste, e.y)[0];
-      // Región más estrecha que su nombre: se rotula a su lado, sobre el cielo.
-      if (Math.abs(borde - opuesto) < e.ancho * 1.15) sx = Math.max(borde, opuesto) + e.ancho / 2 + 8;
+      if (e.ciudad) sx += e.ancho / 2 - 2.5;
+      else {
+        const borde = enPantalla(e.este, e.y)[0], opuesto = enPantalla(e.oeste, e.y)[0];
+        // Región más estrecha que su nombre: se rotula a su lado, sobre el cielo.
+        if (Math.abs(borde - opuesto) < e.ancho * 1.15) sx = Math.max(borde, opuesto) + e.ancho / 2 + 8;
+      }
       const caja = { x0: sx - e.ancho / 2, x1: sx + e.ancho / 2, y0: sy - 9, y1: sy + 9 };
       const dentro = caja.x0 > 4 && caja.x1 < margenDerecho && caja.y0 > 56 && caja.y1 < this.area.y + this.area.h + 8;
       const libre = dentro && ocupados.length < maximo && !ocupados.some(o => caja.x0 < o.x1 + 6 && caja.x1 > o.x0 - 6 && caja.y0 < o.y1 && caja.y1 > o.y0);
@@ -447,11 +748,13 @@ export class ModoPais {
   llegar() {
     this.llegado = true;
     if (this.detalle && this.geometria !== this.detalle) this.montar(this.detalle);
-    else this.ponerMapa(this.geometria);
+    else { this.ponerMapa(this.geometria); this.pedirSatelite(); }
     this.sucio = true;
   }
   // Cambio de país sin cerrar: solo un fundido corto, la pieza no vuelve a volar.
   cambiar(feature) {
+    this.satelite.limpiar();
+    this.datos = null;
     this.preparar(feature);
     this.montar(construirGeometria(feature, triangular));
     this.reiniciarVista();
@@ -459,8 +762,19 @@ export class ModoPais {
     this.uniformesPuntos.uAparicion.value = 0;
     this.medir();
   }
-  salir() { this.llegado = false; this.onPunto?.(null); this.sucio = true; }
+  salir() {
+    this.llegado = false;
+    this.seleccionPendiente = null;
+    this.enfoque = null;
+    this.quitarRelieve();
+    this.satelite.cancelar();
+    this.onPunto?.(null);
+    this.sucio = true;
+  }
   terminar() {
+    this.satelite.limpiar();
+    this.uDetalle.value = 0;
+    this.satelite.uniforms.uSat.value = 0;
     this.activo = false; this.p = 0; this.canvas.hidden = true; this.leyenda.hidden = true; this.canvas.tabIndex = -1;
     this.limpiarPieza(); this.geometria = null; this.detalle = null; this.datos = null; this.promesaDetalle = null;
     this.uniformesPuntos.uAparicion.value = 0;
@@ -468,8 +782,20 @@ export class ModoPais {
     this.uCaja.value.set(0, 0, 1, 1); this.uAltoMapa.value = this.mapaBase.image.height;
   }
   reiniciarVista() {
+    const estabaEnfocada = Boolean(this.vista);
+    this.vista = null;
+    this.enfoque = null;
+    this.seleccionPendiente = null;
+    this.localidades = [];
+    if (estabaEnfocada) {
+      this.quitarRelieve();
+      if (this.geometria) this.crearEtiquetas(this.geometria);
+      this.onVista?.(null);
+    }
     this.giro = this.cabeceo = this.vGiro = this.vCabeceo = 0;
-    this.zoom = 1; this.pan = { x: 0, y: 0 }; this.sucio = true;
+    this.zoom = 1; this.pan = { x: 0, y: 0 };
+    this.ajustarTamano(this.filtro.visibles);
+    this.sucio = true;
   }
   fijarLimbo(px) { this.limbo = px; this.medir(); }
   medir() {
@@ -492,6 +818,9 @@ export class ModoPais {
     const { ancho, alto, grosor } = this.geometria;
     const inclinado = alto * Math.cos(INCLINACION) + grosor * Math.abs(Math.sin(INCLINACION));
     this.escalaFinal = Math.min(this.area.w * this.mpp / ancho, this.area.h * this.mpp / inclinado) * .92;
+    this.uPR.value = this.renderer.getPixelRatio();
+    this.colocarAtribucion();
+    if (this.vista) this.encuadrarVista(false);
     this.aplicarFiltro();
     this.sucio = true;
   }
@@ -522,6 +851,30 @@ export class ModoPais {
       aparicion.value = this.reduceMotion.matches ? destino : THREE.MathUtils.clamp(aparicion.value + Math.sign(destino - aparicion.value) * dt / (destino ? .4 : .14), 0, 1);
       this.sucio = true;
     }
+    if (this.enfoque) {
+      const { inicio, zoom, pan, destino } = this.enfoque;
+      const avance = suaveRango(0, 1, (ahora - inicio) / 450);
+      this.zoom = THREE.MathUtils.lerp(zoom, destino.zoom, avance);
+      this.pan.x = THREE.MathUtils.lerp(pan.x, destino.pan.x, avance);
+      this.pan.y = THREE.MathUtils.lerp(pan.y, destino.pan.y, avance);
+      this.ajustarTamano(this.filtro.visibles);
+      if (avance === 1) this.enfoque = null;
+      this.sucio = true;
+    }
+    // Detalle satelital: el modo y la imagen entran con un fundido corto. Sin imagen
+    // (proveedor caído), el modo sigue activo sobre el mapa base.
+    const fundir = (u, destino, duracion) => {
+      if (u.value === destino) return;
+      u.value = this.reduceMotion.matches ? destino : THREE.MathUtils.clamp(u.value + Math.sign(destino - u.value) * dt / duracion, 0, 1);
+      this.sucio = true;
+    };
+    fundir(this.uDetalle, this.satelital && this.llegado ? 1 : 0, .25);
+    fundir(this.satelite.uniforms.uSat, this.satelital && this.llegado && this.satelite.hayImagen() ? 1 : 0, .35);
+    // La imagen de la zona visible se pide cuando la vista se detiene, no a cada fotograma.
+    if (this.satPendiente && !this.enfoque && !this.punteros.size && ahora - this.vistaCambio > 220) {
+      this.satPendiente = false;
+      this.pedirSatelite();
+    }
     // Quieto, el mapa no se vuelve a dibujar: libera la GPU para las nubes del globo.
     if (!enVuelo && !this.sucio) return;
     this.camara.copy(this.cameraGlobo);
@@ -531,29 +884,37 @@ export class ModoPais {
     this.p = p;
     this.cabeceo = THREE.MathUtils.clamp(this.cabeceo, -1, .3);
     // De cerca el mapa se endereza para poder leer las regiones.
-    const inclinacion = THREE.MathUtils.lerp(INCLINACION, -.02, suaveRango(1.1, 2.2, this.zoom));
+    const plano = suaveRango(1.1, 2.2, this.zoom);
+    const inclinacion = this.vista ? 0 : THREE.MathUtils.lerp(INCLINACION, -.02, plano);
     this.q0.copy(this.globe.quaternion).multiply(this.base);
     this.qFinal.copy(this.camara.quaternion)
       .multiply(this.qAux.setFromAxisAngle(this.ejeX, inclinacion + this.cabeceo))
       .multiply(this.qAux.setFromAxisAngle(this.ejeZ, this.giro));
     this.grupo.quaternion.slerpQuaternions(this.q0, this.qFinal, p);
     this.grupo.position.set(0, 0, 0).lerp(this.objetivo, p);
-    const plano = suaveRango(1.1, 2.2, this.zoom);
     const escala = THREE.MathUtils.lerp(1, this.escalaFinal * this.zoom, p);
-    // De cerca, un mapa: el grosor de la pieza se aplana para no tapar la costa.
-    this.grupo.scale.set(escala, escala, escala * THREE.MathUtils.lerp(1, .06, plano));
+    // El grosor no crece con el acercamiento a una región o ciudad.
+    const grosor = this.vista ? this.escalaFinal * .06 : escala * THREE.MathUtils.lerp(1, .06, plano);
+    this.grupo.scale.set(escala, escala, grosor);
     this.leyenda.classList.toggle('apartada', this.zoom > 1.2);
     this.uMorph.value = p;
+    this.uPxPorMetro.value = escala / this.mpp * this.uPR.value / 6371000;
     this.renderer.render(this.scene, this.camara);
     this.actualizarEtiquetas();
     this.sucio = false;
+    if (this.satelital && this.llegado) {
+      const W = this.canvas.clientWidth, H = this.canvas.clientHeight;
+      const firma = `${this.zoom.toFixed(3)}|${Math.round(this.pan.x)}|${Math.round(this.pan.y)}|${this.giro.toFixed(3)}|${this.cabeceo.toFixed(3)}|${W}x${H}|${p}`;
+      if (firma !== this.firmaVista) { this.firmaVista = firma; this.vistaCambio = ahora; this.satPendiente = true; }
+    }
   }
 
   // ---------- Manipulación ----------
   escucharPunteros() {
     const c = this.canvas;
     c.addEventListener('pointerdown', e => {
-      if (!this.llegado) return;
+      if (!this.llegado || e.button !== 0) return;
+      this.enfoque = null;
       c.setPointerCapture(e.pointerId);
       this.punteros.set(e.pointerId, { x: e.clientX, y: e.clientY, ox: e.clientX, oy: e.clientY });
       this.vGiro = this.vCabeceo = 0; this.distanciaPinza = null;
@@ -581,7 +942,15 @@ export class ModoPais {
       const p = this.punteros.get(e.pointerId);
       const toque = p && e.type === 'pointerup' && this.punteros.size === 1 && Math.hypot(e.clientX - p.ox, e.clientY - p.oy) < 8;
       this.punteros.delete(e.pointerId); this.distanciaPinza = null;
-      if (toque) { this.ultimoPick = 0; this.buscarPunto(e.clientX, e.clientY); }
+      if (toque) {
+        this.ultimoPick = 0;
+        const x = e.clientX, y = e.clientY;
+        if (!this.vista || !this.buscarPunto(x, y)) {
+          this.seleccionarEn(x, y).then(elegida => {
+            if (!elegida && e.pointerType === 'touch') this.buscarPunto(x, y);
+          });
+        }
+      }
       if (!this.punteros.size) c.classList.remove('arrastrando');
     };
     c.addEventListener('pointerup', soltar);
@@ -602,7 +971,10 @@ export class ModoPais {
   }
   // Acerca hacia el cursor: así se puede recorrer un país largo como Chile.
   acercar(factor, x, y) {
-    const nuevo = THREE.MathUtils.clamp(this.zoom * factor, .7, 24);
+    this.enfoque = null;
+    // Si al apagar el detalle el zoom quedó por encima del tope, se conserva y solo
+    // se puede alejar: así el interruptor nunca mueve la vista.
+    const nuevo = THREE.MathUtils.clamp(this.zoom * factor, .7, Math.max(this.zoomMaximo(), this.zoom));
     const real = nuevo / this.zoom;
     if (x !== undefined) {
       const rect = this.canvas.getBoundingClientRect();
@@ -631,7 +1003,14 @@ export class ModoPais {
     const m = new THREE.Matrix4().multiplyMatrices(this.camara.projectionMatrix, this.camara.matrixWorldInverse).multiply(this.grupo.matrixWorld).elements;
     const { plano, dia, sensor, registros, origen } = this.datosPuntos;
     const f = this.filtro, u = this.uniformesPuntos.uSensores.value;
-    let mejor = -1, distancia = 14 * 14;
+    // Con cuadrados grandes (huella real a mucho zoom) vale todo el cuadrado.
+    const radio = s => {
+      if (!this.satelital) return 14;
+      const lado = THREE.MathUtils.clamp((s < .5 ? 1000 : 375) * this.uPxPorMetro.value, this.uTamMin.value, this.uTamMax.value) / this.uPR.value;
+      return Math.max(14, lado * .71);
+    };
+    const radios = [radio(0) ** 2, radio(1) ** 2];
+    let mejor = -1, distancia = Infinity;
     for (let i = 0; i < registros.length; i++) {
       if (dia[i] < f.ini - f.cola || dia[i] > f.fin || (sensor[i] < .5 ? u.x : u.y) === 0) continue;
       const a = plano[i * 3], b = plano[i * 3 + 1], c = plano[i * 3 + 2];
@@ -639,8 +1018,9 @@ export class ModoPais {
       const sx = ((m[0] * a + m[4] * b + m[8] * c + m[12]) / w + 1) * W / 2;
       const sy = (1 - (m[1] * a + m[5] * b + m[9] * c + m[13]) / w) * H / 2;
       const d = (sx - px) ** 2 + (sy - py) ** 2;
-      if (d < distancia) { distancia = d; mejor = i; }
+      if (d < distancia && d < radios[sensor[i] < .5 ? 0 : 1]) { distancia = d; mejor = i; }
     }
     this.onPunto?.(mejor < 0 ? null : registros[mejor], x, y, mejor < 0 ? -1 : origen[mejor]);
+    return mejor >= 0;
   }
 }
