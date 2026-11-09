@@ -1,4 +1,4 @@
-# Atlas del fuego
+# Fire Sat
 
 En Windows, abre **Abrir Tierra.cmd**. Necesitas Python 3 y un navegador compatible con WebGL 2.
 

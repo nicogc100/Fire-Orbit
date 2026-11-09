@@ -5,8 +5,8 @@ import { createCloudNoiseTexture } from './cloud-volume.js';
 import { CloudLayer } from './capa-nubes.js?v=24';
 import { Countries } from './paises.js?v=7';
 import { ModoPais } from './modo-pais.js?v=11';
-import { PanelPais } from './panel-pais.js?v=8';
-import { PanelDatos } from './panel-datos.js?v=6';
+import { PanelPais } from './panel-pais.js?v=9';
+import { PanelDatos } from './panel-datos.js?v=7';
 import { entradaCatalogo, cargarDatos, cargarIndice, cargarCeldas, sumarCeldas, diaDelAnio, fechaDeDia, etiquetaConfianza, etiquetaSatelite } from './datos-pais.js?v=4';
 
 const canvas = document.querySelector('#tierra');
@@ -50,7 +50,7 @@ const panelDatos = new PanelDatos({
   onVerPais: (id, inicial) => solicitarPais(id, inicial),
   onCambio: id => actualizarURL({ datos: id }),
 });
-for (const boton of document.querySelectorAll('#abrir-datos, #portada-datos, #error-datos')) {
+for (const boton of document.querySelectorAll('#abrir-datos, #error-datos')) {
   boton.addEventListener('click', () => panelDatos.abrir());
 }
 if (parametrosIniciales.get('datos')) panelDatos.abrir({ id: parametrosIniciales.get('datos') });
@@ -333,9 +333,7 @@ async function main() {
     controls.update();
   }
   function pintarGiro(activo) {
-    rotationButton.innerHTML = view === 'intro'
-      ? (activo ? 'Pausar giro' : 'Reanudar giro')
-      : (activo ? ICONO_PAUSA : ICONO_REANUDAR);
+    rotationButton.innerHTML = activo ? ICONO_PAUSA : ICONO_REANUDAR;
     rotationButton.setAttribute('aria-label', activo ? 'Pausar giro' : 'Reanudar giro');
     rotationButton.setAttribute('aria-pressed', String(!activo));
   }
@@ -369,11 +367,9 @@ async function main() {
   }
   function fijarTextoInstruccion() {
     pintarGiro(paisAbierto ? giroLado : rotating);
-    document.querySelector('#instruccion').textContent = view === 'intro'
-      ? 'Pasa el cursor sobre las nubes y descubre la superficie.'
-      : window.matchMedia('(hover: none)').matches
-        ? 'Arrastra para girar · Toca un país para ver su actividad'
-        : 'Arrastra para girar · Haz clic en un país para ver su actividad';
+    document.querySelector('#instruccion').textContent = window.matchMedia('(hover: none)').matches
+      ? 'Arrastra para girar · Toca un país para ver su actividad'
+      : 'Arrastra para girar · Haz clic en un país para ver su actividad';
   }
   function changeView(nextView) {
     if (transition || vuelo || paisAbierto) return;
@@ -422,7 +418,7 @@ async function main() {
     fullDistance = Math.sqrt(1 + 1 / (fill * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))) ** 2);
     const landscape = THREE.MathUtils.smoothstep(camera.aspect, 0.6, 1.6);
     const closeDistance = THREE.MathUtils.lerp(1.9, 1.24, landscape);
-    const horizon = THREE.MathUtils.lerp(0.52, 0.44, landscape);
+    const horizon = 0.44;
     const angle = Math.atan((1 - horizon * 2) * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
     const lift = (1 - closeDistance * Math.sin(angle)) / Math.cos(angle);
     const introTarget = initialUp.clone().multiplyScalar(lift);

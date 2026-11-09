@@ -1,9 +1,8 @@
-/* Atlas del fuego. Un sistema para las tres vistas.
-   Tipos: Inter Tight (planeta y país); la portada usa Anton y Archivo.
+/* Fire Sat. Un sistema para las tres vistas.
+   Tipos: Inter Tight (planeta y país); la portada usa Archivo.
    Escala de espacios: 4 8 12 16 24 32 48. Escala de texto: 12 13 14 16 20 28 56.
    El color intenso (brasa) es solo para los focos y las acciones principales. */
 @font-face { font-family: Atlas; src: url('assets/InterTight-variable.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
-@font-face { font-family: AtlasCondensed; src: url('assets/Anton-Regular.ttf') format('truetype'); font-weight: 400; font-display: swap; }
 @font-face { font-family: AtlasPortada; src: url('assets/Archivo-variable.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
 :root {
   color-scheme: light;
@@ -54,7 +53,7 @@ canvas:focus-visible { outline: 2px solid #ffffff73; outline-offset: -5px; }
 
 /* ---------- Cabecera ---------- */
 .cabecera { position: absolute; z-index: 3; top: 24px; left: var(--margen); right: var(--margen); display: flex; align-items: center; justify-content: space-between; pointer-events: none; }
-.marca { pointer-events: auto; padding: 12px 12px 12px 0; color: #fff; text-decoration: none; font-size: 15px; font-weight: 700; letter-spacing: .22em; }
+.marca { pointer-events: auto; padding: 12px 12px 12px 0; color: #fff; text-decoration: none; font-size: 15px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; }
 .cabecera-nav { display: flex; gap: 24px; pointer-events: auto; }
 .enlace-claro { min-height: 44px; padding: 0; border: 0; background: none; color: #fff; font-size: 15px; font-weight: 500; text-decoration: underline; text-decoration-color: #ffffff66; text-decoration-thickness: 1px; text-underline-offset: 5px; cursor: pointer; transition: text-decoration-color .15s; }
 @media (hover: hover) { .enlace-claro:hover { text-decoration-color: #fff; } }
@@ -65,30 +64,88 @@ canvas:focus-visible { outline: 2px solid #ffffff73; outline-offset: -5px; }
 /* Su cielo es más claro que el del resto de vistas y se funde al abrir el planeta. */
 #escena::before { content: ""; position: absolute; inset: 0; background: linear-gradient(175deg, #4e96d1 0%, #64aad6 58%, #8ac5db 100%); transition: opacity .9s ease; }
 #escena[data-view="globe"]::before { opacity: 0; }
-#escena[data-view="intro"] .cabecera { top: 35px; left: 44px; right: 44px; }
-#escena[data-view="intro"] .marca { padding: 14px 12px; margin: -14px -12px; color: #0a2a43; font-family: AtlasPortada, Arial, sans-serif; font-size: 14px; letter-spacing: .28em; }
-.marca-punto { letter-spacing: 0; color: #bf3f0b; }
+#escena[data-view="intro"] .cabecera { top: 20px; }
+#escena[data-view="intro"] .marca, .portada-contenido {
+  color: #f7fbff;
+  text-shadow: 0 1px 2px #0a2438, 0 0 5px #0a243873;
+}
+#escena[data-view="intro"] .marca { font-family: AtlasPortada, Arial, sans-serif; font-size: 13px; }
+.marca-punto { letter-spacing: 0; color: var(--brasa-fuerte); }
 #escena:not([data-view="intro"]) .marca-punto { display: none; }
-.portada { position: absolute; z-index: 3; top: clamp(84px, 11svh, 120px); left: 24px; right: 24px; display: flex; align-items: center; flex-direction: column; text-align: center; color: #0a2a43; font-family: AtlasPortada, Arial, sans-serif; transition: opacity .65s ease, transform .9s ease; }
-#escena[data-view="globe"] .portada { opacity: 0; transform: translateY(-24px); pointer-events: none; }
-.portada h1 { margin: 0; font-family: AtlasCondensed, Impact, sans-serif; font-size: clamp(64px, 8vw, 118px); line-height: 1.04; font-weight: 400; letter-spacing: .003em; text-wrap: balance; }
-.portada h1 span { color: #bf3f0b; }
-.presentacion { margin: 14px 0 24px; max-width: 34em; font-size: clamp(16px, 1.3vw, 19px); line-height: 1.45; text-wrap: balance; }
-.portada-acciones { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; }
-.explorar { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 24px; border: 0; border-radius: 28px; color: #fff; background: #bf3f0b; box-shadow: 0 6px 18px #0a2a4333; cursor: pointer; font-size: 17px; font-weight: 700; transition: background .2s, transform .2s; }
-.explorar svg { flex: none; }
-.explorar:disabled { cursor: wait; opacity: .65; }
-.ver-datos { border: 0; cursor: pointer; display: inline-flex; align-items: center; min-height: 52px; padding: 0 20px; border-radius: 28px; color: #0a2a43; background: #ffffffc7; font-size: 15px; font-weight: 700; text-decoration: none; transition: background .2s; }
-@media (hover: hover) { .explorar:not(:disabled):hover { background: #a13407; transform: translateY(-2px); } .ver-datos:hover { background: #fff; } }
+.portada {
+  --tamano-titulo: min(16vw, 22svh, 13rem);
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  text-align: center;
+  font-family: AtlasPortada, Arial, sans-serif;
+  pointer-events: none;
+  transition: opacity .65s ease, transform .9s ease;
+}
+#escena[data-view="globe"] .portada { opacity: 0; transform: translateY(-24px); }
+.portada-contenido {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 60svh; /* Deja un margen sobre el horizonte, situado al 44% de la altura. */
+  width: min(calc(100% - 40px), 60rem);
+  margin-inline: auto;
+}
+.portada h1 {
+  margin: 0;
+  font-size: var(--tamano-titulo);
+  font-weight: 900;
+  line-height: .88;
+  letter-spacing: -.065em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 3px #0a24387a, 0 6px 18px #0a24382e;
+}
+.presentacion {
+  width: min(100%, 29rem);
+  margin: clamp(8px, 2svh, 22px) auto 0;
+  padding-inline: 16px;
+  font-size: clamp(12px, .9vw, 14px);
+  font-weight: 650;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+.explorar {
+  position: absolute;
+  bottom: clamp(72px, 18svh, 190px);
+  left: 50%;
+  translate: -50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 0 17px;
+  border: 1px solid #ffffff82;
+  border-radius: 5px;
+  color: #fff;
+  background: #0a2438df;
+  box-shadow: inset 0 0 0 3px #0a2438, inset 0 0 0 4px #ffffff35, 0 5px 16px #0a24384d;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background .2s, border-color .2s, transform .2s;
+}
+#escena[data-view="intro"] .explorar { pointer-events: auto; }
+#escena:not([data-state="ready"]) .explorar { visibility: hidden; }
+.explorar svg { flex: none; color: #f3aa63; }
+.explorar:disabled { cursor: wait; opacity: .7; }
+@media (hover: hover) {
+  .explorar:not(:disabled):hover { background: var(--tinta); border-color: #f3aa63; transform: translateY(-2px); }
+}
 .boton { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; padding: 0 24px; border: 0; border-radius: 4px; background: var(--brasa); color: #fff; font-size: 17px; font-weight: 600; cursor: pointer; transition: background .15s, transform .16s var(--salida); }
 .boton:active:not(:disabled) { transform: scale(.97); }
 .boton:disabled { cursor: wait; opacity: .7; }
 @media (hover: hover) { .boton:not(:disabled):hover { background: var(--brasa-fuerte); } }
 .instruccion { position: absolute; z-index: 3; margin: 0; font-size: 14px; line-height: 1.35; pointer-events: none; }
-#escena[data-view="intro"] .instruccion { left: 44px; bottom: 35px; padding: 6px 12px; border-radius: 8px; background: #0a2a43d9; color: #fff; font-family: AtlasPortada, Arial, sans-serif; font-size: 13px; line-height: 1.4; }
 #escena[data-view="globe"] .instruccion { left: var(--margen); bottom: 32px; color: var(--tinta); }
-#escena[data-modo="pais"] .instruccion, #escena:not([data-state="ready"]) .instruccion { display: none; }
-@media (hover: none) { #escena[data-view="intro"] .instruccion { display: none; } }
+#escena[data-view="intro"] .instruccion, #escena[data-modo="pais"] .instruccion, #escena:not([data-state="ready"]) .instruccion { display: none; }
 
 /* ---------- Controles ---------- */
 .pie { position: absolute; z-index: 3; right: var(--margen); bottom: 24px; display: flex; gap: 8px; }
@@ -99,9 +156,11 @@ canvas:focus-visible { outline: 2px solid #ffffff73; outline-offset: -5px; }
 @media (hover: hover) { .boton-icono:not(:disabled):hover { background: var(--tinta); } }
 .creditos > div { position: absolute; right: 0; bottom: 54px; width: min(340px, calc(100vw - 32px)); max-height: calc(100svh - 110px); overflow-y: auto; overscroll-behavior: contain; padding: 8px 20px; border-radius: 4px; background: var(--papel); color: var(--tinta); font-size: 13px; line-height: 1.5; box-shadow: 0 12px 32px #0a243840; }
 .creditos a { color: var(--tinta); text-underline-offset: 2px; }
-#escena[data-view="intro"] .pie { right: 36px; bottom: 28px; gap: 16px; }
-#escena[data-view="intro"] #giro { width: auto; min-height: 44px; height: 44px; padding: 0 16px; border: 1px solid #ffffff55; border-radius: 30px; background: #0a2a43d9; font-family: AtlasPortada, Arial, sans-serif; font-size: 13px; }
-#escena[data-modo="pais"] .creditos { display: none; }
+#escena[data-view="intro"] .pie .boton-icono { border: 1px solid #ffffff4d; background: #0a2438ba; }
+@media (hover: hover) {
+  #escena[data-view="intro"] .pie .boton-icono:not(:disabled):hover { background: var(--tinta); }
+}
+#escena[data-view="intro"] .creditos, #escena[data-modo="pais"] .creditos { display: none; }
 #escena[data-modo="pais"] .pie { left: 24px; right: auto; }
 
 /* ---------- Búsqueda ---------- */
@@ -277,15 +336,7 @@ button.fila-ranking[aria-pressed="true"] .fila-nombre { font-weight: 700; }
 @media (max-width: 720px) {
   :root { --margen: 20px; }
   .cabecera { top: 12px; }
-  .portada { top: clamp(68px, 13svh, 120px); left: 16px; right: 16px; }
-  #escena[data-view="intro"] .cabecera { top: 25px; left: 24px; right: 24px; }
-  #escena[data-view="intro"] .instruccion { left: 16px; right: 200px; bottom: 16px; }
-  #escena[data-view="intro"] .pie { right: 16px; bottom: 16px; gap: 8px; }
-  .portada h1 { font-size: clamp(48px, 15vw, 84px); }
-  .presentacion { margin: 10px 0 18px; }
-  .portada-acciones { flex-direction: column; gap: 8px; }
-  .explorar { min-height: 48px; }
-  .ver-datos { min-height: 44px; font-size: 14px; }
+  #escena[data-view="intro"] .cabecera { top: 12px; }
   .boton { min-height: 48px; font-size: 16px; }
   .pie { bottom: 16px; }
   #escena[data-view="globe"] .instruccion { bottom: 16px; font-size: 13px; right: 124px; }
@@ -327,12 +378,7 @@ button.fila-ranking[aria-pressed="true"] .fila-nombre { font-weight: 700; }
 @media (max-height: 520px) and (min-width: 721px) {
   :root { --margen: 32px; }
   .cabecera { top: 8px; }
-  #escena[data-view="intro"] .cabecera { top: 20px; left: 44px; right: 44px; }
-  .portada { top: 14px; }
-  .portada h1 { font-size: 48px; }
-  .presentacion { margin: 6px 0 10px; max-width: none; font-size: 15px; }
-  .explorar { min-height: 44px; font-size: 15px; }
-  .ver-datos { min-height: 44px; font-size: 14px; }
+  #escena[data-view="intro"] .cabecera { top: 8px; }
   .boton { min-height: 44px; font-size: 15px; }
   .buscador-paises { bottom: 44px; width: 240px; }
   .buscador-paises > label { display: none; }
@@ -342,8 +388,21 @@ button.fila-ranking[aria-pressed="true"] .fila-nombre { font-weight: 700; }
   .panel-titulo { font-size: 32px; }
   .pieza-ayuda { display: none; }
 }
+@media (orientation: portrait) {
+  .portada { --tamano-titulo: min(16vw, 15svh, 13rem); }
+  .presentacion { margin-top: 12px; }
+}
+@media (max-height: 520px) {
+  .portada { --tamano-titulo: min(16vw, 16svh); }
+}
+@media (max-height: 370px) {
+  .portada { --tamano-titulo: min(16vw, 14svh); }
+  .portada-contenido { bottom: 59svh; }
+  .presentacion { margin-top: 6px; }
+  .explorar { bottom: 54px; min-height: 44px; }
+}
 @media (prefers-reduced-motion: reduce) {
-  #escena::before, #tierra, .carga, .portada, .explorar, .ver-datos, .boton, .boton-icono, .panel-pais, #escena[data-modo="pais"] .panel-pais, .pieza-leyenda { transition: none; }
+  #escena::before, #tierra, .carga, .portada, .explorar, .boton, .boton-icono, .panel-pais, #escena[data-modo="pais"] .panel-pais, .pieza-leyenda { transition: none; }
   #escena[data-view="globe"] .portada { transform: none; }
   .orbita, .esqueleto, .datos-guardados[open] { animation: none; }
 }
