@@ -1,0 +1,2065 @@
+{
+"generado": "2026-11-06T23:04+00:00",
+"paises": [
+{
+"id": "180",
+"nombre": "Democratic Republic of the Congo",
+"spanish": "República Democrática del Congo",
+"firms": "Democratic_Republic_of_the_Congo",
+"archivo": "paises/180-mensual.json",
+"total": 28214575,
+"error_pct": 1.9,
+"calidad": "alta"
+},
+{
+"id": "076",
+"nombre": "Brazil",
+"spanish": "Brasil",
+"firms": "Brazil",
+"archivo": "paises/076-mensual.json",
+"total": 20132134,
+"error_pct": 3.4,
+"calidad": "alta"
+},
+{
+"id": "024",
+"nombre": "Angola",
+"spanish": "Angola",
+"firms": "Angola",
+"archivo": "paises/024-mensual.json",
+"total": 18109640,
+"error_pct": 1.6,
+"calidad": "alta"
+},
+{
+"id": "894",
+"nombre": "Zambia",
+"spanish": "Zambia",
+"firms": "Zambia",
+"archivo": "paises/894-mensual.json",
+"total": 12905832,
+"error_pct": 3.3,
+"calidad": "alta"
+},
+{
+"id": "643",
+"nombre": "Russian Federation",
+"spanish": "Rusia",
+"firms": "Russian_Federation",
+"archivo": "paises/643-mensual.json",
+"total": 12705223,
+"error_pct": 1.8,
+"calidad": "baja"
+},
+{
+"id": "036",
+"nombre": "Australia",
+"spanish": "Australia",
+"firms": "Australia",
+"archivo": "paises/036-mensual.json",
+"total": 12385052,
+"error_pct": 5.0,
+"calidad": "alta"
+},
+{
+"id": "508",
+"nombre": "Mozambique",
+"spanish": "Mozambique",
+"firms": "Mozambique",
+"archivo": "paises/508-mensual.json",
+"total": 12266546,
+"error_pct": 3.5,
+"calidad": "alta"
+},
+{
+"id": "140",
+"nombre": "Central African Republic",
+"spanish": "República Centroafricana",
+"firms": "Central_African_Republic",
+"archivo": "paises/140-mensual.json",
+"total": 10367296,
+"error_pct": 3.7,
+"calidad": "alta"
+},
+{
+"id": "728",
+"nombre": "South Sudan",
+"spanish": "Sudán del Sur",
+"firms": "South_Sudan",
+"archivo": "paises/728-mensual.json",
+"total": 9163892,
+"error_pct": 4.2,
+"calidad": "alta"
+},
+{
+"id": "356",
+"nombre": "India",
+"spanish": "India",
+"firms": "India",
+"archivo": "paises/356-mensual.json",
+"total": 8631166,
+"error_pct": 3.1,
+"calidad": "alta"
+},
+{
+"id": "566",
+"nombre": "Nigeria",
+"spanish": "Nigeria",
+"firms": "Nigeria",
+"archivo": "paises/566-mensual.json",
+"total": 8123216,
+"error_pct": 2.0,
+"calidad": "alta"
+},
+{
+"id": "834",
+"nombre": "Tanzania",
+"spanish": "Tanzania",
+"firms": "Tanzania",
+"archivo": "paises/834-mensual.json",
+"total": 7545331,
+"error_pct": 2.5,
+"calidad": "alta"
+},
+{
+"id": "104",
+"nombre": "Myanmar",
+"spanish": "Myanmar",
+"firms": "Myanmar",
+"archivo": "paises/104-mensual.json",
+"total": 6181721,
+"error_pct": 3.3,
+"calidad": "alta"
+},
+{
+"id": "450",
+"nombre": "Madagascar",
+"spanish": "Madagascar",
+"firms": "Madagascar",
+"archivo": "paises/450-mensual.json",
+"total": 6056943,
+"error_pct": 4.1,
+"calidad": "alta"
+},
+{
+"id": "156",
+"nombre": "China",
+"spanish": "China",
+"firms": "China",
+"archivo": "paises/156-mensual.json",
+"total": 5641061,
+"error_pct": 8.9,
+"calidad": "alta"
+},
+{
+"id": "840",
+"nombre": "United States of America",
+"spanish": "Estados Unidos",
+"firms": "United_States",
+"archivo": "paises/840-mensual.json",
+"total": 5065862,
+"error_pct": 4.8,
+"calidad": "alta"
+},
+{
+"id": "324",
+"nombre": "Guinea",
+"spanish": "Guinea",
+"firms": "Guinea",
+"archivo": "paises/324-mensual.json",
+"total": 4748922,
+"error_pct": 4.0,
+"calidad": "alta"
+},
+{
+"id": "360",
+"nombre": "Indonesia",
+"spanish": "Indonesia",
+"firms": "Indonesia",
+"archivo": "paises/360-mensual.json",
+"total": 4154712,
+"error_pct": 8.8,
+"calidad": "alta"
+},
+{
+"id": "484",
+"nombre": "Mexico",
+"spanish": "México",
+"firms": "Mexico",
+"archivo": "paises/484-mensual.json",
+"total": 4152025,
+"error_pct": 2.3,
+"calidad": "alta"
+},
+{
+"id": "120",
+"nombre": "Cameroon",
+"spanish": "Camerún",
+"firms": "Cameroon",
+"archivo": "paises/120-mensual.json",
+"total": 3849465,
+"error_pct": 2.9,
+"calidad": "alta"
+},
+{
+"id": "148",
+"nombre": "Chad",
+"spanish": "Chad",
+"firms": "Chad",
+"archivo": "paises/148-mensual.json",
+"total": 3699899,
+"error_pct": 3.5,
+"calidad": "alta"
+},
+{
+"id": "231",
+"nombre": "Ethiopia",
+"spanish": "Etiopía",
+"firms": "Ethiopia",
+"archivo": "paises/231-mensual.json",
+"total": 3623679,
+"error_pct": 3.9,
+"calidad": "alta"
+},
+{
+"id": "288",
+"nombre": "Ghana",
+"spanish": "Ghana",
+"firms": "Ghana",
+"archivo": "paises/288-mensual.json",
+"total": 3493608,
+"error_pct": 3.5,
+"calidad": "alta"
+},
+{
+"id": "068",
+"nombre": "Bolivia",
+"spanish": "Bolivia",
+"firms": "Bolivia",
+"archivo": "paises/068-mensual.json",
+"total": 3240843,
+"error_pct": 5.8,
+"calidad": "alta"
+},
+{
+"id": "764",
+"nombre": "Thailand",
+"spanish": "Tailandia",
+"firms": "Thailand",
+"archivo": "paises/764-mensual.json",
+"total": 3216836,
+"error_pct": 5.2,
+"calidad": "alta"
+},
+{
+"id": "862",
+"nombre": "Venezuela",
+"spanish": "Venezuela",
+"firms": "Venezuela",
+"archivo": "paises/862-mensual.json",
+"total": 3186594,
+"error_pct": 2.4,
+"calidad": "alta"
+},
+{
+"id": "032",
+"nombre": "Argentina",
+"spanish": "Argentina",
+"firms": "Argentina",
+"archivo": "paises/032-mensual.json",
+"total": 3070295,
+"error_pct": 3.0,
+"calidad": "alta"
+},
+{
+"id": "124",
+"nombre": "Canada",
+"spanish": "Canadá",
+"firms": "Canada",
+"archivo": "paises/124-mensual.json",
+"total": 2981977,
+"error_pct": 3.7,
+"calidad": "alta"
+},
+{
+"id": "729",
+"nombre": "Sudan",
+"spanish": "Sudán",
+"firms": "Sudan",
+"archivo": "paises/729-mensual.json",
+"total": 2701487,
+"error_pct": 2.4,
+"calidad": "alta"
+},
+{
+"id": "466",
+"nombre": "Mali",
+"spanish": "Mali",
+"firms": "Mali",
+"archivo": "paises/466-mensual.json",
+"total": 2682014,
+"error_pct": 2.8,
+"calidad": "alta"
+},
+{
+"id": "116",
+"nombre": "Cambodia",
+"spanish": "Camboya",
+"firms": "Cambodia",
+"archivo": "paises/116-mensual.json",
+"total": 2630191,
+"error_pct": 4.8,
+"calidad": "alta"
+},
+{
+"id": "418",
+"nombre": "Laos",
+"spanish": "Laos",
+"firms": "Lao_PDR",
+"archivo": "paises/418-mensual.json",
+"total": 2243309,
+"error_pct": 5.8,
+"calidad": "alta"
+},
+{
+"id": "710",
+"nombre": "South Africa",
+"spanish": "Sudáfrica",
+"firms": "South_Africa",
+"archivo": "paises/710-mensual.json",
+"total": 2207893,
+"error_pct": 4.5,
+"calidad": "alta"
+},
+{
+"id": "398",
+"nombre": "Kazakhstan",
+"spanish": "Kazajistán",
+"firms": "Kazakhstan",
+"archivo": "paises/398-mensual.json",
+"total": 1962747,
+"error_pct": 4.2,
+"calidad": "alta"
+},
+{
+"id": "600",
+"nombre": "Paraguay",
+"spanish": "Paraguay",
+"firms": "Paraguay",
+"archivo": "paises/600-mensual.json",
+"total": 1863407,
+"error_pct": 2.9,
+"calidad": "alta"
+},
+{
+"id": "170",
+"nombre": "Colombia",
+"spanish": "Colombia",
+"firms": "Colombia",
+"archivo": "paises/170-mensual.json",
+"total": 1831853,
+"error_pct": 2.7,
+"calidad": "alta"
+},
+{
+"id": "800",
+"nombre": "Uganda",
+"spanish": "Uganda",
+"firms": "Uganda",
+"archivo": "paises/800-mensual.json",
+"total": 1784229,
+"error_pct": 5.4,
+"calidad": "alta"
+},
+{
+"id": "716",
+"nombre": "Zimbabwe",
+"spanish": "Zimbabue",
+"firms": "Zimbabwe",
+"archivo": "paises/716-mensual.json",
+"total": 1686329,
+"error_pct": 3.4,
+"calidad": "alta"
+},
+{
+"id": "204",
+"nombre": "Benin",
+"spanish": "Benín",
+"firms": "Benin",
+"archivo": "paises/204-mensual.json",
+"total": 1645936,
+"error_pct": 3.7,
+"calidad": "baja"
+},
+{
+"id": "804",
+"nombre": "Ukraine",
+"spanish": "Ucrania",
+"firms": "Ukraine",
+"archivo": "paises/804-mensual.json",
+"total": 1356250,
+"error_pct": 3.8,
+"calidad": "alta"
+},
+{
+"id": "694",
+"nombre": "Sierra Leone",
+"spanish": "Sierra Leone",
+"firms": "Sierra_Leone",
+"archivo": "paises/694-mensual.json",
+"total": 1353070,
+"error_pct": 10.1,
+"calidad": "alta"
+},
+{
+"id": "854",
+"nombre": "Burkina Faso",
+"spanish": "Burkina Faso",
+"firms": "Burkina_Faso",
+"archivo": "paises/854-mensual.json",
+"total": 1350509,
+"error_pct": 4.4,
+"calidad": "alta"
+},
+{
+"id": "704",
+"nombre": "Vietnam",
+"spanish": "Vietnam",
+"firms": "Vietnam",
+"archivo": "paises/704-mensual.json",
+"total": 1332611,
+"error_pct": 6.6,
+"calidad": "alta"
+},
+{
+"id": "178",
+"nombre": "Congo",
+"spanish": "Congo",
+"firms": "Republic_of_Congo",
+"archivo": "paises/178-mensual.json",
+"total": 1293887,
+"error_pct": 5.0,
+"calidad": "alta"
+},
+{
+"id": "604",
+"nombre": "Peru",
+"spanish": "Perú",
+"firms": "Peru",
+"archivo": "paises/604-mensual.json",
+"total": 1287933,
+"error_pct": 7.3,
+"calidad": "alta"
+},
+{
+"id": "686",
+"nombre": "Senegal",
+"spanish": "Senegal",
+"firms": "Senegal",
+"archivo": "paises/686-mensual.json",
+"total": 1159467,
+"error_pct": 2.2,
+"calidad": "alta"
+},
+{
+"id": "454",
+"nombre": "Malawi",
+"spanish": "Malawi",
+"firms": "Malawi",
+"archivo": "paises/454-mensual.json",
+"total": 1121637,
+"error_pct": 5.4,
+"calidad": "alta"
+},
+{
+"id": "768",
+"nombre": "Togo",
+"spanish": "Togo",
+"firms": "Togo",
+"archivo": "paises/768-mensual.json",
+"total": 968384,
+"error_pct": 6.1,
+"calidad": "baja"
+},
+{
+"id": "586",
+"nombre": "Pakistan",
+"spanish": "Pakistán",
+"firms": "Pakistan",
+"archivo": "paises/586-mensual.json",
+"total": 946174,
+"error_pct": 3.6,
+"calidad": "alta"
+},
+{
+"id": "072",
+"nombre": "Botswana",
+"spanish": "Botswana",
+"firms": "Botswana",
+"archivo": "paises/072-mensual.json",
+"total": 796659,
+"error_pct": 4.3,
+"calidad": "alta"
+},
+{
+"id": "516",
+"nombre": "Namibia",
+"spanish": "Namibia",
+"firms": "Namibia",
+"archivo": "paises/516-mensual.json",
+"total": 751742,
+"error_pct": 3.6,
+"calidad": "alta"
+},
+{
+"id": "340",
+"nombre": "Honduras",
+"spanish": "Honduras",
+"firms": "Honduras",
+"archivo": "paises/340-mensual.json",
+"total": 703516,
+"error_pct": 5.3,
+"calidad": "alta"
+},
+{
+"id": "320",
+"nombre": "Guatemala",
+"spanish": "Guatemala",
+"firms": "Guatemala",
+"archivo": "paises/320-mensual.json",
+"total": 651113,
+"error_pct": 6.6,
+"calidad": "alta"
+},
+{
+"id": "608",
+"nombre": "Philippines",
+"spanish": "Filipinas",
+"firms": "Philippines",
+"archivo": "paises/608-mensual.json",
+"total": 633647,
+"error_pct": 3.3,
+"calidad": "alta"
+},
+{
+"id": "430",
+"nombre": "Liberia",
+"spanish": "Liberia",
+"firms": "Liberia",
+"archivo": "paises/430-mensual.json",
+"total": 593283,
+"error_pct": 10.1,
+"calidad": "alta"
+},
+{
+"id": "792",
+"nombre": "Türkiye",
+"spanish": "Turquía",
+"firms": "Turkey",
+"archivo": "paises/792-mensual.json",
+"total": 591313,
+"error_pct": 4.7,
+"calidad": "alta"
+},
+{
+"id": "598",
+"nombre": "Papua New Guinea",
+"spanish": "Papúa Nueva Guinea",
+"firms": "Papua_New_Guinea",
+"archivo": "paises/598-mensual.json",
+"total": 576638,
+"error_pct": 4.7,
+"calidad": "alta"
+},
+{
+"id": "364",
+"nombre": "Iran",
+"spanish": "Iran",
+"firms": "Iran",
+"archivo": "paises/364-mensual.json",
+"total": 540883,
+"error_pct": 11.9,
+"calidad": "alta"
+},
+{
+"id": "558",
+"nombre": "Nicaragua",
+"spanish": "Nicaragua",
+"firms": "Nicaragua",
+"archivo": "paises/558-mensual.json",
+"total": 529331,
+"error_pct": 5.3,
+"calidad": "alta"
+},
+{
+"id": "192",
+"nombre": "Cuba",
+"spanish": "Cuba",
+"firms": "Cuba",
+"archivo": "paises/192-mensual.json",
+"total": 472538,
+"error_pct": 2.2,
+"calidad": "alta"
+},
+{
+"id": "524",
+"nombre": "Nepal",
+"spanish": "Nepal",
+"firms": "Nepal",
+"archivo": "paises/524-mensual.json",
+"total": 422276,
+"error_pct": 11.1,
+"calidad": "alta"
+},
+{
+"id": "404",
+"nombre": "Kenya",
+"spanish": "Kenia",
+"firms": "Kenya",
+"archivo": "paises/404-mensual.json",
+"total": 339172,
+"error_pct": 8.6,
+"calidad": "alta"
+},
+{
+"id": "380",
+"nombre": "Italy",
+"spanish": "Italia",
+"firms": "Italy",
+"archivo": "paises/380-mensual.json",
+"total": 325427,
+"error_pct": 18.2,
+"calidad": "media"
+},
+{
+"id": "368",
+"nombre": "Iraq",
+"spanish": "Irak",
+"firms": "Iraq",
+"archivo": "paises/368-mensual.json",
+"total": 304008,
+"error_pct": 17.6,
+"calidad": "media"
+},
+{
+"id": "458",
+"nombre": "Malaysia",
+"spanish": "Malasia",
+"firms": "Malaysia",
+"archivo": "paises/458-mensual.json",
+"total": 300824,
+"error_pct": 12.7,
+"calidad": "alta"
+},
+{
+"id": "624",
+"nombre": "Guinea-Bissau",
+"spanish": "Guinea-Bisáu",
+"firms": "Guinea-Bissau",
+"archivo": "paises/624-mensual.json",
+"total": 300568,
+"error_pct": 4.4,
+"calidad": "alta"
+},
+{
+"id": "218",
+"nombre": "Ecuador",
+"spanish": "Ecuador",
+"firms": "Ecuador",
+"archivo": "paises/218-mensual.json",
+"total": 299574,
+"error_pct": 9.1,
+"calidad": "alta"
+},
+{
+"id": "152",
+"nombre": "Chile",
+"spanish": "Chile",
+"firms": "Chile",
+"archivo": "paises/152-mensual.json",
+"total": 289448,
+"error_pct": 13.4,
+"calidad": "alta"
+},
+{
+"id": "012",
+"nombre": "Algeria",
+"spanish": "Argelia",
+"firms": "Algeria",
+"archivo": "paises/012-mensual.json",
+"total": 280905,
+"error_pct": 12.4,
+"calidad": "alta"
+},
+{
+"id": "642",
+"nombre": "Romania",
+"spanish": "Rumania",
+"firms": "Romania",
+"archivo": "paises/642-mensual.json",
+"total": 275740,
+"error_pct": 4.5,
+"calidad": "alta"
+},
+{
+"id": "860",
+"nombre": "Uzbekistan",
+"spanish": "Uzbekistán",
+"firms": "Uzbekistan",
+"archivo": "paises/860-mensual.json",
+"total": 195330,
+"error_pct": 5.7,
+"calidad": "alta"
+},
+{
+"id": "818",
+"nombre": "Egypt",
+"spanish": "Egipto",
+"firms": "Egypt",
+"archivo": "paises/818-mensual.json",
+"total": 192581,
+"error_pct": 22.5,
+"calidad": "baja"
+},
+{
+"id": "795",
+"nombre": "Turkmenistan",
+"spanish": "Turkmenistán",
+"firms": "Turkmenistan",
+"archivo": "paises/795-mensual.json",
+"total": 183565,
+"error_pct": 16.1,
+"calidad": "media"
+},
+{
+"id": "724",
+"nombre": "Spain",
+"spanish": "España",
+"firms": "Spain",
+"archivo": "paises/724-mensual.json",
+"total": 183382,
+"error_pct": 11.0,
+"calidad": "alta"
+},
+{
+"id": "591",
+"nombre": "Panama",
+"spanish": "Panamá",
+"firms": "Panama",
+"archivo": "paises/591-mensual.json",
+"total": 180613,
+"error_pct": 7.8,
+"calidad": "alta"
+},
+{
+"id": "050",
+"nombre": "Bangladesh",
+"spanish": "Bangladesh",
+"firms": "Bangladesh",
+"archivo": "paises/050-mensual.json",
+"total": 179511,
+"error_pct": 7.0,
+"calidad": "alta"
+},
+{
+"id": "682",
+"nombre": "Saudi Arabia",
+"spanish": "Arabia Saudí",
+"firms": "Saudi_Arabia",
+"archivo": "paises/682-mensual.json",
+"total": 175182,
+"error_pct": 7.8,
+"calidad": "alta"
+},
+{
+"id": "496",
+"nombre": "Mongolia",
+"spanish": "Mongolia",
+"firms": "Mongolia",
+"archivo": "paises/496-mensual.json",
+"total": 165308,
+"error_pct": 10.3,
+"calidad": "alta"
+},
+{
+"id": "328",
+"nombre": "Guyana",
+"spanish": "Guyana",
+"firms": "Guyana",
+"archivo": "paises/328-mensual.json",
+"total": 165170,
+"error_pct": 6.9,
+"calidad": "alta"
+},
+{
+"id": "144",
+"nombre": "Sri Lanka",
+"spanish": "Sri Lanka",
+"firms": "Sri_Lanka",
+"archivo": "paises/144-mensual.json",
+"total": 164339,
+"error_pct": 10.8,
+"calidad": "alta"
+},
+{
+"id": "214",
+"nombre": "Dominican Republic",
+"spanish": "República Dominicana",
+"firms": "Dominican_Republic",
+"archivo": "paises/214-mensual.json",
+"total": 144494,
+"error_pct": 7.2,
+"calidad": "alta"
+},
+{
+"id": "266",
+"nombre": "Gabon",
+"spanish": "Gabón",
+"firms": "Gabon",
+"archivo": "paises/266-mensual.json",
+"total": 134736,
+"error_pct": 8.9,
+"calidad": "alta"
+},
+{
+"id": "100",
+"nombre": "Bulgaria",
+"spanish": "Bulgaria",
+"firms": "Bulgaria",
+"archivo": "paises/100-mensual.json",
+"total": 125597,
+"error_pct": 4.5,
+"calidad": "alta"
+},
+{
+"id": "688",
+"nombre": "Serbia",
+"spanish": "Serbia",
+"firms": "Serbia",
+"archivo": "paises/688-mensual.json",
+"total": 118538,
+"error_pct": 7.0,
+"calidad": "alta"
+},
+{
+"id": "760",
+"nombre": "Syria",
+"spanish": "Siria",
+"firms": "Syria",
+"archivo": "paises/760-mensual.json",
+"total": 118435,
+"error_pct": 10.8,
+"calidad": "alta"
+},
+{
+"id": "626",
+"nombre": "Timor-Leste",
+"spanish": "Timor Oriental",
+"firms": "Timor-Leste",
+"archivo": "paises/626-mensual.json",
+"total": 108341,
+"error_pct": 9.1,
+"calidad": "alta"
+},
+{
+"id": "434",
+"nombre": "Libya",
+"spanish": "Libia",
+"firms": "Libya",
+"archivo": "paises/434-mensual.json",
+"total": 106762,
+"error_pct": 21.5,
+"calidad": "baja"
+},
+{
+"id": "562",
+"nombre": "Niger",
+"spanish": "Níger",
+"firms": "Niger",
+"archivo": "paises/562-mensual.json",
+"total": 104271,
+"error_pct": 8.1,
+"calidad": "alta"
+},
+{
+"id": "084",
+"nombre": "Belize",
+"spanish": "Belice",
+"firms": "Belize",
+"archivo": "paises/084-mensual.json",
+"total": 96150,
+"error_pct": 6.5,
+"calidad": "alta"
+},
+{
+"id": "748",
+"nombre": "Eswatini",
+"spanish": "Esuatini",
+"firms": "Swaziland",
+"archivo": "paises/748-mensual.json",
+"total": 95209,
+"error_pct": 6.6,
+"calidad": "alta"
+},
+{
+"id": "300",
+"nombre": "Greece",
+"spanish": "Grecia",
+"firms": "Greece",
+"archivo": "paises/300-mensual.json",
+"total": 92984,
+"error_pct": 8.2,
+"calidad": "alta"
+},
+{
+"id": "222",
+"nombre": "El Salvador",
+"spanish": "El Salvador",
+"firms": "El_Salvador",
+"archivo": "paises/222-mensual.json",
+"total": 92454,
+"error_pct": 9.5,
+"calidad": "alta"
+},
+{
+"id": "112",
+"nombre": "Belarus",
+"spanish": "Bielorrusia",
+"firms": "Belarus",
+"archivo": "paises/112-mensual.json",
+"total": 92099,
+"error_pct": 5.5,
+"calidad": "alta"
+},
+{
+"id": "250",
+"nombre": "France",
+"spanish": "Francia",
+"firms": "France",
+"archivo": "paises/250-mensual.json",
+"total": 89445,
+"error_pct": 9.4,
+"calidad": "alta"
+},
+{
+"id": "620",
+"nombre": "Portugal",
+"spanish": "Portugal",
+"firms": "Portugal",
+"archivo": "paises/620-mensual.json",
+"total": 88943,
+"error_pct": 7.9,
+"calidad": "alta"
+},
+{
+"id": "031",
+"nombre": "Azerbaijan",
+"spanish": "Azerbaiyán",
+"firms": "Azerbaijan",
+"archivo": "paises/031-mensual.json",
+"total": 88026,
+"error_pct": 7.8,
+"calidad": "alta"
+},
+{
+"id": "188",
+"nombre": "Costa Rica",
+"spanish": "Costa Rica",
+"firms": "Costa_Rica",
+"archivo": "paises/188-mensual.json",
+"total": 82382,
+"error_pct": 6.2,
+"calidad": "alta"
+},
+{
+"id": "270",
+"nombre": "Gambia",
+"spanish": "Gambia",
+"firms": "The_Gambia",
+"archivo": "paises/270-mensual.json",
+"total": 74743,
+"error_pct": 6.8,
+"calidad": "alta"
+},
+{
+"id": "706",
+"nombre": "Somalia",
+"spanish": "Somalia",
+"firms": "Somalia",
+"archivo": "paises/706-mensual.json",
+"total": 69983,
+"error_pct": 14.8,
+"calidad": "alta"
+},
+{
+"id": "512",
+"nombre": "Oman",
+"spanish": "Omán",
+"firms": "Oman",
+"archivo": "paises/512-mensual.json",
+"total": 63560,
+"error_pct": 19.0,
+"calidad": "media"
+},
+{
+"id": "858",
+"nombre": "Uruguay",
+"spanish": "Uruguay",
+"firms": "Uruguay",
+"archivo": "paises/858-mensual.json",
+"total": 62284,
+"error_pct": 9.8,
+"calidad": "alta"
+},
+{
+"id": "554",
+"nombre": "New Zealand",
+"spanish": "Nueva Zelanda",
+"firms": "New_Zealand",
+"archivo": "paises/554-mensual.json",
+"total": 61673,
+"error_pct": 11.3,
+"calidad": "alta"
+},
+{
+"id": "108",
+"nombre": "Burundi",
+"spanish": "Burundi",
+"firms": "Burundi",
+"archivo": "paises/108-mensual.json",
+"total": 61074,
+"error_pct": 6.2,
+"calidad": "alta"
+},
+{
+"id": "070",
+"nombre": "Bosnia and Herzegovina",
+"spanish": "Bosnia y Herzegovina",
+"firms": "Bosnia_and_Herzegovina",
+"archivo": "paises/070-mensual.json",
+"total": 51645,
+"error_pct": 12.0,
+"calidad": "alta"
+},
+{
+"id": "826",
+"nombre": "United Kingdom",
+"spanish": "Reino Unido",
+"firms": "United_Kingdom",
+"archivo": "paises/826-mensual.json",
+"total": 50696,
+"error_pct": 12.2,
+"calidad": "alta"
+},
+{
+"id": "740",
+"nombre": "Suriname",
+"spanish": "Surinam",
+"firms": "Suriname",
+"archivo": "paises/740-mensual.json",
+"total": 50086,
+"error_pct": 5.7,
+"calidad": "alta"
+},
+{
+"id": "276",
+"nombre": "Germany",
+"spanish": "Alemania",
+"firms": "Germany",
+"archivo": "paises/276-mensual.json",
+"total": 48949,
+"error_pct": 23.0,
+"calidad": "media"
+},
+{
+"id": "392",
+"nombre": "Japan",
+"spanish": "Japón",
+"firms": "Japan",
+"archivo": "paises/392-mensual.json",
+"total": 48644,
+"error_pct": 21.4,
+"calidad": "baja"
+},
+{
+"id": "616",
+"nombre": "Poland",
+"spanish": "Polonia",
+"firms": "Poland",
+"archivo": "paises/616-mensual.json",
+"total": 48256,
+"error_pct": 24.8,
+"calidad": "media"
+},
+{
+"id": "008",
+"nombre": "Albania",
+"spanish": "Albania",
+"firms": "Albania",
+"archivo": "paises/008-mensual.json",
+"total": 43953,
+"error_pct": 15.4,
+"calidad": "media"
+},
+{
+"id": "498",
+"nombre": "Moldova",
+"spanish": "Moldavia",
+"firms": "Moldova",
+"archivo": "paises/498-mensual.json",
+"total": 43511,
+"error_pct": 15.6,
+"calidad": "media"
+},
+{
+"id": "242",
+"nombre": "Fiji",
+"spanish": "Fiyi",
+"firms": "Fiji",
+"archivo": "paises/242-mensual.json",
+"total": 43472,
+"error_pct": 9.9,
+"calidad": "alta"
+},
+{
+"id": "332",
+"nombre": "Haiti",
+"spanish": "Haití",
+"firms": "Haiti",
+"archivo": "paises/332-mensual.json",
+"total": 42739,
+"error_pct": 7.2,
+"calidad": "alta"
+},
+{
+"id": "348",
+"nombre": "Hungary",
+"spanish": "Hungría",
+"firms": "Hungary",
+"archivo": "paises/348-mensual.json",
+"total": 42497,
+"error_pct": 13.2,
+"calidad": "alta"
+},
+{
+"id": "268",
+"nombre": "Georgia",
+"spanish": "Georgia",
+"firms": "Georgia",
+"archivo": "paises/268-mensual.json",
+"total": 39835,
+"error_pct": 6.2,
+"calidad": "alta"
+},
+{
+"id": "417",
+"nombre": "Kyrgyzstan",
+"spanish": "Kirguizistán",
+"firms": "Kyrgyzstan",
+"archivo": "paises/417-mensual.json",
+"total": 37379,
+"error_pct": 14.1,
+"calidad": "alta"
+},
+{
+"id": "478",
+"nombre": "Mauritania",
+"spanish": "Mauritania",
+"firms": "Mauritania",
+"archivo": "paises/478-mensual.json",
+"total": 36124,
+"error_pct": 17.0,
+"calidad": "media"
+},
+{
+"id": "191",
+"nombre": "Croatia",
+"spanish": "Croacia",
+"firms": "Croatia",
+"archivo": "paises/191-mensual.json",
+"total": 35558,
+"error_pct": 12.6,
+"calidad": "alta"
+},
+{
+"id": "414",
+"nombre": "Kuwait",
+"spanish": "Kuwait",
+"firms": "Kuwait",
+"archivo": "paises/414-mensual.json",
+"total": 33347,
+"error_pct": 41.0,
+"calidad": "baja"
+},
+{
+"id": "504",
+"nombre": "Morocco",
+"spanish": "Marruecos",
+"firms": "Morocco",
+"archivo": "paises/504-mensual.json",
+"total": 31094,
+"error_pct": 14.3,
+"calidad": "alta"
+},
+{
+"id": "426",
+"nombre": "Lesotho",
+"spanish": "Lesotho",
+"firms": "Lesotho",
+"archivo": "paises/426-mensual.json",
+"total": 31064,
+"error_pct": 9.7,
+"calidad": "alta"
+},
+{
+"id": "352",
+"nombre": "Iceland",
+"spanish": "Islandia",
+"firms": "Iceland",
+"archivo": "paises/352-mensual.json",
+"total": 27149,
+"error_pct": 93.3,
+"calidad": "baja"
+},
+{
+"id": "788",
+"nombre": "Tunisia",
+"spanish": "Túnez",
+"firms": "Tunisia",
+"archivo": "paises/788-mensual.json",
+"total": 26671,
+"error_pct": 17.2,
+"calidad": "media"
+},
+{
+"id": "410",
+"nombre": "South Korea",
+"spanish": "Corea del Sur",
+"firms": "Republic_of_Korea",
+"archivo": "paises/410-mensual.json",
+"total": 26416,
+"error_pct": 16.0,
+"calidad": "media"
+},
+{
+"id": "887",
+"nombre": "Yemen",
+"spanish": "Yemen",
+"firms": "Yemen",
+"archivo": "paises/887-mensual.json",
+"total": 24847,
+"error_pct": 32.5,
+"calidad": "baja"
+},
+{
+"id": "004",
+"nombre": "Afghanistan",
+"spanish": "Afganistán",
+"firms": "Afghanistan",
+"archivo": "paises/004-mensual.json",
+"total": 23826,
+"error_pct": 12.1,
+"calidad": "alta"
+},
+{
+"id": "499",
+"nombre": "Montenegro",
+"spanish": "Montenegro",
+"firms": "Montenegro",
+"archivo": "paises/499-mensual.json",
+"total": 22959,
+"error_pct": 16.5,
+"calidad": "media"
+},
+{
+"id": "051",
+"nombre": "Armenia",
+"spanish": "Armenia",
+"firms": "Armenia",
+"archivo": "paises/051-mensual.json",
+"total": 22650,
+"error_pct": 12.3,
+"calidad": "alta"
+},
+{
+"id": "784",
+"nombre": "United Arab Emirates",
+"spanish": "Emiratos Árabes Unidos",
+"firms": "United_Arab_Emirates",
+"archivo": "paises/784-mensual.json",
+"total": 22619,
+"error_pct": 13.3,
+"calidad": "alta"
+},
+{
+"id": "388",
+"nombre": "Jamaica",
+"spanish": "Jamaica",
+"firms": "Jamaica",
+"archivo": "paises/388-mensual.json",
+"total": 22213,
+"error_pct": 6.9,
+"calidad": "alta"
+},
+{
+"id": "780",
+"nombre": "Trinidad and Tobago",
+"spanish": "Trinidad y Tobago",
+"firms": "Trinidad_and_Tobago",
+"archivo": "paises/780-mensual.json",
+"total": 20411,
+"error_pct": 34.0,
+"calidad": "baja"
+},
+{
+"id": "044",
+"nombre": "Bahamas",
+"spanish": "Bahamas",
+"firms": "Bahamas",
+"archivo": "paises/044-mensual.json",
+"total": 18336,
+"error_pct": 8.0,
+"calidad": "alta"
+},
+{
+"id": "158",
+"nombre": "Taiwan",
+"spanish": "Taiwán",
+"firms": "Taiwan",
+"archivo": "paises/158-mensual.json",
+"total": 16767,
+"error_pct": 41.8,
+"calidad": "baja"
+},
+{
+"id": "232",
+"nombre": "Eritrea",
+"spanish": "Eritrea",
+"firms": "Eritrea",
+"archivo": "paises/232-mensual.json",
+"total": 16732,
+"error_pct": 10.6,
+"calidad": "baja"
+},
+{
+"id": "territory-kosovo",
+"nombre": "Kosovo",
+"spanish": "Kosovo",
+"firms": "Kosovo",
+"archivo": "paises/territory-kosovo-mensual.json",
+"total": 16577,
+"error_pct": 18.5,
+"calidad": "media"
+},
+{
+"id": "376",
+"nombre": "Israel",
+"spanish": "Israel",
+"firms": "Israel",
+"archivo": "paises/376-mensual.json",
+"total": 15567,
+"error_pct": 11.0,
+"calidad": "alta"
+},
+{
+"id": "064",
+"nombre": "Bhutan",
+"spanish": "Bután",
+"firms": "Bhutan",
+"archivo": "paises/064-mensual.json",
+"total": 15495,
+"error_pct": 11.9,
+"calidad": "alta"
+},
+{
+"id": "226",
+"nombre": "Equatorial Guinea",
+"spanish": "Guinea Ecuatorial",
+"firms": "Equatorial_Guinea",
+"archivo": "paises/226-mensual.json",
+"total": 15219,
+"error_pct": 9.9,
+"calidad": "alta"
+},
+{
+"id": "646",
+"nombre": "Rwanda",
+"spanish": "Ruanda",
+"firms": "Rwanda",
+"archivo": "paises/646-mensual.json",
+"total": 14806,
+"error_pct": 14.4,
+"calidad": "alta"
+},
+{
+"id": "752",
+"nombre": "Sweden",
+"spanish": "Suecia",
+"firms": "Sweden",
+"archivo": "paises/752-mensual.json",
+"total": 13980,
+"error_pct": 23.1,
+"calidad": "media"
+},
+{
+"id": "540",
+"nombre": "New Caledonia",
+"spanish": "Nueva Caledonia",
+"firms": "New_Caledonia",
+"archivo": "paises/540-mensual.json",
+"total": 13511,
+"error_pct": 16.9,
+"calidad": "media"
+},
+{
+"id": "528",
+"nombre": "Netherlands",
+"spanish": "Países Bajos",
+"firms": "Netherlands",
+"archivo": "paises/528-mensual.json",
+"total": 13046,
+"error_pct": 29.5,
+"calidad": "media"
+},
+{
+"id": "056",
+"nombre": "Belgium",
+"spanish": "Bélgica",
+"firms": "Belgium",
+"archivo": "paises/056-mensual.json",
+"total": 12938,
+"error_pct": 45.1,
+"calidad": "baja"
+},
+{
+"id": "634",
+"nombre": "Qatar",
+"spanish": "Catar",
+"firms": "Qatar",
+"archivo": "paises/634-mensual.json",
+"total": 12444,
+"error_pct": 25.5,
+"calidad": "media"
+},
+{
+"id": "762",
+"nombre": "Tajikistan",
+"spanish": "Tayikistán",
+"firms": "Tajikistan",
+"archivo": "paises/762-mensual.json",
+"total": 11596,
+"error_pct": 22.2,
+"calidad": "media"
+},
+{
+"id": "422",
+"nombre": "Lebanon",
+"spanish": "Líbano",
+"firms": "Lebanon",
+"archivo": "paises/422-mensual.json",
+"total": 11035,
+"error_pct": 20.4,
+"calidad": "media"
+},
+{
+"id": "440",
+"nombre": "Lithuania",
+"spanish": "Lituania",
+"firms": "Lithuania",
+"archivo": "paises/440-mensual.json",
+"total": 9253,
+"error_pct": 14.7,
+"calidad": "alta"
+},
+{
+"id": "578",
+"nombre": "Norway",
+"spanish": "Noruega",
+"firms": "Norway",
+"archivo": "paises/578-mensual.json",
+"total": 9226,
+"error_pct": 17.1,
+"calidad": "media"
+},
+{
+"id": "703",
+"nombre": "Slovakia",
+"spanish": "Eslovaquia",
+"firms": "Slovakia",
+"archivo": "paises/703-mensual.json",
+"total": 8940,
+"error_pct": 27.7,
+"calidad": "media"
+},
+{
+"id": "203",
+"nombre": "Czechia",
+"spanish": "Chequia",
+"firms": "Czech_Republic",
+"archivo": "paises/203-mensual.json",
+"total": 8786,
+"error_pct": 47.0,
+"calidad": "baja"
+},
+{
+"id": "246",
+"nombre": "Finland",
+"spanish": "Finlandia",
+"firms": "Finland",
+"archivo": "paises/246-mensual.json",
+"total": 8596,
+"error_pct": 14.1,
+"calidad": "alta"
+},
+{
+"id": "428",
+"nombre": "Latvia",
+"spanish": "Letonia",
+"firms": "Latvia",
+"archivo": "paises/428-mensual.json",
+"total": 8116,
+"error_pct": 16.6,
+"calidad": "media"
+},
+{
+"id": "372",
+"nombre": "Ireland",
+"spanish": "Irlanda",
+"firms": "Ireland",
+"archivo": "paises/372-mensual.json",
+"total": 7957,
+"error_pct": 28.7,
+"calidad": "media"
+},
+{
+"id": "208",
+"nombre": "Denmark",
+"spanish": "Dinamarca",
+"firms": "Denmark",
+"archivo": "paises/208-mensual.json",
+"total": 7826,
+"error_pct": 20.1,
+"calidad": "media"
+},
+{
+"id": "630",
+"nombre": "Puerto Rico",
+"spanish": "Puerto Rico",
+"firms": "Puerto_Rico",
+"archivo": "paises/630-mensual.json",
+"total": 6331,
+"error_pct": 30.4,
+"calidad": "baja"
+},
+{
+"id": "275",
+"nombre": "Palestine",
+"spanish": "Palestina",
+"firms": "Palestine",
+"archivo": "paises/275-mensual.json",
+"total": 6106,
+"error_pct": 27.4,
+"calidad": "media"
+},
+{
+"id": "040",
+"nombre": "Austria",
+"spanish": "Austria",
+"firms": "Austria",
+"archivo": "paises/040-mensual.json",
+"total": 6098,
+"error_pct": 34.0,
+"calidad": "baja"
+},
+{
+"id": "400",
+"nombre": "Jordan",
+"spanish": "Jordania",
+"firms": "Jordan",
+"archivo": "paises/400-mensual.json",
+"total": 6042,
+"error_pct": 33.3,
+"calidad": "baja"
+},
+{
+"id": "548",
+"nombre": "Vanuatu",
+"spanish": "Vanuatu",
+"firms": "Vanuatu",
+"archivo": "paises/548-mensual.json",
+"total": 4993,
+"error_pct": 39.5,
+"calidad": "baja"
+},
+{
+"id": "048",
+"nombre": "Bahrain",
+"spanish": "Bahrein",
+"firms": "Bahrain",
+"archivo": "paises/048-mensual.json",
+"total": 4332,
+"error_pct": 82.8,
+"calidad": "baja"
+},
+{
+"id": "196",
+"nombre": "Cyprus",
+"spanish": "Chipre",
+"firms": "Cyprus",
+"archivo": "paises/196-mensual.json",
+"total": 3781,
+"error_pct": 25.9,
+"calidad": "media"
+},
+{
+"id": "480",
+"nombre": "Mauritius",
+"spanish": "Mauricio",
+"firms": "Mauritius",
+"archivo": "paises/480-mensual.json",
+"total": 3567,
+"error_pct": 20.2,
+"calidad": "media"
+},
+{
+"id": "174",
+"nombre": "Comoros",
+"spanish": "Comoras",
+"firms": "Comoros",
+"archivo": "paises/174-mensual.json",
+"total": 3557,
+"error_pct": 21.2,
+"calidad": "media"
+},
+{
+"id": "090",
+"nombre": "Solomon Islands",
+"spanish": "Islas Salomón",
+"firms": "Solomon_Islands",
+"archivo": "paises/090-mensual.json",
+"total": 3090,
+"error_pct": 30.1,
+"calidad": "baja"
+},
+{
+"id": "756",
+"nombre": "Switzerland",
+"spanish": "Suiza",
+"firms": "Switzerland",
+"archivo": "paises/756-mensual.json",
+"total": 2911,
+"error_pct": 58.8,
+"calidad": "baja"
+},
+{
+"id": "096",
+"nombre": "Brunei",
+"spanish": "Brunei",
+"firms": "Brunei_Darussalam",
+"archivo": "paises/096-mensual.json",
+"total": 2815,
+"error_pct": 23.9,
+"calidad": "media"
+},
+{
+"id": "233",
+"nombre": "Estonia",
+"spanish": "Estonia",
+"firms": "Estonia",
+"archivo": "paises/233-mensual.json",
+"total": 2677,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "705",
+"nombre": "Slovenia",
+"spanish": "Eslovenia",
+"firms": "Slovenia",
+"archivo": "paises/705-mensual.json",
+"total": 1705,
+"error_pct": 40.9,
+"calidad": "baja"
+},
+{
+"id": "238",
+"nombre": "Falkland Islands",
+"spanish": "Islas Malvinas",
+"firms": "Falkland_Islands",
+"archivo": "paises/238-mensual.json",
+"total": 1406,
+"error_pct": 25.9,
+"calidad": "media"
+},
+{
+"id": "344",
+"nombre": "Hong Kong",
+"spanish": "Hong Kong",
+"firms": "Hong_Kong",
+"archivo": "paises/344-mensual.json",
+"total": 1240,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "132",
+"nombre": "Cape Verde",
+"spanish": "Cabo Verde",
+"firms": "Cape_Verde",
+"archivo": "paises/132-mensual.json",
+"total": 1185,
+"error_pct": 62.5,
+"calidad": "baja"
+},
+{
+"id": "052",
+"nombre": "Barbados",
+"spanish": "Barbados",
+"firms": "Barbados",
+"archivo": "paises/052-mensual.json",
+"total": 1132,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "442",
+"nombre": "Luxembourg",
+"spanish": "Luxemburgo",
+"firms": "Luxembourg",
+"archivo": "paises/442-mensual.json",
+"total": 998,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "776",
+"nombre": "Tonga",
+"spanish": "Tonga",
+"firms": "Tonga",
+"archivo": "paises/776-mensual.json",
+"total": 973,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "304",
+"nombre": "Greenland",
+"spanish": "Groenlandia",
+"firms": "Greenland",
+"archivo": "paises/304-mensual.json",
+"total": 804,
+"error_pct": 49.8,
+"calidad": "baja"
+},
+{
+"id": "316",
+"nombre": "Guam",
+"spanish": "Guam",
+"firms": "Guam",
+"archivo": "paises/316-mensual.json",
+"total": 678,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "580",
+"nombre": "Northern Mariana Islands",
+"spanish": "Islas Marianas del Norte",
+"firms": "Northern_Mariana_Islands",
+"archivo": "paises/580-mensual.json",
+"total": 596,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "659",
+"nombre": "Saint Kitts and Nevis",
+"spanish": "San Cristóbal y Nieves",
+"firms": "Saint_Kitts_and_Nevis",
+"archivo": "paises/659-mensual.json",
+"total": 583,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "262",
+"nombre": "Djibouti",
+"spanish": "Djibouti",
+"firms": "Djibouti",
+"archivo": "paises/262-mensual.json",
+"total": 531,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "531",
+"nombre": "Curaçao",
+"spanish": "Curazao",
+"firms": "Curacao",
+"archivo": "paises/531-mensual.json",
+"total": 482,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "882",
+"nombre": "Samoa",
+"spanish": "Samoa",
+"firms": "Samoa",
+"archivo": "paises/882-mensual.json",
+"total": 424,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "028",
+"nombre": "Antigua and Barbuda",
+"spanish": "Antigua y Barbuda",
+"firms": "Antigua_and_Barbuda",
+"archivo": "paises/028-mensual.json",
+"total": 365,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "678",
+"nombre": "São Tomé and Príncipe",
+"spanish": "Santo Tomé y Príncipe",
+"firms": "Sao_Tome_and_Principe",
+"archivo": "paises/678-mensual.json",
+"total": 357,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "500",
+"nombre": "Montserrat",
+"spanish": "Montserrat",
+"firms": "Montserrat",
+"archivo": "paises/500-mensual.json",
+"total": 282,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "662",
+"nombre": "Saint Lucia",
+"spanish": "Santa Lucía",
+"firms": "Saint_Lucia",
+"archivo": "paises/662-mensual.json",
+"total": 270,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "702",
+"nombre": "Singapore",
+"spanish": "Singapur",
+"firms": "Singapore",
+"archivo": "paises/702-mensual.json",
+"total": 249,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "258",
+"nombre": "French Polynesia",
+"spanish": "Polinesia Francesa",
+"firms": "French_Polynesia",
+"archivo": "paises/258-mensual.json",
+"total": 217,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "212",
+"nombre": "Dominica",
+"spanish": "Dominica",
+"firms": "Dominica",
+"archivo": "paises/212-mensual.json",
+"total": 211,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "850",
+"nombre": "United States Virgin Islands",
+"spanish": "Islas Vírgenes de los Estados Unidos",
+"firms": "United_States_Virgin_Islands",
+"archivo": "paises/850-mensual.json",
+"total": 210,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "796",
+"nombre": "Turks and Caicos Islands",
+"spanish": "Islas Turks y Caicos",
+"firms": "Turks_and_Caicos_Islands",
+"archivo": "paises/796-mensual.json",
+"total": 178,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "470",
+"nombre": "Malta",
+"spanish": "Malta",
+"firms": "Malta",
+"archivo": "paises/470-mensual.json",
+"total": 168,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "136",
+"nombre": "Cayman Islands",
+"spanish": "Islas Caimán",
+"firms": "Cayman_Islands",
+"archivo": "paises/136-mensual.json",
+"total": 134,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "092",
+"nombre": "British Virgin Islands",
+"spanish": "Islas Vírgenes del Reino Unido",
+"firms": "British_Virgin_Islands",
+"archivo": "paises/092-mensual.json",
+"total": 121,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "670",
+"nombre": "Saint Vincent and the Grenadines",
+"spanish": "San Vicente y Granadinas",
+"firms": "Saint_Vincent_and_the_Grenadines",
+"archivo": "paises/670-mensual.json",
+"total": 71,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "833",
+"nombre": "Isle of Man",
+"spanish": "Isla de Man",
+"firms": "Isle_of_Man",
+"archivo": "paises/833-mensual.json",
+"total": 56,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "585",
+"nombre": "Palau",
+"spanish": "Palau",
+"firms": "Palau",
+"archivo": "paises/585-mensual.json",
+"total": 49,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "533",
+"nombre": "Aruba",
+"spanish": "Aruba",
+"firms": "Aruba",
+"archivo": "paises/533-mensual.json",
+"total": 48,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "296",
+"nombre": "Kiribati",
+"spanish": "Kiribati",
+"firms": "Kiribati",
+"archivo": "paises/296-mensual.json",
+"total": 37,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "654",
+"nombre": "Saint Helena, Ascension and Tristan da Cunha",
+"spanish": "Santa Elena, Ascensión y Tristán de Acuña",
+"firms": "Saint_Helena",
+"archivo": "paises/654-mensual.json",
+"total": 20,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "260",
+"nombre": "French Southern and Antarctic Lands",
+"spanish": "Tierras Australes y Antárticas Francesas",
+"firms": "French_Southern_and_Antarctic_Lands",
+"archivo": "paises/260-mensual.json",
+"total": 19,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "016",
+"nombre": "American Samoa",
+"spanish": "Samoa Americana",
+"firms": "American_Samoa",
+"archivo": "paises/016-mensual.json",
+"total": 18,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "534",
+"nombre": "Sint Maarten",
+"spanish": "Sint Maarten",
+"firms": "Sint_Maarten",
+"archivo": "paises/534-mensual.json",
+"total": 17,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "690",
+"nombre": "Seychelles",
+"spanish": "Seychelles",
+"firms": "Seychelles",
+"archivo": "paises/690-mensual.json",
+"total": 14,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "020",
+"nombre": "Andorra",
+"spanish": "Andorra",
+"firms": "Andorra",
+"archivo": "paises/020-mensual.json",
+"total": 11,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "674",
+"nombre": "San Marino",
+"spanish": "San Marino",
+"firms": "San_Marino",
+"archivo": "paises/674-mensual.json",
+"total": 7,
+"error_pct": null,
+"calidad": "baja"
+},
+{
+"id": "060",
+"nombre": "Bermuda",
+"spanish": "Bermudas",
+"firms": "Bermuda",
+"archivo": "paises/060-mensual.json",
+"total": 2,
+"error_pct": null,
+"calidad": "baja"
+}
+]
+}

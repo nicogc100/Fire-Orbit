@@ -8,11 +8,11 @@
   <meta name="application-name" content="Fire Sat">
   <title>Fire Sat · Nuestro planeta</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="tierra.css?v=31">
+  <link rel="stylesheet" href="tierra.css?v=32">
   <link rel="preload" href="assets/InterTight-variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/Archivo-variable.woff2" as="font" type="font/woff2" crossorigin>
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
-  <script src="arranque.js?v=14" defer></script>
+  <script src="arranque.js?v=19" defer></script>
 </head>
 <body>
   <main id="escena" data-view="intro" aria-label="Tierra tridimensional interactiva">
@@ -38,7 +38,7 @@
     <canvas id="pieza" hidden></canvas>
     <div id="etiquetas-regiones" class="etiquetas-regiones" aria-hidden="true"></div>
     <div class="pieza-leyenda" id="pieza-leyenda" aria-hidden="true" hidden>
-      <div class="leyenda-frp"><span>Potencia del fuego (FRP)</span><div class="frp-escala"><small>Baja</small><i></i><small>Alta</small></div></div>
+      <div class="leyenda-frp"><span class="ley-frp">Potencia del fuego (FRP)</span><span class="ley-serie">Actividad de fuego en el período</span><div class="frp-escala"><small>Baja</small><i></i><small>Alta</small></div></div>
       <p class="pieza-ayuda" id="pieza-ayuda"></p>
     </div>
     <aside id="panel-pais" class="panel-pais" aria-labelledby="panel-titulo" hidden></aside>
@@ -52,8 +52,8 @@
       </div>
       <ul id="lista-paises" role="listbox" aria-label="Países" hidden></ul>
       <p id="ayuda-pais" class="solo-lectores">Nombre en español o inglés</p>
-      <div class="con-datos" role="group" aria-label="Países con datos guardados">
-        <span>Con datos:</span>
+      <div class="con-datos" role="group" aria-label="Países con detalle diario">
+        <span>Detalle diario:</span>
         <button type="button" data-pais-rapido="152">Chile</button>
         <button type="button" data-pais-rapido="620">Portugal</button>
       </div>

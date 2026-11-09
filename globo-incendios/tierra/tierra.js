@@ -3,11 +3,11 @@ import { OrbitControls } from './vendor/OrbitControls.js';
 import { HandFlow } from './nubes-interactivas.js?v=9';
 import { createCloudNoiseTexture } from './cloud-volume.js';
 import { CloudLayer } from './capa-nubes.js?v=24';
-import { Countries } from './paises.js?v=4';
+import { Countries } from './paises.js?v=7';
 import { ModoPais } from './modo-pais.js?v=11';
-import { PanelPais } from './panel-pais.js?v=5';
-import { PanelDatos } from './panel-datos.js?v=4';
-import { entradaCatalogo, cargarDatos, diaDelAnio, fechaDeDia, etiquetaConfianza, etiquetaSatelite } from './datos-pais.js';
+import { PanelPais } from './panel-pais.js?v=9';
+import { PanelDatos } from './panel-datos.js?v=7';
+import { entradaCatalogo, cargarDatos, cargarIndice, cargarCeldas, sumarCeldas, diaDelAnio, fechaDeDia, etiquetaConfianza, etiquetaSatelite } from './datos-pais.js?v=4';
 
 const canvas = document.querySelector('#tierra');
 const loading = document.querySelector('#carga');
@@ -35,7 +35,9 @@ const parametrosIniciales = new URLSearchParams(location.search);
 function leerInicial(parametros) {
   const fecha = parametros.get('dia');
   const sensor = parametros.get('sensor');
+  const anio = parametros.get('anio');
   return {
+    anio: /^\d{4}-/.test(fecha || '') ? +fecha.slice(0, 4) : /^\d{4}$/.test(anio || '') ? +anio : null,
     dia: /^\d{4}-\d{2}-\d{2}$/.test(fecha || '') ? diaDelAnio(fecha, +fecha.slice(0, 4)) : null,
     sensor: ['MODIS', 'VIIRS'].includes(sensor) ? sensor : null,
   };
@@ -583,6 +585,20 @@ async function main() {
   function mostrarPunto(registro, x, y, indice) {
     if (!registro) { tipPunto.hidden = true; return; }
     tipPunto.replaceChildren();
+    if (registro.celda) {
+      const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+      const t = document.createElement('strong');
+      t.textContent = `${numeroTip.format(Math.round(registro.valor))} celdas-día con fuego`;
+      const km = Math.round(registro.tam * 111);
+      const lineas = [registro.sel.mes === null ? `Todo ${registro.sel.anio}` : `${meses[registro.sel.mes]} de ${registro.sel.anio}`,
+        `Zona de ~${km} km (${registro.tam}°)`, 'Serie harmonizada MODIS / VIIRS'];
+      tipPunto.append(t, ...lineas.map(texto => { const s = document.createElement('span'); s.textContent = texto; return s; }));
+      tipPunto.hidden = false;
+      const r = tipPunto.getBoundingClientRect();
+      tipPunto.style.left = `${Math.max(8, Math.min(innerWidth - r.width - 8, x + 14))}px`;
+      tipPunto.style.top = `${Math.max(8, y - r.height - 12)}px`;
+      return;
+    }
     const region = panelPais.regionDe(indice);
     const titulo = document.createElement('strong');
     titulo.textContent = region || `${numeroTip.format(registro.frp)} MW`;
@@ -608,18 +624,66 @@ async function main() {
     onPais: id => solicitarPais(id, {}),
     onReintentar: () => abrirPais(panelPais.feature),
     onRegistros: filtro => panelDatos.abrir(filtro),
+    onPeriodo: sel => ponerMapaSerie(sel),
+    onAnio: anio => {
+      // Cambiar de año recarga solo el detalle diario y los puntos del mapa.
+      if (!paisAbierto) return;
+      const entrada = entradaCatalogo(paisAbierto.id, anio);
+      if (!entrada) return;
+      panelPais.cargandoAnio(entrada);
+      actualizarURL({ anio: entrada.anio, dia: null });
+      cargarDatosPais(paisAbierto, entrada, {}, ++pedidoPais);
+    },
     onFiltro: filtro => {
       modo.filtrar(filtro);
       if (filtro.persistente) {
         actualizarURL({
+          anio: panelPais.datos.anio,
           dia: filtro.dia === null ? null : fechaDeDia(filtro.dia, panelPais.datos.anio),
           sensor: filtro.sensor === 'todos' ? null : filtro.sensor,
         });
       }
     },
   });
+  // Países sin detecciones guardadas: un punto por celda con fuego en el período elegido.
+  function ponerMapaSerie(sel) {
+    const entrada = panelPais.entrada, pedido = pedidoPais;
+    if (!entrada?.soloSerie) return;
+    cargarCeldas(entrada.id).then(mapa => {
+      if (pedido !== pedidoPais) return;
+      const suma = sumarCeldas(mapa, sel.anio, sel.mes);
+      const positivos = Array.from(suma).filter(v => v > 0).sort((a, b) => a - b);
+      const ref = positivos[Math.floor(positivos.length * .98)] || 1;
+      const lado = mapa.celda_grados;
+      // Mapa de densidad: cada zona recibe más puntos cuanto más fuego tuvo, repartidos al azar
+      // dentro de ella (siempre en el mismo lugar). Las zonas casi sin fuego no se dibujan.
+      const MAX_PUNTOS = 14;
+      const azar = semilla => { let t = semilla >>> 0; return () => { t += 0x6D2B79F5; let r = Math.imul(t ^ (t >>> 15), 1 | t); r ^= r + Math.imul(r ^ (r >>> 7), 61 | r); return ((r ^ (r >>> 14)) >>> 0) / 4294967296; }; };
+      const registros = [];
+      mapa.celdas.forEach(([lat, lon], i) => {
+        const r = suma[i] / ref;
+        if (r < .02) return;
+        const n = Math.max(1, Math.round(MAX_PUNTOS * Math.sqrt(Math.min(1, r))));
+        const aleatorio = azar(i * 7919 + 17);
+        // Intensidad del color: proporcional a la raíz (la escala del mapa es logarítmica en FRP).
+        const frp = 10 ** (3 * Math.min(1, Math.sqrt(r))) - 1;
+        for (let k = 0; k < n; k++) {
+          registros.push({ lat: lat + aleatorio() * lado, lon: lon + aleatorio() * lado, frp, sensor: 'VIIRS',
+            celda: true, valor: suma[i], tam: lado, sel });
+        }
+      });
+      modo.ponerPuntos({ registros, dias: new Int16Array(registros.length) });
+      modo.filtrar({ ini: 0, fin: 400, cola: 0, sensor: 'todos', visibles: registros.length });
+    }).catch(error => console.warn('Mapa del país no disponible:', error));
+  }
   function cargarDatosPais(country, entrada, inicial, pedido) {
     if (!entrada) return;
+    if (entrada.soloSerie) {
+      // Países sin detecciones guardadas: solo el calendario histórico, sin puntos en el mapa.
+      modo.quitarPuntos();
+      if (pedido === pedidoPais) panelPais.ponerSoloSerie();
+      return;
+    }
     cargarDatos(entrada).then(async datos => {
       if (pedido !== pedidoPais) return;
       panelPais.ponerDatos(datos, modo.ponerPuntos(datos), inicial);
@@ -637,15 +701,15 @@ async function main() {
   }
   function abrirPais(country) {
     if (transition) return;
-    const entrada = entradaCatalogo(country.id);
     const inicial = inicialPais;
+    const entrada = entradaCatalogo(country.id, inicial.anio);
     inicialPais = {};
     const pedido = ++pedidoPais;
     if (!paisAbierto) giroPrevio = rotating;
     setRotation(false);
     panelPais.preparar(country, entrada);
-    stage.dataset.conDatos = entrada ? 'si' : 'no';
-    actualizarURL({ pais: country.id, dia: null, sensor: null });
+    stage.dataset.conDatos = !entrada ? 'no' : entrada.soloSerie ? 'serie' : 'si';
+    actualizarURL({ pais: country.id, dia: null, sensor: null, anio: null });
     const nombre = country.properties.spanish || country.properties.name;
     piezaCanvas.setAttribute('aria-label', `Mapa de ${nombre}. Arrastra para girar y usa la rueda para acercar. Las flechas giran el mapa; más y menos cambian el zoom. Escape vuelve a la Tierra.`);
     if (paisAbierto) {
@@ -691,7 +755,7 @@ async function main() {
     panelPais.detener();
     delete stage.dataset.modo;
     modo.salir();
-    actualizarURL({ pais: null, dia: null, sensor: null });
+    actualizarURL({ pais: null, dia: null, sensor: null, anio: null });
     if (vuelo) { vuelo.sentido = -1; vuelo.ultimo = performance.now(); return; }
     // Vuelve al planeta completo mirando el país, aunque el globo haya seguido girando.
     const dirRegreso = direccionPais(paisAbierto);
@@ -703,6 +767,8 @@ async function main() {
   document.addEventListener('keydown', evento => {
     if (evento.key === 'Escape' && paisAbierto && !panelDatos.dialogo.open) cerrarPais();
   });
+  // El índice mundial dice qué países tienen serie harmonizada (marca "Con datos" y panel).
+  await cargarIndice();
   countries=await Countries.create({canvas,camera,globe,stage,uniforms,onSelect:country=>abrirPais(country)});
   countries.update(0,0,true);
   // Abrir un país desde «Datos guardados» o un enlace directo es una petición explícita:

@@ -10,7 +10,10 @@ Desde la carpeta `globo-incendios`:
 pip install requests pandas numpy
 python procesamiento/1_descargar.py                  # baja Chile: MODIS 2000-2025 y VIIRS 2012-2025
 python procesamiento/2_armonizar.py --anuales        # harmoniza y escribe los archivos en data/
+python procesamiento/3_actualizar.py --key MAP_KEY   # agrega los meses del año en curso desde la API
 ```
+
+El paso 3 necesita una MAP_KEY gratis de FIRMS (https://firms.modaps.eosdis.nasa.gov/api/map_key/). Se puede volver a correr cuando se quiera actualizar: reemplaza los meses del año en curso sin duplicarlos. Agrega a `chile-mensual.json` los campos `actualizado_hasta` (fecha) y marca el mes en curso con `incompleto: true`.
 
 Para otro país: `--pais Portugal` en los dos comandos (nombre en inglés, como lo usa FIRMS).
 
