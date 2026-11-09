@@ -1,4 +1,4 @@
-import { diaDelAnio } from './datos-pais.js?v=cdc22085';
+import { diaDelAnio } from './datos/datos-pais.js?v=20261109';
 
 // Estado de la vista en la URL (?pais=, ?anio=, ?dia=, ?sensor=, ?datos=): permite
 // compartir un enlace que abre exactamente el mismo país, fecha y sensor.

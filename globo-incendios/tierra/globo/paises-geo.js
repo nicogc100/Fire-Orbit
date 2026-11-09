@@ -1,4 +1,4 @@
-import { geoContains } from './vendor/d3-geo.js';
+import { geoContains } from '../vendor/d3-geo.js';
 
 export const normalizeName = value =>
   value

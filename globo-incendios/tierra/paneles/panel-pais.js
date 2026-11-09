@@ -7,8 +7,8 @@ import {
   fechaDeDia,
   CATALOGO,
   cargarSerie,
-} from './datos-pais.js?v=cdc22085';
-import { CalendarioHistorico } from './calendario-historico.js?v=d378a195';
+} from '../datos/datos-pais.js?v=20261109';
+import { CalendarioHistorico } from './calendario-historico.js?v=20261109';
 
 const numero = new Intl.NumberFormat('es-CL');
 const fechaLarga = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'long', timeZone: 'UTC' });

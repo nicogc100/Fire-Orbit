@@ -3,7 +3,7 @@
 // la vista, según el zoom). Una petición nueva de una capa descarta las teselas de esa
 // capa que aún no empezaron; las que ya están en camino terminan y quedan en memoria,
 // así un recorrido de ida y vuelta no vuelve a descargarlas.
-import { FUENTE, rango, cajaDe } from './teselas.js?v=4fe52f38';
+import { FUENTE, rango, cajaDe } from './teselas.js?v=20261109';
 
 const CONCURRENCIA = 6;
 const MEMORIA = 160; // teselas decodificadas (~40 MB)

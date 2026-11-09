@@ -1,6 +1,6 @@
 // Geometría de la pieza 3D de un país. Cada vértice guarda su posición sobre la
 // esfera y la del plano: la pieza se despega del globo sin saltos y aterriza plana.
-// Sin Three.js ni DOM: la usan el worker de cartografía y pruebas/pieza-geo.test.mjs.
+// Sin Three.js ni DOM: la usan el worker de cartografía y el mapa del país.
 const RAD = Math.PI / 180;
 export const aVector = (lon, lat) => {
   const a = lat * RAD,

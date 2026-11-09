@@ -4,16 +4,12 @@ Globo 3D interactivo para explorar los incendios detectados desde el espacio por
 Se elige un país en el globo, su territorio despega como una pieza 3D y muestra las detecciones por día, la serie
 histórica mensual, las regiones y ciudades, y un modo de **detalle satelital** con imágenes Sentinel-2 de 10 m.
 
-La app es estática: HTML, CSS y JavaScript sin compilar, con datos preparados de antemano por scripts de Python. No
-necesita servidor propio ni base de datos.
+La app es estática: HTML, CSS y JavaScript, con datos preparados de antemano por scripts de Python. No necesita
+servidor propio ni base de datos.
 
-## Requisitos
+## Cómo abrirla
 
-- **Python 3.10 o superior**, para el servidor local.
-- **Un navegador con WebGL 2**: Chrome, Edge, Firefox o Safari recientes.
-- **Node.js 22 o superior**, solo para desarrollar (pruebas, formato y revisión). La app no lo necesita.
-
-## Cómo ejecutarla
+Necesitas **Python 3** y un navegador con **WebGL 2** (Chrome, Edge, Firefox o Safari recientes).
 
 En Windows, abre `globo-incendios/Abrir Tierra.cmd`. Desde una terminal:
 
@@ -25,53 +21,43 @@ python iniciar.py --tierra --puerto 8001  # otro puerto
 
 Mantén abierta la ventana del servidor mientras uses la app.
 
-## Estructura
+## Carpetas
 
 ```text
-.
-├── globo-incendios/            La aplicación
-│   ├── iniciar.py              Servidor local
-│   ├── index.html              Redirige a tierra/
-│   ├── datos.js                Utilidades de datos (CSV, resúmenes)
-│   ├── tierra/                 Código de la app (ver docs/ARQUITECTURA.md)
-│   │   ├── assets/             Texturas, fuentes, nubes y cartografía por país
-│   │   └── vendor/             Librerías de terceros (Three.js, D3 Geo); no se editan
-│   ├── data/                   Detecciones y series que genera procesamiento/
-│   ├── procesamiento/          Scripts de Python que descargan y preparan los datos
-│   ├── pruebas/                Pruebas automáticas (node --test)
-│   └── herramientas/           Herramientas de desarrollo (versiones de caché)
-├── docs/ARQUITECTURA.md        Cómo funciona el código, módulo por módulo
-├── .github/workflows/ci.yml    Verificación automática en cada push y pull request
-└── package.json                Comandos de desarrollo
+globo-incendios/
+├── Abrir Tierra.cmd       Abre la app en Windows
+├── iniciar.py             Servidor local
+├── index.html             Redirige a tierra/
+├── tierra/                La app
+│   ├── index.html         Página
+│   ├── tierra.css         Estilos
+│   ├── arranque.js        Carga tierra.js
+│   ├── tierra.js          Programa principal: globo, cámara y vuelo hacia un país
+│   ├── estado-url.js      País, fecha y sensor guardados en la URL
+│   ├── globo/             Superficie del globo y selección de países
+│   ├── nubes/             Nubes volumétricas
+│   ├── pais/              Mapa 3D del país: regiones, ciudades, relieve y focos
+│   ├── satelite/          Detalle satelital (imágenes Sentinel-2)
+│   ├── paneles/           Panel del país, calendario y tabla de registros
+│   ├── datos/             Carga de datos, fechas y conteos
+│   ├── assets/            Texturas, fuentes, nubes y cartografía por país
+│   └── vendor/            Librerías de otros (Three.js, D3 Geo): no se editan
+├── data/                  Detecciones y series de NASA FIRMS
+└── procesamiento/         Scripts de Python que generan data/
+docs/ARQUITECTURA.md       Cómo funciona el código, archivo por archivo
 ```
 
-## Desarrollo
+## Al editar el código
 
-```bash
-npm install          # una vez: instala las herramientas de desarrollo
-npm run check        # todo lo que revisa la integración continua
-```
-
-| Comando                   | Qué hace                                                                  |
-| ------------------------- | ------------------------------------------------------------------------- |
-| `npm start`               | Abre la app con el servidor local                                         |
-| `npm test`                | Pruebas automáticas (geometría, teselas, fechas, integridad de los datos) |
-| `npm run lint`            | Revisión estática del código con ESLint                                   |
-| `npm run format`          | Da formato al código con Prettier                                         |
-| `npm run versionar`       | Recalcula las versiones de caché (`?v=…`) después de editar archivos      |
-| `npm run versionar:check` | Falla si alguna versión de caché quedó desactualizada                     |
-
-**Antes de cada commit:** `npm run format`, `npm run versionar` y `npm run check`.
-
-Los archivos se cargan con una versión en la URL (`modo-pais.js?v=a9c8a30b`) para que el navegador no use una copia
-vieja. Esa versión es una huella del contenido: `npm run versionar` la actualiza en el archivo y en todos los que
-dependen de él. No se edita a mano.
+Los archivos se cargan con una versión al final, por ejemplo `modo-pais.js?v=20261109`, para que el navegador no use
+una copia vieja guardada. Cuando cambies algo, busca `v=20261109` en toda la carpeta `tierra/` y reemplázalo por la
+fecha del día (por ejemplo `v=20261215`). Todos los archivos usan la misma versión, así que es un solo reemplazo.
 
 ## Datos
 
 Los datos de `globo-incendios/data/` se generan con los scripts de `globo-incendios/procesamiento/` a partir de los
-archivos anuales de NASA FIRMS. Su
-[README](globo-incendios/procesamiento/README.md) explica cada paso y el formato de los archivos.
+archivos anuales de NASA FIRMS. Su [README](globo-incendios/procesamiento/README.md) explica cada paso y el formato de
+los archivos.
 
 ```bash
 pip install -r globo-incendios/procesamiento/requirements.txt

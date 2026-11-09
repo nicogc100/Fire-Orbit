@@ -1,4 +1,4 @@
-// Datos guardados por país. Sin DOM ni WebGL: se prueba en pruebas/datos.test.mjs.
+// Datos guardados por país. Sin DOM ni WebGL: solo carga y cálculo.
 // anios: años con detecciones guardadas (data/<prefijo>-<año>.json).
 // serie: archivo con la serie mensual harmonizada MODIS + VIIRS (procesamiento/2_armonizar.py).
 const rango = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);

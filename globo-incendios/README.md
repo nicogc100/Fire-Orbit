@@ -14,8 +14,6 @@ servidor mientras la usas.
 - `tierra/`: código de la app, texturas, nubes y cartografía.
 - `data/`: detecciones y series de NASA FIRMS, con su procedencia.
 - `procesamiento/`: scripts de Python que generan `data/`.
-- `pruebas/`: pruebas automáticas.
-- `herramientas/`: herramientas de desarrollo.
 
-La guía completa (desarrollo, pruebas, estructura y licencias) está en el [README principal](../README.md), y el
+La guía completa (estructura, cómo editar y licencias) está en el [README principal](../README.md), y el
 funcionamiento del código en [docs/ARQUITECTURA.md](../docs/ARQUITECTURA.md).

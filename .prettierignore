@@ -1,9 +1,0 @@
-# Generados o de terceros: no se formatean.
-package-lock.json
-globo-incendios/data/
-globo-incendios/tierra/assets/
-globo-incendios/tierra/vendor/
-globo-incendios/procesamiento/crudos/
-
-# El HTML se mantiene a mano: Prettier puede cambiar espacios significativos entre elementos en línea.
-*.html

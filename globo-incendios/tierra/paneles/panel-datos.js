@@ -1,4 +1,4 @@
-import { convertirCSV, MESES } from '../datos.js';
+import { convertirCSV, MESES } from '../datos/datos.js';
 import {
   CATALOGO,
   cargarDatos,
@@ -10,7 +10,7 @@ import {
   etiquetaConfianza,
   etiquetaSatelite,
   fechaDeDia,
-} from './datos-pais.js?v=cdc22085';
+} from '../datos/datos-pais.js?v=20261109';
 
 const numero = new Intl.NumberFormat('es-CL');
 const decimal = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });

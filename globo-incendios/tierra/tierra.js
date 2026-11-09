@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { HandFlow } from './nubes-interactivas.js?v=e3537923';
-import { createCloudNoiseTexture } from './cloud-volume.js';
-import { CloudLayer } from './capa-nubes.js?v=7cce1e27';
-import { Countries } from './paises.js?v=f21d253e';
-import { ModoPais } from './modo-pais.js?v=7e41116e';
-import { PanelPais } from './panel-pais.js?v=412a6080';
-import { PanelDatos } from './panel-datos.js?v=53991f55';
+import { HandFlow } from './nubes/nubes-interactivas.js?v=20261109';
+import { createCloudNoiseTexture } from './nubes/cloud-volume.js';
+import { CloudLayer } from './nubes/capa-nubes.js?v=20261109';
+import { Countries } from './globo/paises.js?v=20261109';
+import { ModoPais } from './pais/modo-pais.js?v=20261109';
+import { PanelPais } from './paneles/panel-pais.js?v=20261109';
+import { PanelDatos } from './paneles/panel-datos.js?v=20261109';
 import {
   entradaCatalogo,
   cargarDatos,
@@ -14,10 +14,10 @@ import {
   cargarCeldas,
   sumarCeldas,
   fechaDeDia,
-} from './datos-pais.js?v=cdc22085';
-import { vertexShader, surfaceShader } from './globo-shaders.js?v=0ee3774b';
-import { actualizarURL, leerInicial } from './estado-url.js?v=02c2ba0c';
-import { crearFichaPunto } from './ficha-punto.js?v=2b4b3a79';
+} from './datos/datos-pais.js?v=20261109';
+import { vertexShader, surfaceShader } from './globo/globo-shaders.js?v=20261109';
+import { actualizarURL, leerInicial } from './estado-url.js?v=20261109';
+import { crearFichaPunto } from './pais/ficha-punto.js?v=20261109';
 
 const canvas = document.querySelector('#tierra');
 const loading = document.querySelector('#carga');
@@ -99,7 +99,7 @@ async function main() {
     if (!response.ok) throw new Error('No se pudo cargar el volumen de nubes');
     return response.arrayBuffer();
   });
-  const normalGuideRequest = fetch('./assets/nubes-relieve.rgba.gz?v=d5ac9af0').then(async response => {
+  const normalGuideRequest = fetch('./assets/nubes-relieve.rgba.gz?v=20261109').then(async response => {
     if (!response.ok) throw new Error('No se pudo cargar el relieve de las nubes');
     const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
     const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
@@ -110,7 +110,7 @@ async function main() {
     }
     return bytes;
   });
-  const volumeRequest = fetch('./assets/nubes-esfericas.rg.gz?v=c2b40b6e').then(async response => {
+  const volumeRequest = fetch('./assets/nubes-esfericas.rg.gz?v=20261109').then(async response => {
     if (!response.ok) throw new Error('No se pudo cargar el volumen de nubes');
     const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
     const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
