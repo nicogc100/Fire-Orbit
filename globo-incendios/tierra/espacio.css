@@ -1,0 +1,66 @@
+/* Fondo espacial. Se carga después de tierra.css.
+   Los colores de texto de abajo corresponden solo a lo que se dibuja sobre el cielo. */
+:root {
+  --cielo-alto: #04060f;
+  --cielo-medio: #050a1a;
+  --cielo-bajo: #02030a;
+}
+
+body {
+  background: #02030a;
+}
+
+/* Capa decorativa: deja pasar todos los gestos y clics hacia la Tierra. */
+#espacio {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Resplandor de la portada que acompaña al fondo del ejemplo. */
+#escena::before {
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 60% at 50% 100%,
+    #2f6fd133 0%,
+    #1b3c8a14 45%,
+    transparent 70%
+  );
+}
+
+/* Contraste del texto situado directamente sobre el espacio. */
+#escena[data-view='globe'] .instruccion {
+  color: #9fb0c8;
+}
+
+.buscador-paises > label,
+.carga,
+.sin-js,
+.pieza-leyenda {
+  color: #e6edf7;
+}
+
+.con-datos {
+  color: #9fb0c8;
+}
+
+.con-datos button {
+  color: #e6edf7;
+  text-decoration-color: #ffffff59;
+}
+
+@media (hover: hover) {
+  .con-datos button:hover {
+    text-decoration-color: #e6edf7;
+  }
+}
+
+.orbita {
+  border-color: #ffffff26;
+  border-top-color: #9cc4ff;
+}
