@@ -1,0 +1,15 @@
+# Configuración local y archivos generados
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+*.log
+node_modules/
+.DS_Store
+Thumbs.db
+
+# Descargas y documentos locales ajenos a la aplicación
+/etapa-1-descargas/
+/etapa-1-descargas.zip
+/docs/Fire_Sat_Responsabilidades_del_equipo.docx

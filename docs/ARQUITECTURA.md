@@ -23,7 +23,9 @@ Guía para entender el código: qué hace cada archivo y cómo fluye la app. Tod
    carga el terreno, las regiones y los focos.
 5. `paneles/panel-pais.js` muestra los datos del país. Al cambiar la fecha o el sensor, el mapa solo cambia qué focos
    enseña: no se vuelve a construir.
-6. País, año, día y sensor se guardan en la URL (`estado-url.js`): un enlace abre la misma vista.
+6. Al tocar una región, el mapa se acerca y muestra solo sus focos, y el panel pasa a esa región: ruta
+   «Chile › Valparaíso», meses, calendario y pestaña «Datos». «Chile» en la ruta vuelve al país sin cambiar el año.
+7. País, año, día y sensor se guardan en la URL (`estado-url.js`): un enlace abre la misma vista.
 
 ## Archivos
 
@@ -75,15 +77,16 @@ Guía para entender el código: qué hace cada archivo y cómo fluye la app. Tod
 
 | Archivo                   | Qué hace                                                            |
 | ------------------------- | ------------------------------------------------------------------- |
-| `panel-pais.js`           | Panel lateral: resumen, sensores, calendario, rankings, interruptor |
+| `panel-pais.js`           | Panel lateral: ruta, año, pestañas, meses, calendario, rankings     |
 | `calendario-historico.js` | Calendario de años × meses con la serie histórica                   |
+| `tabla-registros.js`      | Tabla de detecciones con orden, páginas y CSV (la usan los dos)     |
 | `panel-datos.js`          | Ventana «Datos guardados»: tabla de registros y descarga en CSV     |
 
 ### `datos/`
 
 | Archivo         | Qué hace                                                    |
 | --------------- | ----------------------------------------------------------- |
-| `datos-pais.js` | Qué países tienen datos, carga de archivos, fechas y conteos |
+| `datos-pais.js` | Qué países tienen datos, carga de archivos, fechas, conteos y series por región |
 | `datos.js`      | Filtros, resúmenes y conversión de registros a CSV          |
 
 ## Costumbres del código

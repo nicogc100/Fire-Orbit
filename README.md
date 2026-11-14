@@ -1,8 +1,10 @@
-# Fire Sat
+# FIRE ORBIT
 
 Globo 3D interactivo para explorar los incendios detectados desde el espacio por NASA FIRMS (sensores MODIS y VIIRS).
 Se elige un país en el globo, su territorio despega como una pieza 3D y muestra las detecciones por día, la serie
 histórica mensual, las regiones y ciudades, y un modo de **detalle satelital** con imágenes Sentinel-2 de 10 m.
+Al elegir una región, el panel muestra sus propias cifras: calendario, meses comparados con su historia y registros
+descargables.
 
 La app es estática: HTML, CSS y JavaScript, con datos preparados de antemano por scripts de Python. No necesita
 servidor propio ni base de datos.
@@ -49,9 +51,10 @@ docs/ARQUITECTURA.md       Cómo funciona el código, archivo por archivo
 
 ## Al editar el código
 
-Los archivos se cargan con una versión al final, por ejemplo `modo-pais.js?v=20261109`, para que el navegador no use
-una copia vieja guardada. Cuando cambies algo, busca `v=20261109` en toda la carpeta `tierra/` y reemplázalo por la
-fecha del día (por ejemplo `v=20261215`). Todos los archivos usan la misma versión, así que es un solo reemplazo.
+Los archivos se cargan con una versión al final, por ejemplo `modo-pais.js?v=20261109d`, para que el navegador no use
+una copia vieja guardada. Cuando cambies algo, busca `v=20261109d` en toda la carpeta `tierra/` y reemplázalo por la
+fecha del día (por ejemplo `v=20261215`; si ya usaste esa fecha, agrega una letra: `v=20261215b`). Todos los archivos
+usan la misma versión, así que es un solo reemplazo.
 
 ## Datos
 

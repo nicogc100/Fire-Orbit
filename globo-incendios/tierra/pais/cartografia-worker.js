@@ -2,12 +2,18 @@
 // ninguna de estas tareas puede competir con la cámara mientras el país se abre.
 import { ShapeUtils, Vector2 } from '../vendor/three.core.js';
 import { geoContains } from '../vendor/d3-geo.js';
-import { construirGeometria, indicesRegion } from './pieza-geo.js?v=20261109';
+import { construirGeometria, indicesRegion, crearContiene } from './pieza-geo.js?v=20261109d';
 import { cargarRelieve } from './relieve-pais.js';
 
 const vectores = puntos => puntos.map(p => new Vector2(p.x, p.y));
 const triangular = (contorno, huecos) => ShapeUtils.triangulateShape(vectores(contorno), huecos.map(vectores));
 const regionesPorPais = new Map();
+// Prueba de «punto en región» preparada una vez por país (es lo que más tarda la primera vez).
+const contienePorPais = new Map();
+const contieneDe = id => {
+  if (!contienePorPais.has(id)) contienePorPais.set(id, crearContiene(regionesPorPais.get(id), geoContains));
+  return contienePorPais.get(id);
+};
 let ciudades, cargaRelieve;
 
 async function leerDetalle(id) {
@@ -23,6 +29,7 @@ self.onmessage = async ({ data }) => {
     if (tipo === 'detalle') {
       const detalle = await leerDetalle(id);
       regionesPorPais.set(id, detalle.regiones);
+      contienePorPais.delete(id);
       const g = construirGeometria(null, triangular, detalle);
       self.postMessage({ tipo, pedido, id, geometria: g }, [
         g.esfera.buffer,
@@ -64,7 +71,7 @@ self.onmessage = async ({ data }) => {
       self.postMessage({ tipo, pedido, id, relieve }, relieve ? [relieve.datos.buffer] : []);
     } else if (tipo === 'regiones') {
       if (!regionesPorPais.has(id)) regionesPorPais.set(id, (await leerDetalle(id)).regiones);
-      const indices = indicesRegion(regionesPorPais.get(id), data.lons, data.lats, geoContains);
+      const indices = indicesRegion(regionesPorPais.get(id), data.lons, data.lats, contieneDe(id));
       self.postMessage({ tipo, pedido, id, indices }, [indices.buffer]);
     }
   } catch (error) {

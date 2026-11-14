@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { construirGeometria, construirPuntos, desproyectar, fueraDePieza, proyectar } from './pieza-geo.js?v=20261109';
-import { CapaSatelital } from '../satelite/capa-satelital.js?v=20261109';
+import { construirGeometria, construirPuntos, desproyectar, fueraDePieza, proyectar } from './pieza-geo.js?v=20261109d';
+import { CapaSatelital } from '../satelite/capa-satelital.js?v=20261109d';
 import {
   verticePieza,
   fragmentoPieza,
@@ -10,7 +10,7 @@ import {
   fragmentoPuntos,
   verticeCuadros,
   fragmentoCuadros,
-} from './modo-pais-shaders.js?v=20261109';
+} from './modo-pais-shaders.js?v=20261109d';
 
 // El mapa del país se dibuja en su propio lienzo, sobre el globo. El pase de nubes
 // no cambia y el globo sigue vivo al lado. La cámara del mapa copia la del globo,
@@ -92,7 +92,10 @@ export class ModoPais {
       uAparicion: { value: 0 },
       uSensores: { value: new THREE.Vector2(1, 1) },
       uIntensidad: { value: 1 },
+      uRegion: { value: -1 },
     };
+    // Región cuyos focos se muestran (null: todo el país).
+    this.regionFocos = null;
     this.p = 0;
     this.activo = false;
     this.llegado = false;
@@ -185,7 +188,7 @@ export class ModoPais {
       depthWrite: false,
       depthTest: false,
     });
-    this.worker = new Worker(new URL('./cartografia-worker.js?v=20261109', import.meta.url), { type: 'module' });
+    this.worker = new Worker(new URL('./cartografia-worker.js?v=20261109d', import.meta.url), { type: 'module' });
     this.worker.onmessage = ({ data }) => {
       const resolver = this.respuestas.get(data.pedido);
       this.respuestas.delete(data.pedido);
@@ -449,6 +452,8 @@ export class ModoPais {
     geo.setAttribute('aDia', new THREE.BufferAttribute(p.dia, 1));
     geo.setAttribute('aFrp', new THREE.BufferAttribute(p.frp, 1));
     geo.setAttribute('aSensor', new THREE.BufferAttribute(p.sensor, 1));
+    geo.setAttribute('aRegion', new THREE.BufferAttribute(new Float32Array(p.dia.length).fill(-1), 1));
+    p.conRegiones = false;
     this.puntos = new THREE.Points(geo, this.materialPuntos);
     this.puntos.frustumCulled = false;
     this.puntos.renderOrder = 2;
@@ -469,6 +474,32 @@ export class ModoPais {
     }
     return respuesta.indices;
   }
+  // Región de cada punto dibujado (indices: una por registro, en el orden de los datos).
+  ponerRegionesPuntos(indices) {
+    const p = this.datosPuntos;
+    if (!p || !this.puntos || indices.length !== this.datos?.registros.length) return;
+    const atributo = this.puntos.geometry.getAttribute('aRegion');
+    p.origen.forEach((i, k) => {
+      atributo.array[k] = indices[i];
+    });
+    atributo.needsUpdate = true;
+    p.region = atributo.array;
+    p.conRegiones = true;
+    this.aplicarFiltro();
+  }
+  // Solo los focos de una región (null: todo el país).
+  mostrarRegion(indice) {
+    this.regionFocos = Number.isInteger(indice) ? indice : null;
+    this.aplicarFiltro();
+  }
+  // Región de cualquier lista de coordenadas (por ejemplo, el centro de cada zona de la serie).
+  async regionesEn(lons, lats) {
+    if (!this.feature) return null;
+    const lo = Float32Array.from(lons),
+      la = Float32Array.from(lats);
+    const r = await this.consultar({ tipo: 'regiones', id: this.feature.id, lons: lo, lats: la }, [lo.buffer, la.buffer]);
+    return r.error ? null : r.indices;
+  }
   filtrar(filtro) {
     Object.assign(this.filtro, filtro);
     this.aplicarFiltro();
@@ -480,6 +511,8 @@ export class ModoPais {
     u.uDiaFin.value = f.fin;
     u.uCola.value = f.cola;
     u.uSensores.value.set(f.sensor === 'VIIRS' ? 0 : 1, f.sensor === 'MODIS' ? 0 : 1);
+    // Mientras se ubica cada foco en su región (unos segundos), no se muestran focos de otras regiones.
+    u.uRegion.value = this.regionFocos === null ? -1 : this.datosPuntos?.conRegiones ? this.regionFocos : -2;
     this.ajustarTamano(f.visibles);
     this.sucio = true;
   }
@@ -1113,9 +1146,10 @@ export class ModoPais {
     const m = new THREE.Matrix4()
       .multiplyMatrices(this.camara.projectionMatrix, this.camara.matrixWorldInverse)
       .multiply(this.grupo.matrixWorld).elements;
-    const { plano, dia, sensor, registros, origen } = this.datosPuntos;
+    const { plano, dia, sensor, registros, origen, region } = this.datosPuntos;
     const f = this.filtro,
-      u = this.uniformesPuntos.uSensores.value;
+      u = this.uniformesPuntos.uSensores.value,
+      enRegion = this.uniformesPuntos.uRegion.value;
     // Con cuadrados grandes (huella real a mucho zoom) vale todo el cuadrado.
     const radio = s => {
       if (!this.satelital) return 14;
@@ -1129,6 +1163,7 @@ export class ModoPais {
       distancia = Infinity;
     for (let i = 0; i < registros.length; i++) {
       if (dia[i] < f.ini - f.cola || dia[i] > f.fin || (sensor[i] < 0.5 ? u.x : u.y) === 0) continue;
+      if (enRegion !== -1 && region?.[i] !== enRegion) continue;
       const a = plano[i * 3],
         b = plano[i * 3 + 1],
         c = plano[i * 3 + 2];

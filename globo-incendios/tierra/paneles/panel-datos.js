@@ -1,4 +1,4 @@
-import { convertirCSV, MESES } from '../datos/datos.js';
+import { MESES } from '../datos/datos.js?v=20261109d';
 import {
   CATALOGO,
   cargarDatos,
@@ -6,28 +6,12 @@ import {
   cargarSerie,
   entradaAnio,
   filtrarTabla,
-  ordenarTabla,
-  etiquetaConfianza,
-  etiquetaSatelite,
   fechaDeDia,
-} from '../datos/datos-pais.js?v=20261109';
+} from '../datos/datos-pais.js?v=20261109d';
+import { TablaRegistros, nombreArchivo } from './tabla-registros.js?v=20261109d';
 
 const numero = new Intl.NumberFormat('es-CL');
-const decimal = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-const coordenada = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 const fechaLarga = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
-const POR_PAGINA = 50;
-const COLUMNAS = [
-  ['fecha', 'Fecha'],
-  [null, 'Hora UTC'],
-  ['sensor', 'Sensor'],
-  [null, 'Satélite'],
-  ['lat', 'Latitud'],
-  ['lon', 'Longitud'],
-  ['frp', 'FRP (MW)'],
-  [null, 'Confianza'],
-  [null, 'Periodo'],
-];
 
 export class PanelDatos {
   constructor({ dialogo, onVerPais, onCambio }) {
@@ -38,9 +22,6 @@ export class PanelDatos {
       mes: 0,
       dia: null,
       sensor: 'todos',
-      orden: 'fecha',
-      direccion: 'asc',
-      pagina: 0,
     };
     dialogo.innerHTML = `
       <div class="datos-marco">
@@ -57,7 +38,7 @@ export class PanelDatos {
                 <p data-parte="resumen" role="status"></p>
               </div>
               <div class="detalle-acciones">
-                <button type="button" class="boton-secundario" data-accion="csv"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span data-parte="csv">Descargar CSV</span></button>
+                <button type="button" class="boton-secundario" data-parte="boton-csv"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span data-parte="csv">Descargar CSV</span></button>
                 <button type="button" class="boton-primario" data-accion="globo">Ver en el globo</button>
               </div>
             </div>
@@ -71,8 +52,8 @@ export class PanelDatos {
             <div class="paginacion">
               <span data-parte="rango" aria-live="polite"></span>
               <div>
-                <button type="button" class="boton-secundario" data-accion="anterior">Anterior</button>
-                <button type="button" class="boton-secundario" data-accion="siguiente">Siguiente</button>
+                <button type="button" class="boton-secundario" data-parte="anterior">Anterior</button>
+                <button type="button" class="boton-secundario" data-parte="siguiente">Siguiente</button>
               </div>
             </div>
             <details class="procedencia">
@@ -84,19 +65,26 @@ export class PanelDatos {
       </div>`;
     this.parte = nombre => dialogo.querySelector(`[data-parte="${nombre}"]`);
     this.form = dialogo.querySelector('form');
+    this.tablaUI = new TablaRegistros({
+      tabla: this.parte('tabla'),
+      rango: this.parte('rango'),
+      anterior: this.parte('anterior'),
+      siguiente: this.parte('siguiente'),
+      csv: this.parte('boton-csv'),
+      etiquetaCSV: this.parte('csv'),
+    });
     dialogo.addEventListener('click', e => this.alHacerClic(e));
     dialogo.addEventListener('close', () => this.onCambio?.(null));
     this.form.addEventListener('change', e => {
       const { name, value } = e.target;
       this.estado[name] = name === 'mes' || name === 'anio' ? +value : value;
       if (name === 'mes' || name === 'anio') this.estado.dia = null;
+      this.tablaUI.pagina = 0;
       if (name === 'anio') {
         this.estado.mes = 0;
-        this.estado.pagina = 0;
         this.cargar();
         return;
       }
-      this.estado.pagina = 0;
       this.pintarTabla();
     });
     this.form.addEventListener('submit', e => e.preventDefault());
@@ -109,10 +97,8 @@ export class PanelDatos {
       sensor,
       anio,
       mes: 0,
-      pagina: 0,
-      orden: 'fecha',
-      direccion: 'asc',
     });
+    this.tablaUI.reiniciarOrden();
     if (!this.dialogo.open) this.dialogo.showModal();
     await this.cargar();
   }
@@ -129,8 +115,7 @@ export class PanelDatos {
     this.form.anio.value = entrada.anio;
     this.parte('titulo').textContent = CATALOGO[id].nombre;
     this.parte('resumen').textContent = 'Cargando registros…';
-    this.parte('tabla').innerHTML =
-      '<div class="tabla-cargando"><div class="esqueleto"></div><div class="esqueleto"></div><div class="esqueleto"></div></div>';
+    this.tablaUI.cargando();
     this.pintarConjuntos();
     try {
       const [datos, procedencia, serie] = await Promise.all([
@@ -211,82 +196,35 @@ export class PanelDatos {
         ? 'Año en curso: VIIRS S-NPP desde la API de FIRMS (filtrado al territorio y sin fuentes industriales). Filtros: solo vegetación.'
         : `Filtros: ${p?.filtros?.[0] ?? 'type == 0 (vegetación)'}.`;
   }
-  seleccion() {
-    const { mes, dia, sensor, orden, direccion } = this.estado;
-    return ordenarTabla(filtrarTabla(this.datos, { mes, dia, sensor }), orden, direccion);
-  }
   pintarTabla() {
     if (!this.datos) return;
     const e = this.estado;
-    const lista = this.seleccion();
-    this.lista = lista;
+    const lista = filtrarTabla(this.datos, e);
     this.form.mes.value = e.mes;
     this.form.sensor.value = e.sensor;
     const quitar = this.dialogo.querySelector('[data-accion="quitar-dia"]');
     quitar.hidden = e.dia === null;
-    if (e.dia !== null)
+    if (e.dia !== null) {
       quitar.textContent = `${fechaLarga.format(new Date(`${fechaDeDia(e.dia, this.datos.anio)}T00:00:00Z`))} ×`;
-    if (e.dia !== null) quitar.setAttribute('aria-label', 'Quitar filtro de día');
+      quitar.setAttribute('aria-label', 'Quitar filtro de día');
+    }
     this.parte('resumen').textContent =
       `${numero.format(lista.length)} de ${numero.format(this.datos.registros.length)} detecciones. Cada fila es un punto de calor, no un incendio único.`;
-    this.parte('csv').textContent = `Descargar CSV (${numero.format(lista.length)})`;
-    const paginas = Math.max(1, Math.ceil(lista.length / POR_PAGINA));
-    e.pagina = Math.min(e.pagina, paginas - 1);
-    const inicio = e.pagina * POR_PAGINA;
-    const visibles = lista.slice(inicio, inicio + POR_PAGINA);
-    const cabeza = COLUMNAS.map(([campo, nombre]) => {
-      const numerica = ['lat', 'lon', 'frp'].includes(campo) ? ' class="num"' : '';
-      if (!campo) return `<th scope="col"${numerica}>${nombre}</th>`;
-      const activo = e.orden === campo;
-      const sort = activo ? (e.direccion === 'asc' ? 'ascending' : 'descending') : 'none';
-      return `<th scope="col"${numerica} aria-sort="${sort}"><button type="button" data-orden="${campo}">${nombre}<span aria-hidden="true">${activo ? (e.direccion === 'asc' ? ' ↑' : ' ↓') : ''}</span></button></th>`;
-    }).join('');
-    const cuerpo = visibles
-      .map(
-        r => `<tr>
-      <td>${fechaLarga.format(new Date(`${r.fecha}T00:00:00Z`))}</td>
-      <td>${r.hora.slice(0, 2)}:${r.hora.slice(2)}</td>
-      <td><i class="marca-sensor ${r.sensor}" aria-hidden="true"></i>${r.sensor}</td>
-      <td>${etiquetaSatelite(r.satelite)}</td>
-      <td class="num">${coordenada.format(r.lat)}</td>
-      <td class="num">${coordenada.format(r.lon)}</td>
-      <td class="num">${decimal.format(r.frp)}</td>
-      <td>${etiquetaConfianza(r.confianza)}</td>
-      <td>${r.periodo === 'D' ? 'Día' : 'Noche'}</td></tr>`,
-      )
-      .join('');
-    this.parte('tabla').innerHTML = lista.length
-      ? `<table class="tabla-registros"><caption class="solo-lectores">Detecciones de ${CATALOGO[e.id].nombre}</caption><thead><tr>${cabeza}</tr></thead><tbody>${cuerpo}</tbody></table>`
-      : '<div class="tabla-error"><p>Ningún registro cumple estos filtros. Prueba con otro mes o con ambos sensores.</p></div>';
-    this.parte('rango').textContent = lista.length
-      ? `${numero.format(inicio + 1)}–${numero.format(inicio + visibles.length)} de ${numero.format(lista.length)}`
-      : 'Sin registros';
-    this.dialogo.querySelector('[data-accion="anterior"]').disabled = e.pagina === 0;
-    this.dialogo.querySelector('[data-accion="siguiente"]').disabled = e.pagina >= paginas - 1;
-    this.dialogo.querySelector('[data-accion="csv"]').disabled = !lista.length;
-  }
-  descargar() {
-    const e = this.estado;
-    const contenido = convertirCSV(this.lista);
-    const url = URL.createObjectURL(new Blob([`\uFEFF${contenido}`], { type: 'text/csv;charset=utf-8' }));
-    const enlace = document.createElement('a');
-    enlace.href = url;
     const sufijo = [
-      e.dia !== null ? fechaDeDia(e.dia, this.datos.anio) : e.mes ? MESES[e.mes - 1].toLowerCase() : null,
-      e.sensor !== 'todos' ? e.sensor.toLowerCase() : null,
-    ]
-      .filter(Boolean)
-      .join('-');
-    enlace.download = `fire-sat-${CATALOGO[e.id].nombre.toLowerCase()}-${this.datos.anio}${sufijo ? `-${sufijo}` : ''}.csv`;
-    enlace.click();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
+      e.dia !== null ? fechaDeDia(e.dia, this.datos.anio) : e.mes ? MESES[e.mes - 1] : null,
+      e.sensor !== 'todos' ? e.sensor : null,
+    ];
+    this.tablaUI.poner(lista, {
+      nombre: nombreArchivo(CATALOGO[e.id].nombre, this.datos.anio, ...sufijo),
+      titulo: `Detecciones de ${CATALOGO[e.id].nombre}`,
+      vacio: 'Ningún registro cumple estos filtros. Prueba con otro mes o con ambos sensores.',
+    });
   }
   alHacerClic(e) {
     if (e.target === this.dialogo) return this.dialogo.close();
     const accion = e.target.closest('[data-accion]')?.dataset.accion;
     const s = this.estado;
     if (accion === 'cerrar') return this.dialogo.close();
-    if (accion === 'csv') return this.descargar();
     if (accion === 'reintentar') return this.cargar();
     if (accion === 'globo') {
       const { id, dia, sensor, anio } = s;
@@ -295,31 +233,14 @@ export class PanelDatos {
     }
     if (accion === 'quitar-dia') {
       s.dia = null;
-      s.pagina = 0;
+      this.tablaUI.pagina = 0;
       return this.pintarTabla();
-    }
-    if (accion === 'anterior' || accion === 'siguiente') {
-      s.pagina += accion === 'anterior' ? -1 : 1;
-      this.pintarTabla();
-      this.parte('tabla').scrollTop = 0;
-      return;
     }
     const conjunto = e.target.closest('[data-conjunto]')?.dataset.conjunto;
     if (conjunto && conjunto !== s.id) {
-      Object.assign(s, { id: conjunto, anio: null, dia: null, mes: 0, sensor: 'todos', pagina: 0 });
+      Object.assign(s, { id: conjunto, anio: null, dia: null, mes: 0, sensor: 'todos' });
+      this.tablaUI.reiniciarOrden();
       this.cargar();
-      return;
-    }
-    const orden = e.target.closest('[data-orden]')?.dataset.orden;
-    if (orden) {
-      if (s.orden === orden) s.direccion = s.direccion === 'asc' ? 'desc' : 'asc';
-      else {
-        s.orden = orden;
-        s.direccion = orden === 'frp' ? 'desc' : 'asc';
-      }
-      s.pagina = 0;
-      this.pintarTabla();
-      this.dialogo.querySelector(`[data-orden="${orden}"]`)?.focus();
     }
   }
 }

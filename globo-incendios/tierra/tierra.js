@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { HandFlow } from './nubes/nubes-interactivas.js?v=20261109';
+import { HandFlow } from './nubes/nubes-interactivas.js?v=20261109d';
 import { createCloudNoiseTexture } from './nubes/cloud-volume.js';
-import { CloudLayer } from './nubes/capa-nubes.js?v=20261109';
-import { Countries } from './globo/paises.js?v=20261109';
-import { ModoPais } from './pais/modo-pais.js?v=20261109';
-import { PanelPais } from './paneles/panel-pais.js?v=20261109';
-import { PanelDatos } from './paneles/panel-datos.js?v=20261109';
+import { CloudLayer } from './nubes/capa-nubes.js?v=20261109d';
+import { Countries } from './globo/paises.js?v=20261109d';
+import { ModoPais } from './pais/modo-pais.js?v=20261109d';
+import { PanelPais } from './paneles/panel-pais.js?v=20261109d';
+import { PanelDatos } from './paneles/panel-datos.js?v=20261109d';
 import {
   entradaCatalogo,
   cargarDatos,
@@ -14,10 +14,10 @@ import {
   cargarCeldas,
   sumarCeldas,
   fechaDeDia,
-} from './datos/datos-pais.js?v=20261109';
-import { vertexShader, surfaceShader } from './globo/globo-shaders.js?v=20261109';
-import { actualizarURL, leerInicial } from './estado-url.js?v=20261109';
-import { crearFichaPunto } from './pais/ficha-punto.js?v=20261109';
+} from './datos/datos-pais.js?v=20261109d';
+import { vertexShader, surfaceShader } from './globo/globo-shaders.js?v=20261109d';
+import { actualizarURL, leerInicial } from './estado-url.js?v=20261109d';
+import { crearFichaPunto } from './pais/ficha-punto.js?v=20261109d';
 
 const canvas = document.querySelector('#tierra');
 const loading = document.querySelector('#carga');
@@ -99,7 +99,7 @@ async function main() {
     if (!response.ok) throw new Error('No se pudo cargar el volumen de nubes');
     return response.arrayBuffer();
   });
-  const normalGuideRequest = fetch('./assets/nubes-relieve.rgba.gz?v=20261109').then(async response => {
+  const normalGuideRequest = fetch('./assets/nubes-relieve.rgba.gz?v=20261109d').then(async response => {
     if (!response.ok) throw new Error('No se pudo cargar el relieve de las nubes');
     const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
     const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
@@ -110,7 +110,7 @@ async function main() {
     }
     return bytes;
   });
-  const volumeRequest = fetch('./assets/nubes-esfericas.rg.gz?v=20261109').then(async response => {
+  const volumeRequest = fetch('./assets/nubes-esfericas.rg.gz?v=20261109d').then(async response => {
     if (!response.ok) throw new Error('No se pudo cargar el volumen de nubes');
     const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
     const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
@@ -591,6 +591,8 @@ async function main() {
     atribucion: document.querySelector('#atribucion-satelital'),
     onVista: vista => {
       panelPais.mostrarVista(vista);
+      // Con una región abierta, el mapa muestra solo sus focos, igual que el panel.
+      modo.mostrarRegion(vista?.region.indice ?? null);
       if (vista) {
         giroLado = false;
         pintarGiro(false);
@@ -604,12 +606,18 @@ async function main() {
     onCerrar: cerrarPais,
     onPais: id => solicitarPais(id, {}),
     onReintentar: () => abrirPais(panelPais.feature),
-    onRegistros: filtro => panelDatos.abrir(filtro),
     onPeriodo: sel => ponerMapaSerie(sel),
     onVolverVista: () => {
       modo.volverVista();
       piezaCanvas.focus({ preventScroll: true });
     },
+    // «Chile» en la ruta: vuelve a la vista nacional. El año, el mes y la pestaña no cambian.
+    onNacional: () => {
+      modo.reiniciarVista();
+      panelPaisRaiz.focus({ preventScroll: true });
+    },
+    onRegion: indice => modo.seleccionarRegion(indice),
+    onZonas: (lons, lats) => modo.regionesEn(lons, lats),
     // Solo cambia el dibujo del mapa: fecha, sensor, región, ciudad y zoom quedan igual.
     onSatelital: activo => {
       stage.dataset.detalle = activo ? 'si' : 'no';
@@ -693,7 +701,8 @@ async function main() {
     if (entrada.soloSerie) {
       // Países sin detecciones guardadas: solo el calendario histórico, sin puntos en el mapa.
       modo.quitarPuntos();
-      if (pedido === pedidoPais) panelPais.ponerSoloSerie();
+      if (pedido === pedidoPais)
+        panelPais.ponerSoloSerie(inicial.anio ? { anio: +inicial.anio, mes: Number.isInteger(inicial.mes) ? inicial.mes : null } : null);
       return;
     }
     cargarDatos(entrada)
@@ -706,7 +715,10 @@ async function main() {
         panelPais.omitidos = modo.datosPuntos?.omitidos ?? panelPais.omitidos;
         panelPais.actualizar();
         const indices = await modo.regionesDe(datos, country.id);
-        if (pedido === pedidoPais && indices) panelPais.ponerRegiones(detalle.nombresRegion, indices);
+        if (pedido === pedidoPais && indices) {
+          panelPais.ponerRegiones(detalle.nombresRegion, indices);
+          modo.ponerRegionesPuntos(indices);
+        }
       })
       .catch(error => {
         console.error('Datos del país:', error);

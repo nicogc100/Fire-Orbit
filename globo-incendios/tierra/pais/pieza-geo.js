@@ -395,6 +395,59 @@ export function construirPuntos(geometria, registros, dias) {
   };
 }
 
+// Prueba rápida de «punto dentro de la región»: un rayo horizontal (regla par/impar) con las
+// aristas agrupadas por franjas de latitud, así cada punto revisa solo las pocas aristas de su
+// franja. Con regiones de miles de vértices, la prueba esférica de d3 tardaba unos 20 s en un año
+// de Chile. Devuelve null si la región cruza el antimeridiano: ahí sigue la prueba esférica.
+const FRANJA = 0.05;
+export function localizadorRegion(region) {
+  const g = region.geometry;
+  const polys = g?.type === 'Polygon' ? [g.coordinates] : g?.type === 'MultiPolygon' ? g.coordinates : null;
+  if (!polys) return null;
+  let s = Infinity,
+    n = -Infinity;
+  for (const poly of polys)
+    for (const anillo of poly)
+      for (let i = 0, j = anillo.length - 1; i < anillo.length; j = i++) {
+        if (Math.abs(anillo[i][0] - anillo[j][0]) > 180) return null;
+        s = Math.min(s, anillo[i][1]);
+        n = Math.max(n, anillo[i][1]);
+      }
+  const nf = Math.max(1, Math.floor((n - s) / FRANJA) + 1);
+  const franjas = Array.from({ length: nf }, () => []);
+  for (const poly of polys)
+    for (const anillo of poly)
+      for (let i = 0, j = anillo.length - 1; i < anillo.length; j = i++) {
+        const [x1, y1] = anillo[j],
+          [x2, y2] = anillo[i];
+        if (y1 === y2) continue;
+        const a = Math.floor((Math.min(y1, y2) - s) / FRANJA),
+          b = Math.min(nf - 1, Math.floor((Math.max(y1, y2) - s) / FRANJA));
+        for (let f = a; f <= b; f++) franjas[f].push(x1, y1, x2, y2);
+      }
+  const tablas = franjas.map(lista => Float64Array.from(lista));
+  return (lon, lat) => {
+    const f = Math.floor((lat - s) / FRANJA);
+    if (!(f >= 0 && f < nf)) return false;
+    const t = tablas[f];
+    let dentro = false;
+    for (let k = 0; k < t.length; k += 4) {
+      const y1 = t[k + 1],
+        y2 = t[k + 3];
+      if (y1 > lat !== y2 > lat && lon < t[k] + ((lat - y1) / (y2 - y1)) * (t[k + 2] - t[k])) dentro = !dentro;
+    }
+    return dentro;
+  };
+}
+// contiene(region, [lon, lat]) con el localizador rápido cuando existe y la prueba esférica si no.
+export function crearContiene(regiones, esferica) {
+  const rapidos = new Map(regiones.map(r => [r, localizadorRegion(r)]));
+  return (region, punto) => {
+    const rapido = rapidos.get(region);
+    return rapido ? rapido(punto[0], punto[1]) : esferica(region, punto);
+  };
+}
+
 // Región de cada registro según los límites administrativos. Los focos se agrupan
 // mucho en el espacio, así que una rejilla de memoria evita repetir comprobaciones.
 export function indicesRegion(regiones, lons, lats, contiene) {

@@ -107,8 +107,10 @@ export class CalendarioHistorico {
   // nodo: contenedor; tip: elemento del tooltip compartido; onAnio(anio): abrir ese año en detalle.
   // detalle: si al tocar un año se abre su detalle diario (solo países con detecciones guardadas).
   // onSeleccion({anio, mes}): países sin detalle diario; el mapa muestra el año o mes elegido.
-  constructor({ nodo, tip, onAnio, onSeleccion, detalle = true }) {
-    Object.assign(this, { nodo, tip, onAnio, onSeleccion, detalle });
+  // onMes(anio, mes): con detalle diario, tocar un mes abre ese año filtrado en ese mes.
+  // territorio: nombre de la región mostrada (null: el país completo).
+  constructor({ nodo, tip, onAnio, onSeleccion, onMes, detalle = true, territorio = null }) {
+    Object.assign(this, { nodo, tip, onAnio, onSeleccion, onMes, detalle, territorio });
     this.seleccion = null;
     this.modo = 'anomalia';
     nodo.addEventListener('click', e => {
@@ -120,6 +122,10 @@ export class CalendarioHistorico {
         return;
       }
       const celda = e.target.closest('.hc-celda:not(.vacia)');
+      if (celda && this.onMes) {
+        this.onMes(+celda.dataset.anioCelda, +celda.dataset.mes);
+        return;
+      }
       if (celda && this.onSeleccion) {
         this.seleccionar(+celda.dataset.anioCelda, +celda.dataset.mes);
         return;
@@ -242,7 +248,7 @@ export class CalendarioHistorico {
 
     this.nodo.innerHTML = `
       <div class="bloque-cabeza">
-        <h3 id="titulo-historico">Historial ${primero}–${ultimo}</h3>
+        <h3 id="titulo-historico">Historial ${primero}–${ultimo}${this.territorio ? ' · <span class="hc-territorio"></span>' : ''}</h3>
         <div class="hc-modos" role="group" aria-label="Color del calendario">
           <button type="button" data-modo-cal="anomalia" aria-pressed="${anomalia}">Anomalía</button>
           <button type="button" data-modo-cal="conteo" aria-pressed="${!anomalia}">Conteo</button>
@@ -254,7 +260,7 @@ export class CalendarioHistorico {
           : 'Celdas de ~1 km con fuego por mes, MODIS y VIIRS harmonizados en una sola serie.'
       }</p>
       <ul class="hc-indicadores">
-        ${u ? `<li><span>Último mes completo</span><strong>${MESES[u.mes]} ${u.anio}: ${decimal.format(u.razon)} × lo normal</strong><small>${numero.format(u.valor)} frente a ${numero.format(u.normal)} habituales</small></li>` : ''}
+        ${u ? `<li><span>Último mes completo</span><strong>${MESES[u.mes]} ${u.anio}: ${u.razon != null ? `${decimal.format(u.razon)} × lo normal` : `${numero.format(u.valor)} celdas`}</strong><small>${numero.format(u.valor)} frente a ${numero.format(u.normal)} habituales</small></li>` : ''}
         ${curso}
         ${ind.peorAnio ? `<li><span>Año con más actividad</span><strong>${ind.peorAnio}</strong><small>${numero.format(ind.totalPeor)} celdas con fuego</small></li>` : ''}
         <li><span>Mes más activo habitualmente</span><strong>${MESES[ind.mesTipico]}</strong><small>mediana ${numero.format(serie.por_mes_calendario.mediana[ind.mesTipico])}</small></li>
@@ -265,7 +271,9 @@ export class CalendarioHistorico {
         ${filas}
       </div>
       <div class="leyenda hc-leyenda">${leyenda}</div>
-      <p class="hc-nota">${this.detalle ? 'Toca un año para ver sus detecciones día a día. ' : this.onSeleccion ? 'Toca un año o un mes para verlo en el mapa. ' : ''}Las casillas rayadas tienen datos incompletos.
+      <p class="hc-nota">${serie.region ? `Región calculada con zonas de ${String(serie.metodo?.zonas_grados ?? 0.25).replace('.', ',')}° (unos ${Math.round((serie.metodo?.zonas_grados ?? 0.25) * 111)} km): cada zona cuenta entera en la región donde está su centro. ` : ''}${this.onMes ? 'Toca un mes para verlo en el mapa, o un año para su detalle día a día. ' : this.detalle ? 'Toca un año para ver sus detecciones día a día. ' : this.onSeleccion ? 'Toca un año o un mes para verlo en el mapa. ' : ''}Las casillas rayadas tienen datos incompletos.
         ${metodo.error_anual_mediano_pct != null ? `${metodo.anios_traslape ? `Antes de ${metodo.anios_traslape[0]}` : 'Los años sin VIIRS'} se reconstruyen desde MODIS (error anual típico ±${decimal.format(metodo.error_anual_mediano_pct)} %).` : ''}</p>`;
+    const t = this.nodo.querySelector('.hc-territorio');
+    if (t) t.textContent = this.territorio;
   }
 }

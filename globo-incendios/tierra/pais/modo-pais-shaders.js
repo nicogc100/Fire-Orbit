@@ -106,12 +106,13 @@ export const fragmentoLinea = /* glsl */ `
   }`;
 export const verticePuntos = /* glsl */ `
   attribute vec3 aEsfera;
-  attribute float aDia, aFrp, aSensor;
-  uniform float uMorph, uDiaIni, uDiaFin, uCola, uTamano, uAparicion;
+  attribute float aDia, aFrp, aSensor, aRegion;
+  uniform float uMorph, uDiaIni, uDiaFin, uCola, uTamano, uAparicion, uRegion;
   uniform vec2 uSensores;
   varying float vFrp, vFuerza;
   void main() {
-    float activo = aSensor < .5 ? uSensores.x : uSensores.y;
+    // Con una región elegida, solo sus focos (uRegion < 0: todo el país).
+    float activo = (aSensor < .5 ? uSensores.x : uSensores.y) * (uRegion < -.5 || abs(aRegion - uRegion) < .5 ? 1.0 : 0.0);
     float dentro = step(uDiaIni - uCola, aDia) * step(aDia, uDiaFin) * activo;
     float cola = uCola > 0.0 && aDia < uDiaIni ? 1.0 - (uDiaIni - aDia) / (uCola + 1.0) : 1.0;
     vFrp = aFrp;
@@ -138,12 +139,12 @@ export const fragmentoPuntos = /* glsl */ `
 // sólido y con contorno oscuro; grande, solo contorno y relleno tenue: deja ver el terreno.
 export const verticeCuadros = /* glsl */ `
   attribute vec3 aEsfera;
-  attribute float aDia, aFrp, aSensor;
-  uniform float uMorph, uDiaIni, uDiaFin, uCola, uAparicion, uPxPorMetro, uTamMin, uTamMax;
+  attribute float aDia, aFrp, aSensor, aRegion;
+  uniform float uMorph, uDiaIni, uDiaFin, uCola, uAparicion, uPxPorMetro, uTamMin, uTamMax, uRegion;
   uniform vec2 uSensores;
   varying float vFrp, vFuerza, vTam;
   void main() {
-    float activo = aSensor < .5 ? uSensores.x : uSensores.y;
+    float activo = (aSensor < .5 ? uSensores.x : uSensores.y) * (uRegion < -.5 || abs(aRegion - uRegion) < .5 ? 1.0 : 0.0);
     float dentro = step(uDiaIni - uCola, aDia) * step(aDia, uDiaFin) * activo;
     float cola = uCola > 0.0 && aDia < uDiaIni ? 1.0 - (uDiaIni - aDia) / (uCola + 1.0) : 1.0;
     vFrp = aFrp;

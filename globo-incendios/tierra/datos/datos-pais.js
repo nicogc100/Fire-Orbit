@@ -25,6 +25,7 @@ export async function cargarIndice() {
   return indiceMundo;
 }
 export const datosMundo = id => indiceMundo.get(String(id)) || null;
+export const paisesMundo = () => [...indiceMundo.values()];
 
 // Mapa del país: celdas (0,25° a 1°) × meses, harmonizado. Uint16 comprimido con gzip.
 const mapas = new Map();
@@ -263,4 +264,140 @@ export function etiquetaConfianza(valor) {
 }
 export function etiquetaSatelite(valor) {
   return valor === 'N' ? 'Suomi NPP' : valor;
+}
+
+// ---------- Territorio: país completo o una región ----------
+// Zonas con conteo mensual harmonizado. Chile usa su grilla propia de 0,25° (llega hasta el mes
+// en curso); el resto, las celdas del índice mundial. Mismo formato que cargarCeldas.
+const zonas = new Map();
+export function cargarZonas(entrada) {
+  if (!entrada) return Promise.reject(new Error('Sin país'));
+  if (!entrada.grilla) return cargarCeldas(entrada.id);
+  if (!zonas.has(entrada.id)) {
+    zonas.set(
+      entrada.id,
+      pedirJSON(`../data/${entrada.grilla}`)
+        .then(g => {
+          const n = g.meses.length;
+          const valores = new Float32Array(g.celdas.length * n);
+          g.celdas.forEach((c, i) => {
+            for (const [m, v] of c.v) valores[i * n + m] = v;
+          });
+          const [a0, m0] = g.meses[0].split('-').map(Number);
+          return {
+            celda_grados: g.celda_grados,
+            celdas: g.celdas.map(c => [c.lat, c.lon]),
+            n_meses: n,
+            escala: 1,
+            valores,
+            a0,
+            m0: m0 - 1,
+          };
+        })
+        .catch(error => {
+          zonas.delete(entrada.id);
+          throw error;
+        }),
+    );
+  }
+  return zonas.get(entrada.id);
+}
+
+const mediana = lista => {
+  const v = lista.filter(x => x != null).sort((a, b) => a - b);
+  if (!v.length) return 0;
+  const k = (v.length - 1) / 2;
+  return (v[Math.floor(k)] + v[Math.ceil(k)]) / 2;
+};
+
+// Serie mensual de una región con el mismo formato que la nacional, para el calendario histórico.
+// regionDeZona: índice de región del centro de cada zona (una zona cuenta entera en una sola región).
+export function serieDeRegion(mapa, regionDeZona, indice, nacional) {
+  const porClave = new Map();
+  for (let i = 0; i < mapa.n_meses; i++) {
+    const t = mapa.m0 + i;
+    const clave = `${mapa.a0 + Math.floor(t / 12)}-${String((t % 12) + 1).padStart(2, '0')}`;
+    let s = 0;
+    for (let c = 0; c < mapa.celdas.length; c++) {
+      if (regionDeZona[c] === indice) s += mapa.valores[c * mapa.n_meses + i];
+    }
+    porClave.set(clave, Math.round(s * mapa.escala * 10) / 10);
+  }
+  const meses = nacional.meses.filter(m => porClave.has(m));
+  const posicion = new Map(nacional.meses.map((m, i) => [m, i]));
+  const armonizado = meses.map(m => porClave.get(m));
+  const [b0, b1] = nacional.por_mes_calendario?.anios_base || [2003, 2025];
+  const medianas = Array.from({ length: 12 }, (_, mes) =>
+    mediana(
+      meses
+        .map((m, i) => ({ anio: +m.slice(0, 4), mes: +m.slice(5, 7) - 1, v: armonizado[i], i: posicion.get(m) }))
+        .filter(x => x.mes === mes && x.anio >= b0 && x.anio <= b1 && !nacional.incompleto?.[x.i])
+        .map(x => x.v),
+    ),
+  );
+  return {
+    ...nacional,
+    region: true,
+    meses,
+    armonizado,
+    origen: meses.map(m => nacional.origen?.[posicion.get(m)] ?? ''),
+    incompleto: meses.map(m => nacional.incompleto?.[posicion.get(m)] ?? false),
+    modis: undefined,
+    viirs: undefined,
+    por_mes_calendario: { mediana: medianas, anios_base: [b0, b1] },
+    metodo: { ...nacional.metodo, zonas_grados: mapa.celda_grados },
+  };
+}
+
+// Referencia histórica de un mes (o del año completo si mes es null) en una serie harmonizada.
+// Es una comparación con el pasado: no anticipa lo que vaya a ocurrir.
+export function referenciaHistorica(serie, anio, mes = null) {
+  if (!serie) return null;
+  const pos = new Map(serie.meses.map((m, i) => [m, i]));
+  const med = serie.por_mes_calendario.mediana;
+  const [b0, b1] = serie.por_mes_calendario.anios_base || [2003, 2025];
+  const clave = m => `${anio}-${String(m + 1).padStart(2, '0')}`;
+  if (mes !== null) {
+    const i = pos.get(clave(mes));
+    if (i === undefined) return null;
+    const valor = serie.armonizado[i];
+    return {
+      valor,
+      normal: med[mes],
+      razon: med[mes] > 0 ? valor / med[mes] : null,
+      incompleto: Boolean(serie.incompleto?.[i]),
+      base: [b0, b1],
+    };
+  }
+  const totalDe = a => {
+    let s = 0,
+      n = 0,
+      incompleto = false;
+    for (let m = 0; m < 12; m++) {
+      const i = pos.get(`${a}-${String(m + 1).padStart(2, '0')}`);
+      if (i === undefined) continue;
+      s += serie.armonizado[i] || 0;
+      n++;
+      incompleto ||= Boolean(serie.incompleto?.[i]);
+    }
+    return { s, completo: n === 12 && !incompleto };
+  };
+  const actual = totalDe(anio);
+  const normales = [];
+  for (let a = b0; a <= b1; a++) {
+    const t = totalDe(a);
+    if (t.completo) normales.push(t.s);
+  }
+  const normal = mediana(normales);
+  return {
+    valor: actual.s,
+    normal,
+    razon: normal > 0 ? actual.s / normal : null,
+    incompleto: !actual.completo,
+    base: [b0, b1],
+  };
+}
+// Mediana de cada mes del calendario: qué meses suelen tener más fuego.
+export function estacionalidad(serie) {
+  return serie?.por_mes_calendario.mediana.map((valor, mes) => ({ mes, valor })) ?? [];
 }
