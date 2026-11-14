@@ -1,7 +1,7 @@
 // Tabla de detecciones con orden, páginas y descarga CSV.
 // La usan la ventana «Datos guardados» y la pestaña «Datos» del panel del país.
-import { convertirCSV } from '../datos/datos.js?v=20261109d';
-import { ordenarTabla, etiquetaConfianza, etiquetaSatelite } from '../datos/datos-pais.js?v=20261109d';
+import { convertirCSV } from '../datos/datos.js?v=20261114ia';
+import { ordenarTabla, etiquetaConfianza, etiquetaSatelite } from '../datos/datos-pais.js?v=20261114ia';
 
 const numero = new Intl.NumberFormat('es-CL');
 const decimal = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });

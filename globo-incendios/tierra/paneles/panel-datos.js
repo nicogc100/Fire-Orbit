@@ -1,4 +1,4 @@
-import { MESES } from '../datos/datos.js?v=20261109d';
+import { MESES } from '../datos/datos.js?v=20261114ia';
 import {
   CATALOGO,
   cargarDatos,
@@ -7,8 +7,8 @@ import {
   entradaAnio,
   filtrarTabla,
   fechaDeDia,
-} from '../datos/datos-pais.js?v=20261109d';
-import { TablaRegistros, nombreArchivo } from './tabla-registros.js?v=20261109d';
+} from '../datos/datos-pais.js?v=20261114ia';
+import { TablaRegistros, nombreArchivo } from './tabla-registros.js?v=20261114ia';
 
 const numero = new Intl.NumberFormat('es-CL');
 const fechaLarga = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });

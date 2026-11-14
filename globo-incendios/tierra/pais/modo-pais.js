@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { construirGeometria, construirPuntos, desproyectar, fueraDePieza, proyectar } from './pieza-geo.js?v=20261109d';
-import { CapaSatelital } from '../satelite/capa-satelital.js?v=20261109d';
+import { construirGeometria, construirPuntos, desproyectar, fueraDePieza, proyectar } from './pieza-geo.js?v=20261114ia';
+import { CapaSatelital } from '../satelite/capa-satelital.js?v=20261114ia';
 import {
   verticePieza,
   fragmentoPieza,
@@ -10,7 +10,7 @@ import {
   fragmentoPuntos,
   verticeCuadros,
   fragmentoCuadros,
-} from './modo-pais-shaders.js?v=20261109d';
+} from './modo-pais-shaders.js?v=20261114ia';
 
 // El mapa del país se dibuja en su propio lienzo, sobre el globo. El pase de nubes
 // no cambia y el globo sigue vivo al lado. La cámara del mapa copia la del globo,
@@ -188,7 +188,7 @@ export class ModoPais {
       depthWrite: false,
       depthTest: false,
     });
-    this.worker = new Worker(new URL('./cartografia-worker.js?v=20261109d', import.meta.url), { type: 'module' });
+    this.worker = new Worker(new URL('./cartografia-worker.js?v=20261114ia', import.meta.url), { type: 'module' });
     this.worker.onmessage = ({ data }) => {
       const resolver = this.respuestas.get(data.pedido);
       this.respuestas.delete(data.pedido);

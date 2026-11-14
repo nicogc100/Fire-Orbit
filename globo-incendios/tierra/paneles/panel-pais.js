@@ -9,9 +9,9 @@ import {
   cargarZonas,
   serieDeRegion,
   referenciaHistorica,
-} from '../datos/datos-pais.js?v=20261109d';
-import { CalendarioHistorico } from './calendario-historico.js?v=20261109d';
-import { TablaRegistros, nombreArchivo } from './tabla-registros.js?v=20261109d';
+} from '../datos/datos-pais.js?v=20261114ia';
+import { CalendarioHistorico } from './calendario-historico.js?v=20261114ia';
+import { TablaRegistros, nombreArchivo } from './tabla-registros.js?v=20261114ia';
 
 const numero = new Intl.NumberFormat('es-CL');
 const decimal = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });

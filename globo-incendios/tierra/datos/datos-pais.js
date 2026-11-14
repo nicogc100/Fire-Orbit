@@ -7,7 +7,7 @@ export const CATALOGO = {
     id: '152',
     nombre: 'Chile',
     prefijo: 'chile',
-    anios: rango(2000, 2026),
+    anios: rango(2003, 2026),
     serie: 'chile-mensual.json',
     grilla: 'chile-grilla.json',
   },

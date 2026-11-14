@@ -272,7 +272,7 @@ export class CalendarioHistorico {
       </div>
       <div class="leyenda hc-leyenda">${leyenda}</div>
       <p class="hc-nota">${serie.region ? `Región calculada con zonas de ${String(serie.metodo?.zonas_grados ?? 0.25).replace('.', ',')}° (unos ${Math.round((serie.metodo?.zonas_grados ?? 0.25) * 111)} km): cada zona cuenta entera en la región donde está su centro. ` : ''}${this.onMes ? 'Toca un mes para verlo en el mapa, o un año para su detalle día a día. ' : this.detalle ? 'Toca un año para ver sus detecciones día a día. ' : this.onSeleccion ? 'Toca un año o un mes para verlo en el mapa. ' : ''}Las casillas rayadas tienen datos incompletos.
-        ${metodo.error_anual_mediano_pct != null ? `${metodo.anios_traslape ? `Antes de ${metodo.anios_traslape[0]}` : 'Los años sin VIIRS'} se reconstruyen desde MODIS (error anual típico ±${decimal.format(metodo.error_anual_mediano_pct)} %).` : ''}</p>`;
+        ${metodo.error_anual_mediano_pct != null ? `${metodo.anios_traslape ? `Antes de ${metodo.anios_traslape[0]}` : 'Los años sin VIIRS'} se reconstruyen desde MODIS${metodo.modelo_ia ? ' con IA (red neuronal + Random Forest)' : ''} (error anual típico ±${decimal.format(metodo.error_anual_mediano_pct)} %).` : ''}</p>`;
     const t = this.nodo.querySelector('.hc-territorio');
     if (t) t.textContent = this.territorio;
   }
