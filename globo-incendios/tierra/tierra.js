@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { HandFlow } from './nubes/nubes-interactivas.js?v=20261115orb1';
+import { HandFlow } from './nubes/nubes-interactivas.js?v=20261115orb2';
 import { createCloudNoiseTexture } from './nubes/cloud-volume.js';
-import { CloudLayer } from './nubes/capa-nubes.js?v=20261115orb1';
-import { Countries } from './globo/paises.js?v=20261115orb1';
-import { Orbitas } from './globo/orbitas.js?v=20261115orb1';
-import { ModoPais } from './pais/modo-pais.js?v=20261115orb1';
-import { PanelPais } from './paneles/panel-pais.js?v=20261115orb1';
-import { PanelDatos } from './paneles/panel-datos.js?v=20261115orb1';
+import { CloudLayer } from './nubes/capa-nubes.js?v=20261115orb2';
+import { Countries } from './globo/paises.js?v=20261115orb2';
+import { Orbitas } from './globo/orbitas.js?v=20261115orb2';
+import { ModoPais } from './pais/modo-pais.js?v=20261115orb2';
+import { PanelPais } from './paneles/panel-pais.js?v=20261115orb2';
+import { PanelDatos } from './paneles/panel-datos.js?v=20261115orb2';
 import {
   entradaCatalogo,
   cargarDatos,
@@ -18,11 +18,11 @@ import {
   serieDeArea,
   sumarCeldas,
   fechaDeDia,
-} from './datos/datos-pais.js?v=20261115orb1';
-import { vertexShader, surfaceShader } from './globo/globo-shaders.js?v=20261115orb1';
-import { actualizarURL, leerInicial } from './estado-url.js?v=20261115orb1';
-import { crearFichaPunto } from './pais/ficha-punto.js?v=20261115orb1';
-import { HerramientasMapa } from './pais/herramientas-mapa.js?v=20261115orb1';
+} from './datos/datos-pais.js?v=20261115orb2';
+import { vertexShader, surfaceShader } from './globo/globo-shaders.js?v=20261115orb2';
+import { actualizarURL, leerInicial } from './estado-url.js?v=20261115orb2';
+import { crearFichaPunto } from './pais/ficha-punto.js?v=20261115orb2';
+import { HerramientasMapa } from './pais/herramientas-mapa.js?v=20261115orb2';
 
 const canvas = document.querySelector('#tierra');
 const loading = document.querySelector('#carga');
@@ -104,7 +104,7 @@ async function main() {
     if (!response.ok) throw new Error('No se pudo cargar el volumen de nubes');
     return response.arrayBuffer();
   });
-  const normalGuideRequest = fetch('./assets/nubes-relieve.rgba.gz?v=20261115orb1').then(async response => {
+  const normalGuideRequest = fetch('./assets/nubes-relieve.rgba.gz?v=20261115orb2').then(async response => {
     if (!response.ok) throw new Error('No se pudo cargar el relieve de las nubes');
     const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
     const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
@@ -115,7 +115,7 @@ async function main() {
     }
     return bytes;
   });
-  const volumeRequest = fetch('./assets/nubes-esfericas.rg.gz?v=20261115orb1').then(async response => {
+  const volumeRequest = fetch('./assets/nubes-esfericas.rg.gz?v=20261115orb2').then(async response => {
     if (!response.ok) throw new Error('No se pudo cargar el volumen de nubes');
     const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
     const bytes = new Uint8Array(await new Response(stream).arrayBuffer());

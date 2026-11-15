@@ -210,6 +210,14 @@ def main():
     ap.add_argument("--crudos", default=None, help="Folder with the FIRMS CSVs (optional)")
     args = ap.parse_args()
 
+    # Optional description of the table (written by 8_tabla_desde_app.py): cell size, unit and method.
+    global KM_CELDA
+    extra = {}
+    ruta_meta = Path(args.celdas).with_name("celdas_armonizadas.meta.json")
+    if ruta_meta.exists():
+        extra = json.loads(ruta_meta.read_text(encoding="utf-8"))
+        KM_CELDA = extra.get("km", KM_CELDA)
+
     regs = cargar_regiones()
     t = pd.read_csv(args.celdas)
     for c in COLS:
@@ -217,7 +225,9 @@ def main():
             t[c] = np.nan
     t["per"] = pd.PeriodIndex(t["mes"], freq="M")
     per_viirs = pd.Period(INICIO_VIIRS, "M")
-    celdas = t.groupby(["gi", "gj"])[["lat", "lon"]].first().reset_index()
+    if "area_km2" not in t:
+        t["area_km2"] = KM_CELDA ** 2
+    celdas = t.groupby(["gi", "gj"])[["lat", "lon", "area_km2"]].first().reset_index()
     celdas["reg"] = asignar_region(celdas["lat"].to_numpy(), celdas["lon"].to_numpy(), regs)
     t = t.merge(celdas[["gi", "gj", "reg"]], on=["gi", "gj"])
     meses = pd.period_range(t["per"].min(), t["per"].max(), freq="M")
@@ -408,7 +418,7 @@ def main():
 
         clim12 = s["armonizada"].groupby(mm).quantile([0.25, 0.5, 0.75]).unstack()
         datos = {
-            "nombre": nombre, "celdas": int(len(ids)), "area_km2": int(len(ids) * KM_CELDA ** 2),
+            "nombre": nombre, "celdas": int(len(ids)), "area_km2": int(round(ids["area_km2"].sum())),
             "hash": hashlib.sha1(",".join(f"{r.gi}-{r.gj}" for r in ids.sort_values(["gi", "gj"]).itertuples()).encode()).hexdigest()[:10],
             "nota_conaf": a["nota_conaf"],
             "conaf_hasta": None if cf is None else str(cf["conaf_ha"].last_valid_index()),
@@ -425,11 +435,11 @@ def main():
         print(f"   {nombre:24s} {len(ids):5d} cells  ->  datos/{sl}.js")
 
     meta = {"generado": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"), "inicio_viirs": INICIO_VIIRS,
-            "unidad": UNIDAD, "meses": [str(p) for p in meses], "temporadas": sorted(completas),
+            "unidad": extra.get("unidad", UNIDAD), "celda": extra.get("celda", f"cells of {KM_CELDA} km"), "meses": [str(p) for p in meses], "temporadas": sorted(completas),
             "tiene_crudos": crudos is not None, "mes_inicio_temporada": MES_INICIO_TEMPORADA,
-            "modelo": "Combined model (average of a neural network and a Random Forest, step 7). "
-                      f"From {INICIO_VIIRS}: measured VIIRS S-NPP. Before: MODIS brought to the VIIRS scale.",
-            "productos": "FIRMS: MODIS Collection 6.1 (Terra and Aqua, 1 km) and VIIRS S-NPP 375 m. Country archive."}
+            "modelo": extra.get("modelo", "Combined model (average of a neural network and a Random Forest, step 7). "
+                                          f"From {INICIO_VIIRS}: measured VIIRS S-NPP. Before: MODIS brought to the VIIRS scale."),
+            "productos": extra.get("productos", "FIRMS: MODIS Collection 6.1 (Terra and Aqua, 1 km) and VIIRS S-NPP 375 m. Country archive.")}
     (WEB / "datos" / "indice.js").write_text(
         "window.INDICE=" + json.dumps({"areas": indice, "meta": meta}, ensure_ascii=False) + ";", encoding="utf-8")
     (WEB / "informe.html").write_text(HTML, encoding="utf-8")
@@ -489,7 +499,7 @@ footer{color:var(--gris);font-size:12px;margin-top:18px}
 </head>
 <body>
 <header>
-  <h1>Burning activity report</h1>
+  <h1>Burning activity report · Fire Orbit</h1>
   <div class="sub">Harmonized MODIS–VIIRS record · NASA FIRMS · validated against CONAF</div>
   <div class="ctrl">
     <div><label for="area">Region</label><select id="area"></select></div>
@@ -511,7 +521,7 @@ function llenar(){
   $("area").innerHTML=INDICE.areas.map(a=>`<option value="${a.slug}">${a.nombre}</option>`).join("");
   periodos();
   const h=decodeURIComponent(location.hash.slice(1)).split("/");
-  if(h.length===3){$("area").value=h[0];$("tipo").value=h[1];periodos();$("periodo").value=h[2];}
+  if(h.length===3){$("area").value=h[0];if($("area").selectedIndex<0)$("area").selectedIndex=0;$("tipo").value=h[1]==="temporada"?"temporada":"mes";periodos();$("periodo").value=h[2];if($("periodo").selectedIndex<0)$("periodo").selectedIndex=0;}
   ["area","tipo","periodo"].forEach(id=>$(id).onchange=()=>{if(id==="tipo")periodos();pintar();});
   pintar();
 }
@@ -561,7 +571,7 @@ async function pintar(){
   <div class="nota">Reliability is ${r.conf} because ${r.conf_por.join("; ")}.</div></div>`;
 
   h+=`<h2>0 · Identity and provenance</h2><div class="carta"><table>
-  <tr><th>Area</th><td>${d.nombre} · ${fmt(d.celdas)} cells of 20 km · ≈ ${fmt(d.area_km2)} km² · id ${d.hash}</td></tr>
+  <tr><th>Area</th><td>${d.nombre} · ${fmt(d.celdas)} ${meta.celda} · ≈ ${fmt(d.area_km2)} km² · id ${d.hash}</td></tr>
   <tr><th>Period</th><td>${nomPer} · data: ${origen}</td></tr>
   <tr><th>Products</th><td>${meta.productos}</td></tr>
   <tr><th>Method</th><td>${meta.modelo}</td></tr>

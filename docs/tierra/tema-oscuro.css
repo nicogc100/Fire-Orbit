@@ -211,6 +211,11 @@
 .hc-como-pais {
   margin: 14px 0 0;
 }
+.hc-informe {
+  box-sizing: border-box;
+  margin-top: 8px;
+  text-decoration: none;
+}
 
 /* Etiquetas de los satélites en órbita (globo/orbitas.js) */
 .etiqueta-satelite {

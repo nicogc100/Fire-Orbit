@@ -9,9 +9,9 @@ import {
   cargarZonas,
   serieDeRegion,
   referenciaHistorica,
-} from '../datos/datos-pais.js?v=20261115orb1';
-import { CalendarioHistorico } from './calendario-historico.js?v=20261115orb1';
-import { TablaRegistros, nombreArchivo } from './tabla-registros.js?v=20261115orb1';
+} from '../datos/datos-pais.js?v=20261115orb2';
+import { CalendarioHistorico } from './calendario-historico.js?v=20261115orb2';
+import { TablaRegistros, nombreArchivo } from './tabla-registros.js?v=20261115orb2';
 
 const numero = new Intl.NumberFormat('es-CL');
 const decimal = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -48,6 +48,36 @@ const BOTON_METODO = `<button type="button" class="hc-como hc-como-pais" data-ab
   <span><strong>Armonización MODIS + VIIRS</strong><span>Gráficos y precisión de la serie 2003–2025.</span></span>
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
 </button>`;
+
+// Informe del territorio y período que se está viendo (informes/informe.html, generado por
+// procesamiento/9_informes.py). El enlace se completa al hacer clic, con la selección del momento.
+const BOTON_INFORME = `<a class="hc-como hc-como-pais hc-informe" data-informe href="../informes/informe.html" target="_blank" rel="noopener">
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#9cc4ff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l4 4v14H7zM14 3v4h4M10 12h5M10 16h5"/></svg>
+  <span><strong>Informe del período</strong><span>Percentil histórico, controles y comparación con CONAF (en inglés).</span></span>
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+</a>`;
+// Nombre de una región de Chile → archivo de su informe.
+function regionInforme(nombre) {
+  if (!nombre) return 'chile';
+  const s = nombre
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+  const claves = [
+    ['metropolitana', 'metropolitana'],
+    ['santiago', 'metropolitana'],
+    ['higgins', 'o-higgins'],
+    ['ays', 'aysen'],
+    ['ais', 'aysen'],
+    ['magallanes', 'magallanes'],
+    ['bio', 'biobio'],
+    ['araucan', 'la-araucania'],
+    ['arica', 'arica-y-parinacota'],
+    ['rios', 'los-rios'],
+    ['lagos', 'los-lagos'],
+  ];
+  return claves.find(([clave]) => s.includes(clave))?.[1] ?? s.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
 
 // Primer día (índice dentro del año) y cantidad de días de cada mes.
 function diasDelMes(anio, mes) {
@@ -93,6 +123,14 @@ export class PanelPais {
     this.botonSatelital = raiz.querySelector('[data-accion="satelital"]');
     this.estadoSat = raiz.querySelector('#estado-satelital');
     raiz.addEventListener('click', e => this.alHacerClic(e));
+    // Informe: mes elegido, o la temporada de incendios (julio a junio) que termina en el año elegido.
+    raiz.addEventListener('click', e => {
+      const enlace = e.target.closest('[data-informe]');
+      if (!enlace || !this.datos) return;
+      const anio = this.datos.anio;
+      const periodo = Number.isInteger(this.mes) ? `mes/${anio}-${String(this.mes + 1).padStart(2, '0')}` : `temporada/${anio - 1}`;
+      enlace.href = `../informes/informe.html#${regionInforme(this.territorio?.nombre)}/${periodo}`;
+    });
     raiz.addEventListener('keydown', e => this.teclaPestanas(e));
     this.tip = document.createElement('div');
     this.tip.className = 'tip-calendario';
@@ -333,7 +371,7 @@ export class PanelPais {
           </select>
         </label>
       </div>
-      ${this.entrada?.id === '152' ? BOTON_METODO : ''}
+      ${this.entrada?.id === '152' ? BOTON_METODO + BOTON_INFORME : ''}
       <div class="pestanas" role="tablist" aria-label="Información del territorio">
         <button type="button" role="tab" id="pestana-calendario" aria-controls="vista-calendario" data-pestana="calendario">Calendario</button>
         <button type="button" role="tab" id="pestana-datos" aria-controls="vista-datos" data-pestana="datos">Datos</button>
@@ -499,7 +537,7 @@ export class PanelPais {
     const nodo = this.parte?.('vista-validacion');
     if (!nodo || nodo.dataset.listo) return;
     nodo.dataset.listo = '1';
-    import('../armonizacion.js?v=20261115orb1')
+    import('../armonizacion.js?v=20261115orb2')
       .then(m => m.pintarValidacion(nodo))
       .catch(error => {
         console.error('Validación:', error);

@@ -84,14 +84,25 @@ and one per fire season (July to June). The script, its messages and the report 
 ```bash
 cd globo-incendios/procesamiento
 pip install -r requirements.txt
+python 8_tabla_desde_app.py                 # builds salida/celdas_armonizadas.csv.gz from the app's data/
 python 9_informes.py                        # uses salida/celdas_armonizadas.csv.gz
 python 9_informes.py --crudos crudos/Chile  # also reads the FIRMS CSVs (FRP, day/night, concentration)
 python 9_informes.py --celdas path/to/celdas_armonizadas.csv.gz
 ```
 
+Then copy the result into the app: replace `globo-incendios/informes/` with the contents of `web_informes/`. The
+country panel of Chile has an **Informe del período** button that opens the report of the region and period on screen
+(the selected month, or the fire season that ends in the selected year).
+
+The reports published in `informes/` were built with `8_tabla_desde_app.py`. It rebuilds the model table from what the
+app already ships: the harmonized 0.25° grid (`chile-grilla.json`, output of the AI model) and MODIS and VIIRS fire
+cell-days counted from the stored detections (`chile-YYYY.json`); its totals reproduce `chile-mensual.json`. Compared
+with the original 20 km table of the model project, the cells are 0.25°, and the separate neural-network and
+Random-Forest values are missing, so those reports do not show the range between the two models.
+
 | Input                           | What it is                                                                              |
 | ------------------------------- | --------------------------------------------------------------------------------------- |
-| `salida/celdas_armonizadas.csv.gz` | Output of the AI model (step 7 of the separate Chile project): one row per 20 km cell and month. **Not in this repository.** |
+| `salida/celdas_armonizadas.csv.gz` | Model table, one row per cell and month: from step 7 of the separate Chile project (20 km cells), or rebuilt here with `8_tabla_desde_app.py`. Generated, not committed. |
 | `regiones_chile.geojson`        | Boundaries of the 16 regions; each cell goes to the region that contains its center     |
 | `conaf_region_mes.csv`          | CONAF area burned (ha) and number of fires by region and month, 2001–2024               |
 | `fuentes-conaf/`                | The two CONAF Excel files (monthly damage and monthly occurrence) the CSV was built from |

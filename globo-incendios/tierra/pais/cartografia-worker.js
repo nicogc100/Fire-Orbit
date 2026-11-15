@@ -2,7 +2,7 @@
 // ninguna de estas tareas puede competir con la cámara mientras el país se abre.
 import { ShapeUtils, Vector2 } from '../vendor/three.core.js';
 import { geoContains } from '../vendor/d3-geo.js';
-import { construirGeometria, indicesRegion, crearContiene } from './pieza-geo.js?v=20261115orb1';
+import { construirGeometria, indicesRegion, crearContiene } from './pieza-geo.js?v=20261115orb2';
 import { cargarRelieve } from './relieve-pais.js';
 
 const vectores = puntos => puntos.map(p => new Vector2(p.x, p.y));
