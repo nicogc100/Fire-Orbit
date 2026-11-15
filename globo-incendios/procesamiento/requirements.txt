@@ -4,3 +4,6 @@
 numpy>=1.24
 pandas>=2.0
 requests>=2.31
+# Only for 9_informes.py (regional reports):
+scipy>=1.10
+matplotlib>=3.7
