@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { HandFlow } from './nubes/nubes-interactivas.js?v=20261115orb3';
+import { HandFlow } from './nubes/nubes-interactivas.js?v=20261115orb4';
 import { createCloudNoiseTexture } from './nubes/cloud-volume.js';
-import { CloudLayer } from './nubes/capa-nubes.js?v=20261115orb3';
-import { Countries } from './globo/paises.js?v=20261115orb3';
-import { Orbitas } from './globo/orbitas.js?v=20261115orb3';
-import { ModoPais } from './pais/modo-pais.js?v=20261115orb3';
-import { PanelPais } from './paneles/panel-pais.js?v=20261115orb3';
-import { PanelDatos } from './paneles/panel-datos.js?v=20261115orb3';
+import { CloudLayer } from './nubes/capa-nubes.js?v=20261115orb4';
+import { Countries } from './globo/paises.js?v=20261115orb4';
+import { Orbitas } from './globo/orbitas.js?v=20261115orb4';
+import { ModoPais } from './pais/modo-pais.js?v=20261115orb4';
+import { PanelPais } from './paneles/panel-pais.js?v=20261115orb4';
+import { PanelDatos } from './paneles/panel-datos.js?v=20261115orb4';
 import {
   entradaCatalogo,
   cargarDatos,
@@ -18,11 +18,11 @@ import {
   serieDeArea,
   sumarCeldas,
   fechaDeDia,
-} from './datos/datos-pais.js?v=20261115orb3';
-import { vertexShader, surfaceShader } from './globo/globo-shaders.js?v=20261115orb3';
-import { actualizarURL, leerInicial } from './estado-url.js?v=20261115orb3';
-import { crearFichaPunto } from './pais/ficha-punto.js?v=20261115orb3';
-import { HerramientasMapa } from './pais/herramientas-mapa.js?v=20261115orb3';
+} from './datos/datos-pais.js?v=20261115orb4';
+import { vertexShader, surfaceShader } from './globo/globo-shaders.js?v=20261115orb4';
+import { actualizarURL, leerInicial } from './estado-url.js?v=20261115orb4';
+import { crearFichaPunto } from './pais/ficha-punto.js?v=20261115orb4';
+import { HerramientasMapa } from './pais/herramientas-mapa.js?v=20261115orb4';
 
 const canvas = document.querySelector('#tierra');
 const loading = document.querySelector('#carga');
@@ -104,7 +104,7 @@ async function main() {
     if (!response.ok) throw new Error('No se pudo cargar el volumen de nubes');
     return response.arrayBuffer();
   });
-  const normalGuideRequest = fetch('./assets/nubes-relieve.rgba.gz?v=20261115orb3').then(async response => {
+  const normalGuideRequest = fetch('./assets/nubes-relieve.rgba.gz?v=20261115orb4').then(async response => {
     if (!response.ok) throw new Error('No se pudo cargar el relieve de las nubes');
     const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
     const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
@@ -115,7 +115,7 @@ async function main() {
     }
     return bytes;
   });
-  const volumeRequest = fetch('./assets/nubes-esfericas.rg.gz?v=20261115orb3').then(async response => {
+  const volumeRequest = fetch('./assets/nubes-esfericas.rg.gz?v=20261115orb4').then(async response => {
     if (!response.ok) throw new Error('No se pudo cargar el volumen de nubes');
     const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
     const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
@@ -764,6 +764,7 @@ async function main() {
   }
   function cambiarPuntos(valor) {
     puntosModo = valor;
+    panelPais.fijarArmonizado(valor === 'armonizados');
     claveArmonizado = null;
     tipPunto.hidden = true;
     if (valor === 'armonizados') {
@@ -833,6 +834,7 @@ async function main() {
     if (country.id !== paisAbierto?.id) {
       herramientas.reiniciar();
       puntosModo = 'originales';
+      panelPais.fijarArmonizado(false);
       indicesOriginales = null;
     }
     herramientas.mostrar(country.id === '152' && Boolean(entrada) && !entrada.soloSerie);

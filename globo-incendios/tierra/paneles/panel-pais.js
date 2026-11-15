@@ -9,9 +9,9 @@ import {
   cargarZonas,
   serieDeRegion,
   referenciaHistorica,
-} from '../datos/datos-pais.js?v=20261115orb3';
-import { CalendarioHistorico } from './calendario-historico.js?v=20261115orb3';
-import { TablaRegistros, nombreArchivo } from './tabla-registros.js?v=20261115orb3';
+} from '../datos/datos-pais.js?v=20261115orb4';
+import { CalendarioHistorico } from './calendario-historico.js?v=20261115orb4';
+import { TablaRegistros, nombreArchivo } from './tabla-registros.js?v=20261115orb4';
 
 const numero = new Intl.NumberFormat('es-CL');
 const decimal = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -262,6 +262,12 @@ export class PanelPais {
     }
   }
   // ---------- Detalle satelital ----------
+  // Con los puntos armonizados (serie mensual) no hay reproducción día a día.
+  fijarArmonizado(activo) {
+    this.armonizado = Boolean(activo);
+    if (this.armonizado) this.detener(true);
+    else this.pintarReproducir();
+  }
   fijarSatelital(activo) {
     this.satelital = activo;
     this.botonSatelital.setAttribute('aria-checked', String(activo));
@@ -537,7 +543,7 @@ export class PanelPais {
     const nodo = this.parte?.('vista-validacion');
     if (!nodo || nodo.dataset.listo) return;
     nodo.dataset.listo = '1';
-    import('../armonizacion.js?v=20261115orb3')
+    import('../armonizacion.js?v=20261115orb4')
       .then(m => m.pintarValidacion(nodo))
       .catch(error => {
         console.error('Validación:', error);
@@ -992,6 +998,7 @@ export class PanelPais {
   pintarReproducir() {
     const b = this.cuerpo.querySelector('[data-accion="reproducir"]');
     if (!b) return;
+    b.hidden = Boolean(this.armonizado);
     const que = this.mes === null ? this.datos.anio : MESES_LARGOS[this.mes];
     b.innerHTML = `${this.reproduciendo ? ICONO_PAUSA : ICONO_PLAY}${this.reproduciendo ? 'Pausar' : `Reproducir ${que}`}`;
     b.setAttribute('aria-pressed', String(Boolean(this.reproduciendo)));
@@ -1081,7 +1088,7 @@ export class PanelPais {
 
   // ---------- Reproducción ----------
   reproducir() {
-    if (!this.conteos) return;
+    if (!this.conteos || this.armonizado) return;
     const { ini, fin } = this.mes === null ? { ini: 0, fin: this.datos.totalDias - 1 } : diasDelMes(this.datos.anio, this.mes);
     this.reproduciendo = { fin };
     this.posicion = this.dia ?? ini;

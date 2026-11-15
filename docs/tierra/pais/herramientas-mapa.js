@@ -1,7 +1,7 @@
 // Herramientas del mapa de Chile: puntos originales o armonizados, poblaciones (INE, Censo 2024)
 // y «Área»: dibujar un polígono (o arrastrar un rectángulo) para consultar las detecciones que
 // caen dentro y la evolución histórica de esa área.
-import { medidasArea } from './modo-pais.js?v=20261115orb3';
+import { medidasArea } from './modo-pais.js?v=20261115orb4';
 
 const numero = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 });
 const dec1 = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 1 });
@@ -96,7 +96,7 @@ export class HerramientasMapa {
     this.cargar();
   }
   cargar() {
-    this.carga ||= fetch('../data/chile-poblaciones.json?v=20261115orb3')
+    this.carga ||= fetch('../data/chile-poblaciones.json?v=20261115orb4')
       .then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
