@@ -7,23 +7,23 @@
   <meta name="description" content="Observa el fuego desde el espacio con datos de NASA FIRMS y dos sensores satelitales: MODIS y VIIRS.">
   <meta name="application-name" content="Fire Orbit">
   <title>Fire Orbit · Nuestro planeta</title>
-  <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="tierra.css?v=20261115nombre2">
-  <link rel="stylesheet" href="espacio.css?v=20261114-espacio">
-  <link rel="stylesheet" href="tema-oscuro.css?v=20261115chl3">
-  <link rel="stylesheet" href="armonizacion.css?v=20261115chl3">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg transform='rotate(-20 32 32)'%3E%3Cellipse cx='32' cy='32' rx='29' ry='10' fill='none' stroke='%239cc4ff' stroke-width='4'/%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='17' fill='%231f74cf'/%3E%3Cpath d='M22 24c4-3 9-2 11 1s0 6-3 7-3 5-6 4-6-4-5-8 1-3 3-4zM37 36c3-1 6 1 6 4s-2 6-5 6-4-3-3-6 1-3 2-4z' fill='%235fc27a'/%3E%3Cg transform='rotate(-20 32 32)'%3E%3Cpath d='M3 32a29 10 0 0 0 58 0' fill='none' stroke='%239cc4ff' stroke-width='4'/%3E%3Ccircle cx='48' cy='40.5' r='4.5' fill='%23ffb45e'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="stylesheet" href="tierra.css?v=20261115orb1">
+  <link rel="stylesheet" href="espacio.css?v=20261115orb1">
+  <link rel="stylesheet" href="tema-oscuro.css?v=20261115orb1">
+  <link rel="stylesheet" href="armonizacion.css?v=20261115orb1">
   <link rel="preload" href="assets/InterTight-variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/Archivo-variable.woff2" as="font" type="font/woff2" crossorigin>
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
-  <script src="arranque.js?v=20261115chl3" defer></script>
-  <script src="espacio.js?v=20261114-espacio" defer></script>
-  <script type="module" src="armonizacion.js?v=20261115chl3"></script>
+  <script src="arranque.js?v=20261115orb1" defer></script>
+  <script src="espacio.js?v=20261115orb1" defer></script>
+  <script type="module" src="armonizacion.js?v=20261115orb1"></script>
 </head>
 <body>
   <main id="escena" data-view="intro" aria-label="Tierra tridimensional interactiva">
     <div id="nombre-pais" class="nombre-pais" aria-hidden="true"></div>
     <header class="cabecera">
-      <a class="marca" href="./" aria-label="Fire Orbit: volver al inicio" translate="no">Fire Orbit<span class="marca-punto" aria-hidden="true">.</span></a>
+      <a class="marca" href="./" aria-label="Fire Orbit: volver al inicio" translate="no"><svg class="planeta" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><defs><radialGradient id="pl-mar-marca" cx="36%" cy="30%" r="78%"><stop offset="0" stop-color="#7fd0ff"/><stop offset=".55" stop-color="#1f74cf"/><stop offset="1" stop-color="#0a2a66"/></radialGradient><clipPath id="pl-disco-marca"><circle cx="32" cy="32" r="15"/></clipPath><clipPath id="pl-frente-marca"><rect x="-8" y="32" width="80" height="40"/></clipPath></defs><g class="pl-aro"><ellipse class="pl-anillo" cx="32" cy="32" rx="28" ry="9"/><circle class="pl-sat" r="2.8"/></g><circle cx="32" cy="32" r="15" fill="url(#pl-mar-marca)"/><g clip-path="url(#pl-disco-marca)"><g class="pl-tierras"><path d="M19 22c3-2 7-2 9 0s1 5-1 6-2 4-5 4-5-3-5-6 1-3 2-4zM33 34c2-1 5 0 6 2s0 5-2 7-4 1-5-2 0-6 1-7zM40 20c2-1 5-1 6 1s-1 4-3 4-4-1-4-3 0-2 1-2zM24 42c1-1 3-1 4 0s0 3-1 3-3 0-3-1 0-2 0-2z"/><g transform="translate(60)"><path d="M19 22c3-2 7-2 9 0s1 5-1 6-2 4-5 4-5-3-5-6 1-3 2-4zM33 34c2-1 5 0 6 2s0 5-2 7-4 1-5-2 0-6 1-7zM40 20c2-1 5-1 6 1s-1 4-3 4-4-1-4-3 0-2 1-2zM24 42c1-1 3-1 4 0s0 3-1 3-3 0-3-1 0-2 0-2z"/></g></g></g><circle class="pl-brillo" cx="32" cy="32" r="14.5"/><g class="pl-aro"><g clip-path="url(#pl-frente-marca)"><ellipse class="pl-anillo" cx="32" cy="32" rx="28" ry="9"/><circle class="pl-sat" r="2.8"/></g></g></svg>Fire Orbit<span class="marca-punto" aria-hidden="true">.</span></a>
       <nav class="cabecera-nav" aria-label="Principal">
         <button type="button" class="enlace-claro" id="restaurar" disabled>Vista inicial</button>
         <button type="button" class="enlace-claro boton-metodo" id="abrir-metodo" data-abrir-metodo>Armonización</button>
@@ -69,7 +69,7 @@
     </aside>
     <span id="anuncio-pais" class="solo-lectores" role="status" aria-live="polite"></span>
     <div class="carga" id="carga" role="status" aria-live="polite">
-      <span class="orbita" aria-hidden="true"></span>
+      <span class="orbita" aria-hidden="true"><svg class="planeta" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><defs><radialGradient id="pl-mar-carga" cx="36%" cy="30%" r="78%"><stop offset="0" stop-color="#7fd0ff"/><stop offset=".55" stop-color="#1f74cf"/><stop offset="1" stop-color="#0a2a66"/></radialGradient><clipPath id="pl-disco-carga"><circle cx="32" cy="32" r="15"/></clipPath><clipPath id="pl-frente-carga"><rect x="-8" y="32" width="80" height="40"/></clipPath></defs><g class="pl-aro"><ellipse class="pl-anillo" cx="32" cy="32" rx="28" ry="9"/><circle class="pl-sat" r="2.8"/></g><circle cx="32" cy="32" r="15" fill="url(#pl-mar-carga)"/><g clip-path="url(#pl-disco-carga)"><g class="pl-tierras"><path d="M19 22c3-2 7-2 9 0s1 5-1 6-2 4-5 4-5-3-5-6 1-3 2-4zM33 34c2-1 5 0 6 2s0 5-2 7-4 1-5-2 0-6 1-7zM40 20c2-1 5-1 6 1s-1 4-3 4-4-1-4-3 0-2 1-2zM24 42c1-1 3-1 4 0s0 3-1 3-3 0-3-1 0-2 0-2z"/><g transform="translate(60)"><path d="M19 22c3-2 7-2 9 0s1 5-1 6-2 4-5 4-5-3-5-6 1-3 2-4zM33 34c2-1 5 0 6 2s0 5-2 7-4 1-5-2 0-6 1-7zM40 20c2-1 5-1 6 1s-1 4-3 4-4-1-4-3 0-2 1-2zM24 42c1-1 3-1 4 0s0 3-1 3-3 0-3-1 0-2 0-2z"/></g></g></g><circle class="pl-brillo" cx="32" cy="32" r="14.5"/><g class="pl-aro"><g clip-path="url(#pl-frente-carga)"><ellipse class="pl-anillo" cx="32" cy="32" rx="28" ry="9"/><circle class="pl-sat" r="2.8"/></g></g></svg></span>
       <p id="mensaje-carga">Preparando la Tierra…</p>
     </div>
     <div class="error" id="error" role="alert" hidden>

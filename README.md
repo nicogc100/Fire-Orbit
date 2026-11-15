@@ -25,7 +25,8 @@ own and no database.
     overpass times (orbital drift) and model accuracy.
   - **Validation** tab: comparison with CONAF wildfire records.
   - **Map tools** (movable bar): original or harmonized points, towns with their population (INE Census 2024), and
-    **Area**: draw a rectangle to count the fires inside it.
+    **Area**: draw a polygon (click the vertices, double-click to close) or drag a rectangle, as in NASA FIRMS, to
+    see the detections inside it and the area's historical evolution (yearly harmonized activity since 2003).
   - The fire card shows the nearest town and its distance.
 
 ## How to open it
@@ -67,7 +68,7 @@ globo-incendios/
 │   ├── assets/            Textures, fonts, clouds and per-country cartography
 │   └── vendor/            Third-party libraries (Three.js, D3 Geo): do not edit
 ├── data/                  NASA FIRMS detections and series, model results, Chile towns
-└── procesamiento/         Python scripts that generate data/
+└── procesamiento/         Python scripts that generate data/ and the regional reports (9_informes.py)
 docs/ARQUITECTURA.md       How the code works, file by file
 ```
 

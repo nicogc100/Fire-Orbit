@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { elegirRango, claveRango, metrosPorPixel } from './teselas.js?v=20261115chl3';
+import { elegirRango, claveRango, metrosPorPixel } from './teselas.js?v=20261115orb1';
 
 // Imagen satelital por niveles para la pieza del país. Dos mosaicos en Web Mercator:
 // «grueso» cubre el país entero y «fino» la zona a la vista con el nivel que pide el
@@ -71,7 +71,7 @@ export class CapaSatelital {
     this.worker.postMessage({ tipo: 'mosaico', pedido, capa, limites, z: r.z });
   }
   crearWorker() {
-    const worker = new Worker(new URL('./satelite-worker.js?v=20261115chl3', import.meta.url), { type: 'module' });
+    const worker = new Worker(new URL('./satelite-worker.js?v=20261115orb1', import.meta.url), { type: 'module' });
     worker.onmessage = ({ data }) => this.recibir(data);
     worker.onerror = error => {
       console.warn('Worker satelital:', error.message);

@@ -400,3 +400,55 @@ export function referenciaHistorica(serie, anio, mes = null) {
 export function estacionalidad(serie) {
   return serie?.por_mes_calendario.mediana.map((valor, mes) => ({ mes, valor })) ?? [];
 }
+
+// ---------- Área dibujada en el mapa ----------
+export function dentroDePoligono(poligono, x, y) {
+  let dentro = false;
+  for (let i = 0, j = poligono.length - 1; i < poligono.length; j = i++) {
+    const [xi, yi] = poligono[i],
+      [xj, yj] = poligono[j];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) dentro = !dentro;
+  }
+  return dentro;
+}
+// Evolución anual de un área (polígono de [lon, lat]) con la grilla armonizada: suma las zonas cuyo
+// centro cae dentro. Si el área es menor que una zona, usa la zona de su centro.
+// nacional: serie del país, solo para saber qué meses siguen incompletos.
+export function serieDeArea(mapa, poligono, nacional = null) {
+  const lado = mapa.celda_grados / 2;
+  const zonas = [];
+  mapa.celdas.forEach(([lat, lon], i) => {
+    if (dentroDePoligono(poligono, lon + lado, lat + lado)) zonas.push(i);
+  });
+  let aproximada = false;
+  if (!zonas.length) {
+    const cx = poligono.reduce((s, p) => s + p[0], 0) / poligono.length,
+      cy = poligono.reduce((s, p) => s + p[1], 0) / poligono.length;
+    const i = mapa.celdas.findIndex(([lat, lon]) => cx >= lon && cx < lon + 2 * lado && cy >= lat && cy < lat + 2 * lado);
+    if (i >= 0) zonas.push(i);
+    aproximada = true;
+  }
+  const incompletos = new Set((nacional?.meses ?? []).filter((_, i) => nacional.incompleto?.[i]));
+  const porAnio = new Map();
+  for (let i = 0; i < mapa.n_meses; i++) {
+    const t = mapa.m0 + i,
+      anio = mapa.a0 + Math.floor(t / 12),
+      mes = t % 12;
+    let s = 0;
+    for (const c of zonas) s += mapa.valores[c * mapa.n_meses + i];
+    const a = porAnio.get(anio) ?? { anio, valor: 0, meses: new Array(12).fill(null), n: 0, incompleto: false };
+    a.valor += s * mapa.escala;
+    a.meses[mes] = s * mapa.escala;
+    a.n++;
+    if (incompletos.has(`${anio}-${String(mes + 1).padStart(2, '0')}`)) a.incompleto = true;
+    porAnio.set(anio, a);
+  }
+  const anios = [...porAnio.values()].map(a => ({ ...a, incompleto: a.incompleto || a.n < 12 }));
+  return {
+    anios,
+    zonas: zonas.length,
+    grados: mapa.celda_grados,
+    aproximada,
+    mediana: mediana(anios.filter(a => !a.incompleto).map(a => a.valor)),
+  };
+}

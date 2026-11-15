@@ -1,4 +1,4 @@
-# How Fire Sat works
+# How Fire Orbit works
 
 A guide to understanding the code: what each file does and how the app flows. All the code is in
 `globo-incendios/tierra/`.
@@ -29,7 +29,7 @@ A guide to understanding the code: what each file does and how the app flows. Al
    "Chile › Valparaíso", months, calendar and the "Datos" tab. "Chile" in the path goes back to the country without
    changing the year.
 7. Country, year, day and sensor are stored in the URL (`estado-url.js`): a link opens the same view.
-8. **Chile only:** `pais/herramientas-mapa.js` adds the map tools (original/harmonized points, towns, area count), and
+8. **Chile only:** `pais/herramientas-mapa.js` adds the map tools (original/harmonized points, towns, area query), and
    the panel adds the "Validación" tab. `armonizacion.js` opens the "Armonización" panel with the model charts.
 
 ## Files
@@ -66,13 +66,13 @@ A guide to understanding the code: what each file does and how the app flows. Al
 
 | File                    | What it does                                                                     |
 | ----------------------- | -------------------------------------------------------------------------------- |
-| `modo-pais.js`          | 3D country map: flight, zoom, regions, cities, labels, fires, towns and area count |
+| `modo-pais.js`          | 3D country map: flight, zoom, regions, cities, labels, fires, towns and area count (polygon in lon/lat) |
 | `modo-pais-shaders.js`  | Rendering of terrain, coast, borders, fires and squares                          |
 | `pieza-geo.js`          | Map math: projection, triangles and the region of each fire                      |
 | `cartografia-worker.js` | In the background: reads the cartography, triangulates it and finds regions      |
 | `relieve-pais.js`       | Hill shading from elevation data                                                 |
 | `ficha-punto.js`        | Floating card with a fire's date, time, sensor and nearest town                  |
-| `herramientas-mapa.js`  | Chile map tools (movable bar): original/harmonized points, towns, area count     |
+| `herramientas-mapa.js`  | Chile map tools (movable bar): original/harmonized points, towns, and the area tool (draw a polygon or rectangle; detections inside it and its yearly history from the harmonized grid) |
 
 ### `satelite/`
 

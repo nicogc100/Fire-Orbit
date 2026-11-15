@@ -1,25 +1,28 @@
 import * as THREE from 'three';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { HandFlow } from './nubes/nubes-interactivas.js?v=20261115chl3';
+import { HandFlow } from './nubes/nubes-interactivas.js?v=20261115orb1';
 import { createCloudNoiseTexture } from './nubes/cloud-volume.js';
-import { CloudLayer } from './nubes/capa-nubes.js?v=20261115chl3';
-import { Countries } from './globo/paises.js?v=20261115chl3';
-import { Orbitas } from './globo/orbitas.js?v=20261115chl3';
-import { ModoPais } from './pais/modo-pais.js?v=20261115chl3';
-import { PanelPais } from './paneles/panel-pais.js?v=20261115chl3';
-import { PanelDatos } from './paneles/panel-datos.js?v=20261115chl3';
+import { CloudLayer } from './nubes/capa-nubes.js?v=20261115orb1';
+import { Countries } from './globo/paises.js?v=20261115orb1';
+import { Orbitas } from './globo/orbitas.js?v=20261115orb1';
+import { ModoPais } from './pais/modo-pais.js?v=20261115orb1';
+import { PanelPais } from './paneles/panel-pais.js?v=20261115orb1';
+import { PanelDatos } from './paneles/panel-datos.js?v=20261115orb1';
 import {
   entradaCatalogo,
   cargarDatos,
   cargarIndice,
   cargarCeldas,
+  cargarSerie,
+  cargarZonas,
+  serieDeArea,
   sumarCeldas,
   fechaDeDia,
-} from './datos/datos-pais.js?v=20261115chl3';
-import { vertexShader, surfaceShader } from './globo/globo-shaders.js?v=20261115chl3';
-import { actualizarURL, leerInicial } from './estado-url.js?v=20261115chl3';
-import { crearFichaPunto } from './pais/ficha-punto.js?v=20261115chl3';
-import { HerramientasMapa } from './pais/herramientas-mapa.js?v=20261115chl3';
+} from './datos/datos-pais.js?v=20261115orb1';
+import { vertexShader, surfaceShader } from './globo/globo-shaders.js?v=20261115orb1';
+import { actualizarURL, leerInicial } from './estado-url.js?v=20261115orb1';
+import { crearFichaPunto } from './pais/ficha-punto.js?v=20261115orb1';
+import { HerramientasMapa } from './pais/herramientas-mapa.js?v=20261115orb1';
 
 const canvas = document.querySelector('#tierra');
 const loading = document.querySelector('#carga');
@@ -101,7 +104,7 @@ async function main() {
     if (!response.ok) throw new Error('No se pudo cargar el volumen de nubes');
     return response.arrayBuffer();
   });
-  const normalGuideRequest = fetch('./assets/nubes-relieve.rgba.gz?v=20261115chl3').then(async response => {
+  const normalGuideRequest = fetch('./assets/nubes-relieve.rgba.gz?v=20261115orb1').then(async response => {
     if (!response.ok) throw new Error('No se pudo cargar el relieve de las nubes');
     const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
     const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
@@ -112,7 +115,7 @@ async function main() {
     }
     return bytes;
   });
-  const volumeRequest = fetch('./assets/nubes-esfericas.rg.gz?v=20261115chl3').then(async response => {
+  const volumeRequest = fetch('./assets/nubes-esfericas.rg.gz?v=20261115orb1').then(async response => {
     if (!response.ok) throw new Error('No se pudo cargar el volumen de nubes');
     const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
     const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
@@ -661,7 +664,19 @@ async function main() {
       }
     },
   });
-  herramientas = new HerramientasMapa({ escena: stage, modo, describirFiltro, onPuntos: cambiarPuntos });
+  herramientas = new HerramientasMapa({
+    escena: stage,
+    modo,
+    describirFiltro,
+    onPuntos: cambiarPuntos,
+    // Evolución anual del área dibujada, con la grilla armonizada del país.
+    historia: async poligono => {
+      const entrada = panelPais.entrada;
+      if (!entrada || entrada.soloSerie) return null;
+      const [mapa, nacional] = await Promise.all([cargarZonas(entrada), cargarSerie(entrada).catch(() => null)]);
+      return serieDeArea(mapa, poligono, nacional);
+    },
+  });
   // Países sin detecciones guardadas: un punto por celda con fuego en el período elegido.
   function ponerMapaSerie(sel) {
     const entrada = panelPais.entrada,
@@ -767,7 +782,7 @@ async function main() {
       periodo = `${+dd} de ${meses[+m - 1]} de ${a}`;
     }
     const sensor = panelPais.sensor === 'todos' ? 'MODIS y VIIRS' : panelPais.sensor;
-    return { periodo, sensor };
+    return { periodo, sensor, anio: d.anio };
   }
   function cargarDatosPais(country, entrada, inicial, pedido) {
     if (!entrada) return;

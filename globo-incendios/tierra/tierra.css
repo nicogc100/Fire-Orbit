@@ -235,7 +235,7 @@ canvas:focus-visible {
   display: none;
 }
 .portada {
-  --tamano-titulo: min(16vw, 22svh, 13rem);
+  --tamano-titulo: min(12.6vw, 22svh, 10.2rem);
   position: absolute;
   inset: 0;
   z-index: 3;
@@ -254,19 +254,18 @@ canvas:focus-visible {
   position: absolute;
   inset-inline: 0;
   bottom: 60svh; /* Deja un margen sobre el horizonte, situado al 44% de la altura. */
-  /* Usamos el ancho disponible para centrar el nombre completo. */
-  width: calc(100% - 40px);
+  width: min(calc(100% - 40px), 60rem);
   margin-inline: auto;
 }
 .portada h1 {
   margin: 0;
-  /* Fire Orbit ocupa una sola línea, también en pantallas estrechas. */
-  font-size: min(var(--tamano-titulo), 14vw);
+  font-size: var(--tamano-titulo);
   font-weight: 900;
   line-height: 0.88;
   letter-spacing: -0.065em;
   text-transform: uppercase;
   white-space: nowrap;
+  word-spacing: 0.1em;
   text-shadow:
     0 1px 3px #0a24387a,
     0 6px 18px #0a24382e;
@@ -1617,19 +1616,6 @@ button.fila-ranking[aria-pressed='true'] .fila-nombre {
   font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
-.orbita {
-  width: 32px;
-  height: 32px;
-  border: 2px solid #0a243840;
-  border-top-color: var(--tinta);
-  border-radius: 50%;
-  animation: orbitar 1s linear infinite;
-}
-@keyframes orbitar {
-  to {
-    transform: rotate(360deg);
-  }
-}
 .error {
   position: absolute;
   inset: 0;
@@ -1891,7 +1877,7 @@ button.fila-ranking[aria-pressed='true'] .fila-nombre {
 }
 @media (orientation: portrait) {
   .portada {
-    --tamano-titulo: min(16vw, 15svh, 13rem);
+    --tamano-titulo: min(12.6vw, 15svh, 10.2rem);
   }
   .presentacion {
     margin-top: 12px;
@@ -1899,12 +1885,12 @@ button.fila-ranking[aria-pressed='true'] .fila-nombre {
 }
 @media (max-height: 520px) {
   .portada {
-    --tamano-titulo: min(16vw, 16svh);
+    --tamano-titulo: min(12.6vw, 16svh);
   }
 }
 @media (max-height: 370px) {
   .portada {
-    --tamano-titulo: min(16vw, 14svh);
+    --tamano-titulo: min(12.6vw, 14svh);
   }
   .portada-contenido {
     bottom: 59svh;
