@@ -9,9 +9,9 @@ import {
   cargarZonas,
   serieDeRegion,
   referenciaHistorica,
-} from '../datos/datos-pais.js?v=20261115orb2';
-import { CalendarioHistorico } from './calendario-historico.js?v=20261115orb2';
-import { TablaRegistros, nombreArchivo } from './tabla-registros.js?v=20261115orb2';
+} from '../datos/datos-pais.js?v=20261115orb3';
+import { CalendarioHistorico } from './calendario-historico.js?v=20261115orb3';
+import { TablaRegistros, nombreArchivo } from './tabla-registros.js?v=20261115orb3';
 
 const numero = new Intl.NumberFormat('es-CL');
 const decimal = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -537,7 +537,7 @@ export class PanelPais {
     const nodo = this.parte?.('vista-validacion');
     if (!nodo || nodo.dataset.listo) return;
     nodo.dataset.listo = '1';
-    import('../armonizacion.js?v=20261115orb2')
+    import('../armonizacion.js?v=20261115orb3')
       .then(m => m.pintarValidacion(nodo))
       .catch(error => {
         console.error('Validación:', error);
@@ -1086,12 +1086,14 @@ export class PanelPais {
     this.reproduciendo = { fin };
     this.posicion = this.dia ?? ini;
     this.dia = Math.floor(this.posicion);
-    this.ultimo = performance.now();
+    this.ultimo = null;
     this.pintarReproducir();
     const paso = ahora => {
       if (!this.reproduciendo) return;
       const ritmo = this.reduceMotion.matches ? 2.5 : DIAS_POR_SEGUNDO;
-      this.posicion += ((ahora - this.ultimo) / 1000) * ritmo;
+      // La hora del fotograma puede ser anterior al clic: sin este resguardo el día quedaba en -1
+      // y la reproducción se detenía en el primer día.
+      if (this.ultimo !== null) this.posicion += (Math.max(0, ahora - this.ultimo) / 1000) * ritmo;
       this.ultimo = ahora;
       if (this.posicion > this.reproduciendo.fin + 0.999) {
         this.detener();
@@ -1112,6 +1114,7 @@ export class PanelPais {
   // Un solo día cambia por fotograma: no se recalculan escala ni etiquetas de todo el año.
   pintarDiaReproducido() {
     const { dia, datos } = this;
+    if (!this.conteos || !this.celdas[dia]) return;
     this.cuerpo.querySelector('.celda.activa')?.classList.remove('activa');
     this.celdas[dia].classList.add('activa');
     this.parte('cifra').textContent = numero.format(this.conteos[dia]);

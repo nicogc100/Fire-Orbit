@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { HandFlow } from './nubes/nubes-interactivas.js?v=20261115orb2';
+import { HandFlow } from './nubes/nubes-interactivas.js?v=20261115orb3';
 import { createCloudNoiseTexture } from './nubes/cloud-volume.js';
-import { CloudLayer } from './nubes/capa-nubes.js?v=20261115orb2';
-import { Countries } from './globo/paises.js?v=20261115orb2';
-import { Orbitas } from './globo/orbitas.js?v=20261115orb2';
-import { ModoPais } from './pais/modo-pais.js?v=20261115orb2';
-import { PanelPais } from './paneles/panel-pais.js?v=20261115orb2';
-import { PanelDatos } from './paneles/panel-datos.js?v=20261115orb2';
+import { CloudLayer } from './nubes/capa-nubes.js?v=20261115orb3';
+import { Countries } from './globo/paises.js?v=20261115orb3';
+import { Orbitas } from './globo/orbitas.js?v=20261115orb3';
+import { ModoPais } from './pais/modo-pais.js?v=20261115orb3';
+import { PanelPais } from './paneles/panel-pais.js?v=20261115orb3';
+import { PanelDatos } from './paneles/panel-datos.js?v=20261115orb3';
 import {
   entradaCatalogo,
   cargarDatos,
@@ -18,11 +18,11 @@ import {
   serieDeArea,
   sumarCeldas,
   fechaDeDia,
-} from './datos/datos-pais.js?v=20261115orb2';
-import { vertexShader, surfaceShader } from './globo/globo-shaders.js?v=20261115orb2';
-import { actualizarURL, leerInicial } from './estado-url.js?v=20261115orb2';
-import { crearFichaPunto } from './pais/ficha-punto.js?v=20261115orb2';
-import { HerramientasMapa } from './pais/herramientas-mapa.js?v=20261115orb2';
+} from './datos/datos-pais.js?v=20261115orb3';
+import { vertexShader, surfaceShader } from './globo/globo-shaders.js?v=20261115orb3';
+import { actualizarURL, leerInicial } from './estado-url.js?v=20261115orb3';
+import { crearFichaPunto } from './pais/ficha-punto.js?v=20261115orb3';
+import { HerramientasMapa } from './pais/herramientas-mapa.js?v=20261115orb3';
 
 const canvas = document.querySelector('#tierra');
 const loading = document.querySelector('#carga');
@@ -104,7 +104,7 @@ async function main() {
     if (!response.ok) throw new Error('No se pudo cargar el volumen de nubes');
     return response.arrayBuffer();
   });
-  const normalGuideRequest = fetch('./assets/nubes-relieve.rgba.gz?v=20261115orb2').then(async response => {
+  const normalGuideRequest = fetch('./assets/nubes-relieve.rgba.gz?v=20261115orb3').then(async response => {
     if (!response.ok) throw new Error('No se pudo cargar el relieve de las nubes');
     const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
     const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
@@ -115,7 +115,7 @@ async function main() {
     }
     return bytes;
   });
-  const volumeRequest = fetch('./assets/nubes-esfericas.rg.gz?v=20261115orb2').then(async response => {
+  const volumeRequest = fetch('./assets/nubes-esfericas.rg.gz?v=20261115orb3').then(async response => {
     if (!response.ok) throw new Error('No se pudo cargar el volumen de nubes');
     const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
     const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
@@ -652,8 +652,11 @@ async function main() {
     },
     onFiltro: filtro => {
       // Con los puntos armonizados el mapa muestra el mes o el año completo, no el día ni el sensor.
+      // Al reproducir, avanza mes a mes (la serie armonizada es mensual).
       if (puntosModo === 'armonizados' && panelPais.datos) {
-        if (claveArmonizado !== `${panelPais.datos.anio}-${panelPais.mes}`) ponerArmonizados();
+        const anio = panelPais.datos.anio;
+        const mes = !filtro.persistente && Number.isInteger(filtro.dia) ? mesDelDia(filtro.dia, anio) : panelPais.mes;
+        if (claveArmonizado !== `${anio}-${mes ?? null}`) ponerArmonizados(mes);
       } else modo.filtrar(filtro);
       if (filtro.persistente) {
         actualizarURL({
@@ -739,11 +742,12 @@ async function main() {
     return registros;
   }
   // Chile: los puntos armonizados salen de su grilla de 0,25° (serie con IA) para el año o mes del panel.
-  async function ponerArmonizados() {
+  const mesDelDia = (dia, anio) => new Date(Date.UTC(anio, 0, 1 + dia)).getUTCMonth();
+  async function ponerArmonizados(mes = panelPais.mes) {
     const datos = panelPais.datos,
       pedido = pedidoPais;
     if (!datos || !panelPais.entrada || panelPais.entrada.soloSerie) return;
-    const sel = { anio: datos.anio, mes: panelPais.mes ?? null };
+    const sel = { anio: datos.anio, mes: mes ?? null };
     const clave = (claveArmonizado = `${sel.anio}-${sel.mes}`);
     let zonas;
     try {
