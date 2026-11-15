@@ -1,19 +1,20 @@
-# Fire Sat · aplicación
+# Fire Sat · application
 
-En Windows, abre **Abrir Tierra.cmd**. Necesitas Python 3 y un navegador compatible con WebGL 2.
+On Windows, open **Abrir Tierra.cmd**. You need Python 3 and a browser that supports WebGL 2.
 
-Desde una terminal, en esta carpeta:
+From a terminal, in this folder:
 
 ```bash
 python iniciar.py --tierra
 ```
 
-La aplicación se abre en [127.0.0.1:8000/tierra/](http://127.0.0.1:8000/tierra/). Mantén abierta la ventana del
-servidor mientras la usas.
+The application opens at [127.0.0.1:8000/tierra/](http://127.0.0.1:8000/tierra/). Keep the server window open while
+you use it.
 
-- `tierra/`: código de la app, texturas, nubes y cartografía.
-- `data/`: detecciones y series de NASA FIRMS, con su procedencia.
-- `procesamiento/`: scripts de Python que generan `data/`.
+- `tierra/`: app code, textures, clouds and cartography.
+- `data/`: NASA FIRMS detections and series with their provenance, AI model results for Chile (`chile-metodo.json`)
+  and Chile towns (`chile-poblaciones.json`).
+- `procesamiento/`: Python scripts that generate `data/`.
 
-La guía completa (estructura, cómo editar y licencias) está en el [README principal](../README.md), y el
-funcionamiento del código en [docs/ARQUITECTURA.md](../docs/ARQUITECTURA.md).
+The full guide (structure, how to edit, and licenses) is in the [main README](../README.md), and how the code works is
+in [docs/ARQUITECTURA.md](../docs/ARQUITECTURA.md).

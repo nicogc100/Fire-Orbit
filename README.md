@@ -1,84 +1,111 @@
 # FIRE ORBIT
 
-Globo 3D interactivo para explorar los incendios detectados desde el espacio por NASA FIRMS (sensores MODIS y VIIRS).
-Se elige un país en el globo, su territorio despega como una pieza 3D y muestra las detecciones por día, la serie
-histórica mensual, las regiones y ciudades, y un modo de **detalle satelital** con imágenes Sentinel-2 de 10 m.
-Al elegir una región, el panel muestra sus propias cifras: calendario, meses comparados con su historia y registros
-descargables.
+Interactive 3D globe to explore fires detected from space by NASA FIRMS (MODIS and VIIRS sensors).
+Pick a country on the globe and its territory lifts off as a 3D piece that shows the daily detections, the monthly
+historical series, regions and cities, and a **satellite detail** mode with 10 m Sentinel-2 imagery.
+When you pick a region, the panel switches to its own figures: calendar, months compared with their history, and
+downloadable records.
 
-La app es estática: HTML, CSS y JavaScript, con datos preparados de antemano por scripts de Python. No necesita
-servidor propio ni base de datos.
+**Chile is the focus of the project.** Its 2003–2025 series combines MODIS and VIIRS with a model built from detection
+physics plus AI (neural network + Random Forest), validated against CONAF wildfire records. The other countries use a
+simple harmonization (one VIIRS/MODIS factor per month); the same method can be replicated for any country with the
+NASA FIRMS files.
 
-## Cómo abrirla
+The app is static: HTML, CSS and JavaScript, with data prepared in advance by Python scripts. It needs no server of its
+own and no database.
 
-Necesitas **Python 3** y un navegador con **WebGL 2** (Chrome, Edge, Firefox o Safari recientes).
+> The app interface is in Spanish, since it is built for users in Chile.
 
-En Windows, abre `globo-incendios/Abrir Tierra.cmd`. Desde una terminal:
+## Main features
+
+- **3D globe** with volumetric clouds, day/night lighting and the Aqua (MODIS) and NOAA-20 (VIIRS) satellites in orbit.
+- **Country view** with daily fire detections, a month-by-month calendar and region-level statistics.
+- **Chile only:**
+  - **Harmonization** panel: annual series (raw / simple factor / AI), Aqua detection probability curve, satellite
+    overpass times (orbital drift) and model accuracy.
+  - **Validation** tab: comparison with CONAF wildfire records.
+  - **Map tools** (movable bar): original or harmonized points, towns with their population (INE Census 2024), and
+    **Area**: draw a rectangle to count the fires inside it.
+  - The fire card shows the nearest town and its distance.
+
+## How to open it
+
+You need **Python 3** and a browser with **WebGL 2** (recent Chrome, Edge, Firefox or Safari).
+
+On Windows, open `globo-incendios/Abrir Tierra.cmd`. From a terminal:
 
 ```bash
 cd globo-incendios
 python iniciar.py --tierra                # http://127.0.0.1:8000/tierra/
-python iniciar.py --tierra --puerto 8001  # otro puerto
+python iniciar.py --tierra --puerto 8001  # another port
 ```
 
-Mantén abierta la ventana del servidor mientras uses la app.
+Keep the server window open while you use the app.
 
-## Carpetas
+## Folders
 
 ```text
 globo-incendios/
-├── Abrir Tierra.cmd       Abre la app en Windows
-├── iniciar.py             Servidor local
-├── index.html             Redirige a tierra/
-├── tierra/                La app
-│   ├── index.html         Página
-│   ├── tierra.css         Estilos
-│   ├── arranque.js        Carga tierra.js
-│   ├── tierra.js          Programa principal: globo, cámara y vuelo hacia un país
-│   ├── estado-url.js      País, fecha y sensor guardados en la URL
-│   ├── globo/             Superficie del globo y selección de países
-│   ├── nubes/             Nubes volumétricas
-│   ├── pais/              Mapa 3D del país: regiones, ciudades, relieve y focos
-│   ├── satelite/          Detalle satelital (imágenes Sentinel-2)
-│   ├── paneles/           Panel del país, calendario y tabla de registros
-│   ├── datos/             Carga de datos, fechas y conteos
-│   ├── assets/            Texturas, fuentes, nubes y cartografía por país
-│   └── vendor/            Librerías de otros (Three.js, D3 Geo): no se editan
-├── data/                  Detecciones y series de NASA FIRMS
-└── procesamiento/         Scripts de Python que generan data/
-docs/ARQUITECTURA.md       Cómo funciona el código, archivo por archivo
+├── Abrir Tierra.cmd       Opens the app on Windows
+├── iniciar.py             Local server
+├── index.html             Redirects to tierra/
+├── tierra/                The app
+│   ├── index.html         Page
+│   ├── tierra.css         Styles
+│   ├── tema-oscuro.css    Dark theme for panels, calendars and map tools
+│   ├── armonizacion.js    "Harmonization" panel and "Validation" tab (charts)
+│   ├── armonizacion.css   Styles for those charts
+│   ├── arranque.js        Loads tierra.js
+│   ├── tierra.js          Main program: globe, camera and flight to a country
+│   ├── estado-url.js      Country, date and sensor stored in the URL
+│   ├── globo/             Globe surface, country picking and orbiting satellites
+│   ├── nubes/             Volumetric clouds
+│   ├── pais/              3D country map: regions, cities, relief, fires and map tools
+│   ├── satelite/          Satellite detail (Sentinel-2 imagery)
+│   ├── paneles/           Country panel, calendars and records table
+│   ├── datos/             Data loading, dates and counts
+│   ├── assets/            Textures, fonts, clouds and per-country cartography
+│   └── vendor/            Third-party libraries (Three.js, D3 Geo): do not edit
+├── data/                  NASA FIRMS detections and series, model results, Chile towns
+└── procesamiento/         Python scripts that generate data/
+docs/ARQUITECTURA.md       How the code works, file by file
 ```
 
-## Al editar el código
+## When editing the code
 
-Los archivos se cargan con una versión al final, por ejemplo `modo-pais.js?v=20261109d`, para que el navegador no use
-una copia vieja guardada. Cuando cambies algo, busca `v=20261109d` en toda la carpeta `tierra/` y reemplázalo por la
-fecha del día (por ejemplo `v=20261215`; si ya usaste esa fecha, agrega una letra: `v=20261215b`). Todos los archivos
-usan la misma versión, así que es un solo reemplazo.
+Files are loaded with a version at the end, for example `modo-pais.js?v=20261115chl3`, so the browser does not use an
+old cached copy. When you change something, search for the current version (for example `v=20261115chl3`) across the
+whole `tierra/` folder and replace it with today's date (for example `v=20261215`; if you already used that date, add a
+letter: `v=20261215b`). Every file uses the same version, so it is a single replacement.
 
-## Datos
+## Data
 
-Los datos de `globo-incendios/data/` se generan con los scripts de `globo-incendios/procesamiento/` a partir de los
-archivos anuales de NASA FIRMS. Su [README](globo-incendios/procesamiento/README.md) explica cada paso y el formato de
-los archivos.
+The data in `globo-incendios/data/` is generated by the scripts in `globo-incendios/procesamiento/` from the yearly
+NASA FIRMS files. Its [README](globo-incendios/procesamiento/README.md) explains each step and the file formats.
 
 ```bash
 pip install -r globo-incendios/procesamiento/requirements.txt
 ```
 
-## Fuentes y licencias
+Chile's harmonized series (`chile-mensual.json`, `chile-grilla.json`) and `chile-metodo.json` come from the AI model,
+which lives in a separate project (MODIS/VIIRS harmonization for Chile). **Do not run `procesamiento/2_armonizar.py`
+for Chile**: it would overwrite the AI series with the simple method.
 
-| Contenido                   | Fuente                                                              | Licencia                  |
-| --------------------------- | ------------------------------------------------------------------- | ------------------------- |
-| Detecciones de incendios    | [NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/) (MODIS y VIIRS) | Datos abiertos de la NASA |
-| Detalle satelital           | [EOxCloudless 2016](https://cloudless.eox.at) de EOX IT Services    | CC BY 4.0                 |
-| Texturas de la Tierra       | Solar System Scope / INOVE                                          | CC BY 4.0                 |
-| Relieve submarino           | NASA Blue Marble                                                    | Dominio público           |
-| Relieve regional            | Mapzen Terrain Tiles                                                | Varias, con atribución    |
-| Países, regiones y ciudades | Natural Earth                                                       | Dominio público           |
-| Nombres de países           | mledoze/countries                                                   | ODbL                      |
-| Gráficos y geografía        | Three.js, D3 Geo                                                    | MIT, ISC                  |
-| Tipografías                 | Inter Tight, Archivo                                                | SIL OFL                   |
+## Sources and licenses
 
-El detalle de cada fuente está en los archivos `procedencia*.json` de `globo-incendios/tierra/assets/` y
-`globo-incendios/data/`, y las licencias de terceros en `globo-incendios/tierra/vendor/`.
+| Content                       | Source                                                                                                          | License                   |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| Fire detections               | [NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/) (MODIS and VIIRS)                                            | NASA open data            |
+| Model validation              | CONAF wildfire records, obtained from [cvidalmsu/FONDEF-IDEA-](https://github.com/cvidalmsu/FONDEF-IDEA-)       | CONAF public data         |
+| Chile towns and population    | INE Census 2024 (via [falopass/brasas](https://github.com/falopass/brasas)); locations from [GeoNames](https://www.geonames.org) and [caracena/chile-geojson](https://github.com/caracena/chile-geojson) | CC BY-SA 4.0 (INE), CC BY 4.0 (GeoNames) |
+| Satellite detail              | [EOxCloudless 2016](https://cloudless.eox.at) by EOX IT Services                                                | CC BY 4.0                 |
+| Earth textures                | Solar System Scope / INOVE                                                                                      | CC BY 4.0                 |
+| Ocean floor relief            | NASA Blue Marble                                                                                                | Public domain             |
+| Regional relief               | Mapzen Terrain Tiles                                                                                            | Various, with attribution |
+| Countries, regions and cities | Natural Earth                                                                                                   | Public domain             |
+| Country names                 | mledoze/countries                                                                                               | ODbL                      |
+| Graphics and geography        | Three.js, D3 Geo                                                                                                | MIT, ISC                  |
+| Typefaces                     | Inter Tight, Archivo                                                                                            | SIL OFL                   |
+
+The details of each source are in the `procedencia*.json` files in `globo-incendios/tierra/assets/` and
+`globo-incendios/data/`, and the third-party licenses are in `globo-incendios/tierra/vendor/`.

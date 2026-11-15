@@ -1,5 +1,5 @@
-# Dependencias de los scripts de procesamiento (Python 3.10+).
-# Instalar desde la raíz del repositorio:
+# Dependencies of the processing scripts (Python 3.10+).
+# Install from the repository root:
 #   pip install -r globo-incendios/procesamiento/requirements.txt
 numpy>=1.24
 pandas>=2.0

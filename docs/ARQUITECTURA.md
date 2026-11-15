@@ -1,99 +1,109 @@
-# Cómo funciona Fire Sat
+# How Fire Sat works
 
-Guía para entender el código: qué hace cada archivo y cómo fluye la app. Todo el código está en
+A guide to understanding the code: what each file does and how the app flows. All the code is in
 `globo-incendios/tierra/`.
 
-## Idea general
+## Overview
 
-- **Sin compilación.** El navegador carga los archivos JavaScript tal como están, con `import` y `export`. Three.js se
-  carga desde `vendor/`, según se indica en `tierra/index.html`.
-- **Datos estáticos.** Los JSON de `data/` se generan antes con Python (`procesamiento/`). La app solo los lee.
-- **Dos lienzos 3D.** `#tierra` dibuja el globo y las nubes; `#pieza` dibuja encima el mapa del país abierto.
-  Comparten la cámara, para que el país despegue justo desde donde está en el planeta.
-- **Trabajo pesado en segundo plano.** Los archivos `*-worker.js` corren en hilos aparte (cartografía, relieve,
-  imágenes satelitales), así la animación no se congela.
+- **No build step.** The browser loads the JavaScript files as they are, with `import` and `export`. Three.js is
+  loaded from `vendor/`, as declared in `tierra/index.html`.
+- **Static data.** The JSON files in `data/` are generated beforehand with Python (`procesamiento/`). The app only
+  reads them.
+- **Two 3D canvases.** `#tierra` draws the globe and the clouds; `#pieza` draws the open country's map on top. They
+  share the camera, so the country lifts off exactly from where it sits on the planet.
+- **Heavy work in the background.** The `*-worker.js` files run on separate threads (cartography, relief, satellite
+  imagery), so the animation never freezes.
 
-## Recorrido de la app
+## How the app flows
 
-1. `index.html` carga `arranque.js`, que carga `tierra.js` y muestra un aviso si la descarga falla.
-2. `tierra.js` crea el globo: texturas, nubes, controles de cámara y el bucle de animación.
-3. Al elegir un país (clic, búsqueda o `?pais=` en la URL), `abrirPais()` inicia un **vuelo**: un valor `t` que va
-   de 0 a 1 y del que salen la cámara, la luz, el encuadre y el despegue del mapa. Volver atrás solo invierte `t`.
-4. `pais/modo-pais.js` arma el mapa 3D con la geometría que prepara `pais/cartografia-worker.js` y, al aterrizar,
-   carga el terreno, las regiones y los focos.
-5. `paneles/panel-pais.js` muestra los datos del país. Al cambiar la fecha o el sensor, el mapa solo cambia qué focos
-   enseña: no se vuelve a construir.
-6. Al tocar una región, el mapa se acerca y muestra solo sus focos, y el panel pasa a esa región: ruta
-   «Chile › Valparaíso», meses, calendario y pestaña «Datos». «Chile» en la ruta vuelve al país sin cambiar el año.
-7. País, año, día y sensor se guardan en la URL (`estado-url.js`): un enlace abre la misma vista.
+1. `index.html` loads `arranque.js`, which loads `tierra.js` and shows a notice if the download fails.
+2. `tierra.js` builds the globe: textures, clouds, camera controls, the orbiting satellites and the animation loop.
+3. When a country is picked (click, search or `?pais=` in the URL), `abrirPais()` starts a **flight**: a value `t`
+   that goes from 0 to 1 and drives the camera, the light, the framing and the map lift-off. Going back simply
+   reverses `t`.
+4. `pais/modo-pais.js` builds the 3D map with the geometry prepared by `pais/cartografia-worker.js` and, after
+   landing, loads the terrain, the regions and the fires.
+5. `paneles/panel-pais.js` shows the country data. Changing the date or the sensor only changes which fires the map
+   shows: nothing is rebuilt.
+6. Clicking a region zooms the map in and shows only its fires, and the panel switches to that region: path
+   "Chile › Valparaíso", months, calendar and the "Datos" tab. "Chile" in the path goes back to the country without
+   changing the year.
+7. Country, year, day and sensor are stored in the URL (`estado-url.js`): a link opens the same view.
+8. **Chile only:** `pais/herramientas-mapa.js` adds the map tools (original/harmonized points, towns, area count), and
+   the panel adds the "Validación" tab. `armonizacion.js` opens the "Armonización" panel with the model charts.
 
-## Archivos
+## Files
 
-### Principal (`tierra/`)
+### Main (`tierra/`)
 
-| Archivo                    | Qué hace                                                               |
-| -------------------------- | ---------------------------------------------------------------------- |
-| `index.html`, `tierra.css` | Estructura y estilos de toda la interfaz                               |
-| `arranque.js`              | Carga `tierra.js` y avisa si falla la descarga                         |
-| `tierra.js`                | Programa principal: globo, cámara, vistas, vuelo y conexión de todo    |
-| `estado-url.js`            | Lee y escribe país, fecha y sensor en la URL                           |
+| File                                | What it does                                                               |
+| ----------------------------------- | -------------------------------------------------------------------------- |
+| `index.html`, `tierra.css`          | Structure and styles of the whole interface                                |
+| `tema-oscuro.css`                   | Dark theme for panels, calendars, map tools and satellite labels           |
+| `armonizacion.js`, `armonizacion.css` | "Armonización" panel and "Validación" tab: hand-drawn interactive SVG charts read from `data/chile-metodo.json` |
+| `arranque.js`                       | Loads `tierra.js` and warns if the download fails                          |
+| `tierra.js`                         | Main program: globe, camera, views, flight, and wiring everything together |
+| `estado-url.js`                     | Reads and writes country, date and sensor in the URL                       |
 
 ### `globo/`
 
-| Archivo                      | Qué hace                                                                  |
-| ---------------------------- | ------------------------------------------------------------------------- |
-| `globo-shaders.js`           | Dibujo de la superficie: día y noche, océano, sombras, país marcado       |
-| `paises.js`, `paises-geo.js` | Selección de países sobre el globo y buscador en español e inglés         |
+| File                         | What it does                                                                  |
+| ---------------------------- | ----------------------------------------------------------------------------- |
+| `globo-shaders.js`           | Surface rendering: day and night, ocean, shadows, highlighted country         |
+| `paises.js`, `paises-geo.js` | Country picking on the globe and search in Spanish and English                |
+| `orbitas.js`                 | Aqua (MODIS) and NOAA-20 (VIIRS) satellites on polar orbits, with trails and labels |
 
 ### `nubes/`
 
-| Archivo                                | Qué hace                                         |
-| -------------------------------------- | ------------------------------------------------ |
-| `capa-nubes.js`                        | Nubes volumétricas y su sombra sobre el globo    |
-| `cloud-shader.js`, `cloud-settings.js` | Forma y parámetros de las nubes                  |
-| `cloud-volume.js`                      | Ruido 3D que da forma a las nubes                |
-| `nubes-interactivas.js`                | El cursor aparta las nubes                       |
+| File                                   | What it does                                   |
+| -------------------------------------- | ---------------------------------------------- |
+| `capa-nubes.js`                        | Volumetric clouds and their shadow on the globe |
+| `cloud-shader.js`, `cloud-settings.js` | Cloud shape and parameters                     |
+| `cloud-volume.js`                      | 3D noise that shapes the clouds                |
+| `nubes-interactivas.js`                | The cursor pushes the clouds aside             |
 
 ### `pais/`
 
-| Archivo                 | Qué hace                                                                     |
-| ----------------------- | ---------------------------------------------------------------------------- |
-| `modo-pais.js`          | Mapa 3D del país: vuelo, zoom, regiones, ciudades, etiquetas y focos          |
-| `modo-pais-shaders.js`  | Dibujo del terreno, la costa, los límites, los focos y los cuadrados         |
-| `pieza-geo.js`          | Matemática del mapa: proyección, triángulos y región de cada foco            |
-| `cartografia-worker.js` | En segundo plano: lee la cartografía, la triangula y busca regiones          |
-| `relieve-pais.js`       | Sombreado de montañas y valles a partir de datos de elevación                |
-| `ficha-punto.js`        | Ficha flotante con fecha, hora y sensor de un foco                           |
+| File                    | What it does                                                                     |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| `modo-pais.js`          | 3D country map: flight, zoom, regions, cities, labels, fires, towns and area count |
+| `modo-pais-shaders.js`  | Rendering of terrain, coast, borders, fires and squares                          |
+| `pieza-geo.js`          | Map math: projection, triangles and the region of each fire                      |
+| `cartografia-worker.js` | In the background: reads the cartography, triangulates it and finds regions      |
+| `relieve-pais.js`       | Hill shading from elevation data                                                 |
+| `ficha-punto.js`        | Floating card with a fire's date, time, sensor and nearest town                  |
+| `herramientas-mapa.js`  | Chile map tools (movable bar): original/harmonized points, towns, area count     |
 
 ### `satelite/`
 
-| Archivo              | Qué hace                                                                  |
-| -------------------- | ------------------------------------------------------------------------- |
-| `teselas.js`         | Fuente de imágenes (EOxCloudless 2016) y cálculo de qué teselas pedir      |
-| `capa-satelital.js`  | Imagen del país entero y de la zona visible; estado y fallos              |
-| `satelite-worker.js` | En segundo plano: descarga las teselas y las une en una sola imagen       |
+| File                 | What it does                                                                |
+| -------------------- | --------------------------------------------------------------------------- |
+| `teselas.js`         | Imagery source (EOxCloudless 2016) and which tiles to request               |
+| `capa-satelital.js`  | Image of the whole country and of the visible area; status and failures     |
+| `satelite-worker.js` | In the background: downloads the tiles and stitches them into one image     |
 
 ### `paneles/`
 
-| Archivo                   | Qué hace                                                            |
-| ------------------------- | ------------------------------------------------------------------- |
-| `panel-pais.js`           | Panel lateral: ruta, año, pestañas, meses, calendario, rankings     |
-| `calendario-historico.js` | Calendario de años × meses con la serie histórica                   |
-| `tabla-registros.js`      | Tabla de detecciones con orden, páginas y CSV (la usan los dos)     |
-| `panel-datos.js`          | Ventana «Datos guardados»: tabla de registros y descarga en CSV     |
+| File                      | What it does                                                          |
+| ------------------------- | --------------------------------------------------------------------- |
+| `panel-pais.js`           | Side panel: path, year, tabs, months, calendar, rankings              |
+| `calendario-historico.js` | Years × months calendar with the historical series                    |
+| `tabla-registros.js`      | Detections table with sorting, pages and CSV (used by both panels)    |
+| `panel-datos.js`          | "Datos guardados" window: records table and CSV download              |
 
 ### `datos/`
 
-| Archivo         | Qué hace                                                    |
-| --------------- | ----------------------------------------------------------- |
-| `datos-pais.js` | Qué países tienen datos, carga de archivos, fechas, conteos y series por región |
-| `datos.js`      | Filtros, resúmenes y conversión de registros a CSV          |
+| File            | What it does                                                                  |
+| --------------- | ----------------------------------------------------------------------------- |
+| `datos-pais.js` | Which countries have data, file loading, dates, counts and per-region series  |
+| `datos.js`      | Filters, summaries and conversion of records to CSV                           |
 
-## Costumbres del código
+## Code conventions
 
-- Nombres y comentarios en español. Las nubes y parte del globo, que son más antiguos, conservan nombres en inglés.
-- Los comentarios explican _por qué_ se hace algo, no qué hace cada línea.
-- La matemática que no dibuja nada (`pieza-geo.js`, `teselas.js`, `datos-pais.js`) va en archivos aparte, sin
-  depender de la pantalla.
-- Todo control funciona con teclado y mide al menos 44 px en pantallas táctiles.
-- Al editar, cambia la versión `?v=` (ver el README principal).
+- Names, comments and the interface are in Spanish (the app is built for users in Chile). The clouds and parts of the
+  globe, which are older, keep English names.
+- Comments explain _why_ something is done, not what each line does.
+- Math that draws nothing (`pieza-geo.js`, `teselas.js`, `datos-pais.js`) lives in separate files, independent of the
+  screen.
+- Every control works with the keyboard and is at least 44 px on touch screens.
+- When editing, change the `?v=` version (see the main README).
