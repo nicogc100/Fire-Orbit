@@ -346,22 +346,112 @@
 #pieza.modo-area {
   cursor: crosshair;
 }
-.caja-area {
+/* Área dibujada: polígono anclado al mapa (SVG sobre la escena) */
+.trazo-area {
   position: absolute;
   z-index: 3;
-  top: 0;
-  left: 0;
-  border: 1.5px dashed #9cc4ff;
-  border-radius: 2px;
-  background: #3987e51f;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   pointer-events: none;
+}
+.trazo-area[hidden] {
+  display: none;
+}
+.ta-forma,
+.ta-relleno {
+  fill: #9cc4ff2e;
+}
+.ta-forma,
+.ta-linea {
+  stroke: #e6edf7;
+  stroke-width: 1.8;
+  stroke-dasharray: 7 5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.ta-linea {
+  fill: none;
+}
+.ta-vertice {
+  fill: #0b1220;
+  stroke: #e6edf7;
+  stroke-width: 1.8;
+}
+.ta-primero {
+  fill: #9cc4ff;
+}
+.ta-medida {
+  fill: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  paint-order: stroke;
+  stroke: #0b1220e6;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.ayuda-area {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  max-width: min(420px, calc(100vw - 24px));
+  padding: 7px 10px;
+  border: 1px solid #ffffff1f;
+  border-radius: 10px;
+  background: #0b1220e6;
+  color: #c9d5e6;
+  font-size: 12.5px;
+  line-height: 1.35;
+  box-shadow: 0 8px 24px #00000080;
+}
+.ayuda-area[hidden],
+#escena:not([data-modo='pais']) .ayuda-area,
+#escena:not([data-modo='pais']) .trazo-area,
+#escena:not([data-modo='pais']) .resultado-area {
+  display: none;
+}
+.ayuda-area span {
+  flex: 1 1 200px;
+}
+.ayuda-area button {
+  min-height: 28px;
+  padding: 0 11px;
+  border: 1px solid #ffffff33;
+  border-radius: 999px;
+  background: none;
+  color: var(--tinta);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ayuda-area button.principal {
+  border-color: #9cc4ff;
+  background: #9cc4ff;
+  color: #06101f;
+}
+.ayuda-area button:focus-visible {
+  outline: 2px solid #9cc4ff;
+  outline-offset: 2px;
 }
 .resultado-area {
   position: fixed;
   z-index: 6;
   top: 0;
   left: 0;
-  width: 260px;
+  transform: translate(var(--x, 12px), var(--y, 76px));
+  width: 300px;
+  max-height: calc(100vh - 88px);
+  max-height: calc(100dvh - 88px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: #ffffff33 transparent;
   padding: 10px 12px 12px;
   border: 1px solid #ffffff26;
   border-radius: 10px;
@@ -416,6 +506,79 @@
   border-top: 1px solid #ffffff14;
   margin-top: 8px !important;
 }
+/* Evolución histórica del área */
+.ra-historia {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #ffffff14;
+}
+.ra-titulo {
+  font-weight: 600;
+}
+.ra-titulo small {
+  margin-left: 4px;
+  color: var(--tinta-2);
+  font-weight: 500;
+}
+.rh-lectura {
+  min-height: 1.4em;
+  font-variant-numeric: tabular-nums;
+}
+.rh-lectura small {
+  color: var(--tinta-2);
+}
+.rh-grafico {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 6px;
+  overflow: visible;
+  touch-action: pan-y;
+}
+.rh-barra {
+  fill: #c2561a;
+}
+.rh-anio.incompleto .rh-barra {
+  fill: #c2561a80;
+}
+.rh-anio.elegido .rh-barra {
+  fill: #ffc773;
+}
+.rh-anio.activo .rh-barra {
+  fill: #f08a2e;
+}
+.rh-anio.elegido.activo .rh-barra {
+  fill: #ffdca3;
+}
+.rh-zona {
+  fill: transparent;
+}
+.rh-base {
+  stroke: #ffffff33;
+}
+.rh-mediana {
+  stroke: #e6edf7;
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.75;
+  pointer-events: none;
+}
+.rh-eje {
+  fill: #9fb0c8;
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+}
+.rh-eje.elegido {
+  fill: #e6edf7;
+  font-weight: 600;
+}
+.rh-raya {
+  display: inline-block;
+  width: 14px;
+  margin-right: 6px;
+  border-top: 1px dashed #e6edf7;
+  vertical-align: middle;
+}
 .ra-pobl small,
 .etiqueta-poblacion small {
   color: #c9d5e6;
@@ -443,5 +606,140 @@
     max-width: calc(100vw - 24px);
     overflow-x: auto;
     padding: 4px;
+  }
+  /* En el teléfono la barra queda fija: sin asa, y los cuatro controles caben en 360 px. */
+  .hm-mover {
+    display: none;
+  }
+  .herramientas-mapa {
+    gap: 4px;
+  }
+  .hm-puntos button,
+  .hm-boton {
+    min-height: 32px;
+    padding: 0 8px;
+    gap: 4px;
+  }
+  /* En el teléfono el resultado se ancla sobre el panel, a todo el ancho, y se desplaza por dentro:
+     así la parte alta del mapa y el área dibujada siguen a la vista. */
+  .resultado-area {
+    top: auto;
+    bottom: calc(40svh + 10px);
+    left: 12px;
+    right: 12px;
+    transform: none;
+    width: auto;
+    max-height: 34svh;
+  }
+}
+@media (max-width: 380px) {
+  .hm-puntos button,
+  .hm-boton {
+    padding: 0 6px;
+    font-size: 11.5px;
+  }
+}
+
+/* ---------- Ficha de un punto del mapa ---------- */
+/* --tinta es clara en este tema: como fondo dejaba el texto ilegible. */
+.tip-punto {
+  max-width: min(320px, calc(100vw - 16px));
+  padding: 9px 12px 10px;
+  border: 1px solid #ffffff2e;
+  border-radius: 8px;
+  background: #0d1626f5;
+  color: #c3d0e2;
+  box-shadow: 0 8px 24px #000000b3;
+}
+.tip-punto strong {
+  margin-bottom: 2px;
+  color: #fff;
+}
+
+/* ---------- Marca y carga: una Tierra pequeña con un aro en órbita ---------- */
+.planeta {
+  display: block;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  overflow: visible;
+}
+.pl-aro {
+  transform-origin: 32px 32px;
+  transform: rotate(-20deg);
+  animation: pl-vaiven 5s ease-in-out infinite alternate;
+}
+.pl-anillo {
+  fill: none;
+  stroke: #9cc4ff;
+  stroke-width: 1.7;
+}
+.pl-sat {
+  display: none;
+  fill: #ffb45e;
+}
+@supports (offset-path: path('M0 0')) {
+  .pl-sat {
+    display: inline;
+    offset-path: path('M4 32a28 9 0 1 0 56 0a28 9 0 1 0-56 0');
+    offset-rotate: 0deg;
+    offset-distance: 30%;
+    animation: pl-orbita 2.6s linear infinite;
+  }
+}
+.pl-tierras {
+  fill: #5fc27a;
+  animation: pl-giro 8s linear infinite;
+}
+.pl-brillo {
+  fill: none;
+  stroke: #bfe3ff;
+  stroke-width: 1;
+  opacity: 0.55;
+}
+@keyframes pl-orbita {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+@keyframes pl-giro {
+  to {
+    transform: translateX(-60px);
+  }
+}
+@keyframes pl-vaiven {
+  from {
+    transform: rotate(-27deg);
+  }
+  to {
+    transform: rotate(-13deg);
+  }
+}
+.orbita {
+  display: block;
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  animation: none;
+}
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.marca .planeta {
+  width: 30px;
+  height: 30px;
+  filter: drop-shadow(0 1px 2px #0a243899);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pl-aro,
+  .pl-sat,
+  .pl-tierras {
+    animation: none;
   }
 }

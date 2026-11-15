@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import { construirGeometria, construirPuntos, desproyectar, fueraDePieza, proyectar } from './pieza-geo.js?v=20261115chl3';
-import { CapaSatelital } from '../satelite/capa-satelital.js?v=20261115chl3';
+import { construirGeometria, construirPuntos, desproyectar, fueraDePieza, proyectar } from './pieza-geo.js?v=20261115orb1';
+import { dentroDePoligono } from '../datos/datos-pais.js?v=20261115orb1';
+import { CapaSatelital } from '../satelite/capa-satelital.js?v=20261115orb1';
 import {
   verticePieza,
   fragmentoPieza,
@@ -10,7 +11,7 @@ import {
   fragmentoPuntos,
   verticeCuadros,
   fragmentoCuadros,
-} from './modo-pais-shaders.js?v=20261115chl3';
+} from './modo-pais-shaders.js?v=20261115orb1';
 
 // El mapa del país se dibuja en su propio lienzo, sobre el globo. El pase de nubes
 // no cambia y el globo sigue vivo al lado. La cámara del mapa copia la del globo,
@@ -35,6 +36,16 @@ const cuadro = () => {
 
 const habitantesCorto = n =>
   n >= 1e6 ? `${(n / 1e6).toLocaleString('es-CL', { maximumFractionDigits: 1 })} M` : n >= 1000 ? `${Math.round(n / 1000)} mil` : `${n}`;
+
+// Superficie aproximada (proyección local en km) y centro de un polígono de [lon, lat].
+export function medidasArea(geo) {
+  const n = geo.length;
+  const centro = [geo.reduce((s, e) => s + e[0], 0) / n, geo.reduce((s, e) => s + e[1], 0) / n];
+  const lat0 = (centro[1] * Math.PI) / 180;
+  const xy = geo.map(([lon, lat]) => [lon * 111.32 * Math.cos(lat0), lat * 110.57]);
+  const km2 = Math.abs(xy.reduce((s, [x, y], i) => s + x * xy[(i + 1) % n][1] - xy[(i + 1) % n][0] * y, 0) / 2);
+  return { km2, centro };
+}
 
 export class ModoPais {
   constructor({
@@ -196,7 +207,7 @@ export class ModoPais {
       depthWrite: false,
       depthTest: false,
     });
-    this.worker = new Worker(new URL('./cartografia-worker.js?v=20261115chl3', import.meta.url), { type: 'module' });
+    this.worker = new Worker(new URL('./cartografia-worker.js?v=20261115orb1', import.meta.url), { type: 'module' });
     this.worker.onmessage = ({ data }) => {
       const resolver = this.respuestas.get(data.pedido);
       this.respuestas.delete(data.pedido);
@@ -522,6 +533,7 @@ export class ModoPais {
     // Mientras se ubica cada foco en su región (unos segundos), no se muestran focos de otras regiones.
     u.uRegion.value = this.regionFocos === null ? -1 : this.datosPuntos?.conRegiones ? this.regionFocos : -2;
     this.ajustarTamano(f.visibles);
+    this.onPuntosCambiados?.();
     this.sucio = true;
   }
   // Muchos puntos juntos saturarían a blanco; pocos deben seguir siendo visibles.
@@ -1031,6 +1043,7 @@ export class ModoPais {
     this.uPxPorMetro.value = ((escala / this.mpp) * this.uPR.value) / 6371000;
     this.renderer.render(this.scene, this.camara);
     this.actualizarEtiquetas();
+    this.onDibujo?.();
     this.sucio = false;
     if (this.satelital && this.llegado) {
       const W = this.canvas.clientWidth,
@@ -1071,15 +1084,29 @@ export class ModoPais {
       ];
     };
   }
-  // Cuenta los focos visibles (mismos filtros que el mapa) dentro de un rectángulo de pantalla.
-  contarEnRect(x0, y0, x1, y1) {
+  // Longitud y latitud → píxeles de la ventana, con la vista actual.
+  proyectorGeo() {
+    const g = this.geometria;
+    if (!g) return null;
+    const enPantalla = this.proyectorPantalla();
+    return (lon, lat) => {
+      const [x, y] = proyectar(g.marco, lon, lat);
+      return enPantalla(x - g.cx, y - g.cy);
+    };
+  }
+  // Cuenta los focos visibles (mismos filtros que el mapa) dentro de un polígono de [lon, lat].
+  contarEnPoligono(geo) {
     const p = this.datosPuntos,
       g = this.geometria;
-    if (!p || !g) return null;
-    const [ax, bx] = [Math.min(x0, x1), Math.max(x0, x1)],
-      [ay, by] = [Math.min(y0, y1), Math.max(y0, y1)];
+    if (!p || !g || !geo || geo.length < 3) return null;
     const enPantalla = this.proyectorPantalla();
-    const dentro = (sx, sy) => sx >= ax && sx <= bx && sy >= ay && sy <= by;
+    const aPantalla = this.proyectorGeo();
+    const poli = geo.map(([lon, lat]) => aPantalla(lon, lat));
+    const ax = Math.min(...poli.map(v => v[0])),
+      bx = Math.max(...poli.map(v => v[0])),
+      ay = Math.min(...poli.map(v => v[1])),
+      by = Math.max(...poli.map(v => v[1]));
+    const dentro = (sx, sy) => sx >= ax && sx <= bx && sy >= ay && sy <= by && dentroDePoligono(poli, sx, sy);
     const f = this.filtro,
       u = this.uniformesPuntos.uSensores.value,
       enRegion = this.uniformesPuntos.uRegion.value;
@@ -1112,26 +1139,14 @@ export class ModoPais {
       armonizado = 0;
       for (const c of porCelda.values()) armonizado += (c.valor * c.dentro) / c.total;
     }
-    // Superficie aproximada a partir de las cuatro esquinas (proyección local en km).
-    const esquinas = [
-      [ax, ay],
-      [bx, ay],
-      [bx, by],
-      [ax, by],
-    ].map(([x, y]) => this.lonLatEn(x, y));
-    let km2 = null;
-    if (esquinas.every(Boolean)) {
-      const lat0 = THREE.MathUtils.degToRad(esquinas.reduce((s, e) => s + e[1], 0) / 4);
-      const xy = esquinas.map(([lon, lat]) => [lon * 111.32 * Math.cos(lat0), lat * 110.57]);
-      km2 = Math.abs(xy.reduce((s, [x, y], i) => s + x * xy[(i + 1) % 4][1] - xy[(i + 1) % 4][0] * y, 0) / 2);
-    }
+    const { km2, centro } = medidasArea(geo);
     const poblaciones = (this.listaPoblaciones ?? [])
       .filter(([, lon, lat]) => !fueraDePieza(g.marco, lon, lat))
       .filter(([, lon, lat]) => {
         const [x, y] = proyectar(g.marco, lon, lat);
         return dentro(...enPantalla(x - g.cx, y - g.cy));
       });
-    return { modis, viirs, frpMax, armonizado, km2, poblaciones, centro: this.lonLatEn((ax + bx) / 2, (ay + by) / 2) };
+    return { modis, viirs, frpMax, armonizado, km2, poblaciones, centro };
   }
 
   escucharPunteros() {
@@ -1140,9 +1155,9 @@ export class ModoPais {
       if (!this.llegado || e.button !== 0) return;
       if (this.modoArea) {
         c.setPointerCapture(e.pointerId);
-        this.arrastreArea = { id: e.pointerId, x0: e.clientX, y0: e.clientY, x1: e.clientX, y1: e.clientY };
+        this.arrastreArea = { id: e.pointerId };
         this.onPunto?.(null);
-        this.onArea?.({ ...this.arrastreArea, final: false });
+        this.onAreaPuntero?.('baja', e);
         return;
       }
       this.enfoque = null;
@@ -1154,11 +1169,8 @@ export class ModoPais {
       this.onPunto?.(null);
     });
     c.addEventListener('pointermove', e => {
-      const a = this.arrastreArea;
-      if (a && a.id === e.pointerId) {
-        a.x1 = e.clientX;
-        a.y1 = e.clientY;
-        this.onArea?.({ ...a, final: false });
+      if (this.modoArea) {
+        this.onAreaPuntero?.(this.arrastreArea?.id === e.pointerId ? 'arrastra' : 'flota', e);
         return;
       }
       const p = this.punteros.get(e.pointerId);
@@ -1191,12 +1203,7 @@ export class ModoPais {
       const a = this.arrastreArea;
       if (a && a.id === e.pointerId) {
         this.arrastreArea = null;
-        const chico = Math.abs(a.x1 - a.x0) < 6 || Math.abs(a.y1 - a.y0) < 6;
-        this.onArea?.(
-          chico || e.type === 'pointercancel'
-            ? null
-            : { ...a, final: true, resultado: this.contarEnRect(a.x0, a.y0, a.x1, a.y1) },
-        );
+        this.onAreaPuntero?.(e.type === 'pointercancel' ? 'cancela' : 'sube', e);
         return;
       }
       const p = this.punteros.get(e.pointerId);
@@ -1230,7 +1237,10 @@ export class ModoPais {
       { passive: false },
     );
     c.addEventListener('dblclick', () => {
-      if (this.modoArea) return;
+      if (this.modoArea) {
+        this.onAreaPuntero?.('doble', e);
+        return;
+      }
       this.reiniciarVista();
       this.onVistaMovida?.();
     });

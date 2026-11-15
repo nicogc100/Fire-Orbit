@@ -1,4 +1,4 @@
-import { CLOUD_SETTINGS } from './cloud-settings.js?v=20261115chl3';
+import { CLOUD_SETTINGS } from './cloud-settings.js?v=20261115orb1';
 const glslFloat = value => (Number.isInteger(value) ? `${value}.0` : String(value));
 // One density field drives volumetric clouds, their transparency and shadows.
 export const cloudField = /* glsl */ `

@@ -1,4 +1,4 @@
-import { etiquetaConfianza, etiquetaSatelite } from '../datos/datos-pais.js?v=20261115chl3';
+import { etiquetaConfianza, etiquetaSatelite } from '../datos/datos-pais.js?v=20261115orb1';
 
 // Ficha flotante de un foco del mapa: fecha, hora, sensor, potencia y confianza, o el
 // resumen de una zona cuando el país solo tiene la serie harmonizada por celdas.

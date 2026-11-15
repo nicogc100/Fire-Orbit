@@ -37,7 +37,7 @@ The raw CSV files are stored in `procesamiento/crudos/` and **are not uploaded t
 | `chile-grilla.json`  | Harmonized counts per 0.25° cell and per month                                                           | Region calendars and harmonized map points  |
 | `chile-YYYY.json`    | Raw detections for one year (with `--anuales`), same format as `chile-2023.json`                          | Table and CSV download                      |
 | `chile-metodo.json`  | AI model results: annual series, detection curve, overpass times, errors, CONAF validation (not from these scripts) | "Armonización" panel and "Validación" tab   |
-| `chile-poblaciones.json` | Chile towns (one per commune) with INE Census 2024 population (not from these scripts)               | Towns layer, nearest town, area count       |
+| `chile-poblaciones.json` | Chile towns (one per commune) with INE Census 2024 population (not from these scripts)               | Towns layer, nearest town, area tool        |
 
 ### `chile-mensual.json` format
 
@@ -75,6 +75,36 @@ The unit `celdas-día con fuego` means "fire cell-days": ~1 km cells with fire, 
 
 `lat` and `lon` are the southwest corner of the cell. `v` is a list of `[index in meses, value]` pairs and only
 includes months with fire. For a selected area, add up the cells that fall inside it, month by month.
+
+## Regional reports (`9_informes.py`)
+
+`9_informes.py` writes a burning-activity report for every region of Chile and for the whole country, one per month
+and one per fire season (July to June). The script, its messages and the report itself are in English.
+
+```bash
+cd globo-incendios/procesamiento
+pip install -r requirements.txt
+python 9_informes.py                        # uses salida/celdas_armonizadas.csv.gz
+python 9_informes.py --crudos crudos/Chile  # also reads the FIRMS CSVs (FRP, day/night, concentration)
+python 9_informes.py --celdas path/to/celdas_armonizadas.csv.gz
+```
+
+| Input                           | What it is                                                                              |
+| ------------------------------- | --------------------------------------------------------------------------------------- |
+| `salida/celdas_armonizadas.csv.gz` | Output of the AI model (step 7 of the separate Chile project): one row per 20 km cell and month. **Not in this repository.** |
+| `regiones_chile.geojson`        | Boundaries of the 16 regions; each cell goes to the region that contains its center     |
+| `conaf_region_mes.csv`          | CONAF area burned (ha) and number of fires by region and month, 2001–2024               |
+| `fuentes-conaf/`                | The two CONAF Excel files (monthly damage and monthly occurrence) the CSV was built from |
+
+Output: `web_informes/` (`informe.html` plus `datos/*.js`), a static viewer that can be uploaded as is. Choose region,
+type (monthly or season) and period; the address keeps the choice, for example `informe.html#biobio/temporada/2022`.
+
+Each report states: the percentile and rank of the period against the same month (or season) of the other years of
+the same region, the reliability of that figure and why, what is not observable, the harmonized activity against its
+median, checks on whether an anomaly is real or an artifact (sensor mix, static sources, MODIS alone), comparisons
+(previous year, most similar years, neighboring regions, CONAF), the most active cells, the trend (Mann-Kendall with
+autocorrelation correction and Sen's slope) and what the report does not claim. Whatever cannot be computed with the
+available data is shown as "not available" rather than estimated.
 
 ## Simple harmonization method (used by the other countries)
 

@@ -9,9 +9,9 @@ import {
   cargarZonas,
   serieDeRegion,
   referenciaHistorica,
-} from '../datos/datos-pais.js?v=20261115chl3';
-import { CalendarioHistorico } from './calendario-historico.js?v=20261115chl3';
-import { TablaRegistros, nombreArchivo } from './tabla-registros.js?v=20261115chl3';
+} from '../datos/datos-pais.js?v=20261115orb1';
+import { CalendarioHistorico } from './calendario-historico.js?v=20261115orb1';
+import { TablaRegistros, nombreArchivo } from './tabla-registros.js?v=20261115orb1';
 
 const numero = new Intl.NumberFormat('es-CL');
 const decimal = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -499,7 +499,7 @@ export class PanelPais {
     const nodo = this.parte?.('vista-validacion');
     if (!nodo || nodo.dataset.listo) return;
     nodo.dataset.listo = '1';
-    import('../armonizacion.js?v=20261115chl3')
+    import('../armonizacion.js?v=20261115orb1')
       .then(m => m.pintarValidacion(nodo))
       .catch(error => {
         console.error('Validación:', error);
