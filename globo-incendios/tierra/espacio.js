@@ -1,4 +1,4 @@
-// Fondo espacial de Fire Sat: estrellas, Vía Láctea, nebulosa, brillo del Sol y estrellas fugaces.
+// Fondo espacial de Fire Orbit: estrellas, Vía Láctea, nebulosa, brillo del Sol y estrellas fugaces.
 // Es una capa independiente (canvas 2D) que va detrás del canvas WebGL de la Tierra,
 // que ya se dibuja con fondo transparente. No toca tierra.js ni el render del planeta.
 (() => {

@@ -1,4 +1,4 @@
-/* Fire Sat. Un sistema para las tres vistas.
+/* Fire Orbit. Un sistema para las tres vistas.
    Tipos: Inter Tight (planeta y país); la portada usa Archivo.
    Escala de espacios: 4 8 12 16 24 32 48. Escala de texto: 12 13 14 16 20 28 56.
    El color intenso (brasa) es solo para los focos y las acciones principales. */
@@ -254,16 +254,19 @@ canvas:focus-visible {
   position: absolute;
   inset-inline: 0;
   bottom: 60svh; /* Deja un margen sobre el horizonte, situado al 44% de la altura. */
-  width: min(calc(100% - 40px), 60rem);
+  /* Usamos el ancho disponible para centrar el nombre completo. */
+  width: calc(100% - 40px);
   margin-inline: auto;
 }
 .portada h1 {
   margin: 0;
-  font-size: var(--tamano-titulo);
+  /* Fire Orbit ocupa una sola línea, también en pantallas estrechas. */
+  font-size: min(var(--tamano-titulo), 14vw);
   font-weight: 900;
   line-height: 0.88;
   letter-spacing: -0.065em;
   text-transform: uppercase;
+  white-space: nowrap;
   text-shadow:
     0 1px 3px #0a24387a,
     0 6px 18px #0a24382e;

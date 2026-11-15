@@ -1,0 +1,1026 @@
+{
+  "width": 2048,
+  "height": 1024,
+  "depth": 32,
+  "base": 1.0015,
+  "top": 1.0115,
+  "densityScale": 6,
+  "appearance": "Three-scale connected cloud formations: spherical macro-weather guide, warped connected medium billows and folds, varied low/deep/high profiles and edge-only fine erosion. No column reconstruction.",
+  "channels": "R: density / 6; G: optical depth towards top × 100",
+  "controls": {
+    "macroFilter": "three spherical box passes, angular radius 5 pixels at equator",
+    "formationThreshold": 1,
+    "weatherRange": [
+      0.1,
+      0.56
+    ],
+    "cellularScale": [
+      4.37,
+      5.36
+    ],
+    "shapeMix": "0.74 warped billows + 0.26 coherent folds",
+    "coherentMediumScales": [
+      32,
+      15.5
+    ],
+    "canopyRange": [
+      0.28,
+      0.88
+    ],
+    "bodyProfileExponent": 0.46,
+    "lowSheetWeight": 0.6,
+    "lowSheetMask": "medium 3D folds",
+    "highWispWeight": 0.065,
+    "fineEdgeErosion": 0.045,
+    "globalOpacityAnchor": 0.19,
+    "calibratedGain": 4.80261215865612,
+    "finalGlobalCorrection": 1.261394202709198,
+    "clippedVoxels": 142064,
+    "regionalCalibration": {
+      "purpose": "Broad-distribution opacity anchor only; no per-column equality and no aesthetic pass/fail.",
+      "baselineSha256": "c8eec0ae096efdc8abadf189df997df88a73189be3ab6f761cb6df3a30a5477b",
+      "grid": {
+        "longitudeCells": 12,
+        "latitudeCells": 6,
+        "cellDegrees": 30
+      },
+      "iterations": 17,
+      "sampleStride": 4,
+      "gainLimits": [
+        0.55,
+        1.8
+      ],
+      "controlGainRange": [
+        0.55,
+        1.8
+      ],
+      "appliedGainRange": [
+        0.5499999999999999,
+        1.8000000000000005
+      ],
+      "appliedMeanGain": 1.0502943991752247,
+      "baselineMeanOpacity": 0.16350440135113758,
+      "beforeMeanOpacity": 0.18998216567980306,
+      "afterMeanOpacity": 0.1787302892466748,
+      "regionalMeanAbsoluteError": 0.04961569211489807,
+      "regionalMaximumAbsoluteError": 0.23183631406598015,
+      "beforeRegionalMeanAbsoluteError": 0.07279348067213252,
+      "beforeRegionalMaximumAbsoluteError": 0.2892354532816652,
+      "controlsAtLimits": 47,
+      "regions": [
+        {
+          "longitude": [
+            -180,
+            -150
+          ],
+          "latitude": [
+            -90,
+            -60
+          ],
+          "baselineMeanOpacity": 0.19257752253714702,
+          "beforeMeanOpacity": 0.21127709732688013,
+          "afterMeanOpacity": 0.21307026058581138
+        },
+        {
+          "longitude": [
+            -150,
+            -120
+          ],
+          "latitude": [
+            -90,
+            -60
+          ],
+          "baselineMeanOpacity": 0.3746595028071387,
+          "beforeMeanOpacity": 0.5731997226358003,
+          "afterMeanOpacity": 0.5402657330119669
+        },
+        {
+          "longitude": [
+            -120,
+            -90
+          ],
+          "latitude": [
+            -90,
+            -60
+          ],
+          "baselineMeanOpacity": 0.14329519821299355,
+          "beforeMeanOpacity": 0.15871794788660498,
+          "afterMeanOpacity": 0.16452988960383663
+        },
+        {
+          "longitude": [
+            -90,
+            -60
+          ],
+          "latitude": [
+            -90,
+            -60
+          ],
+          "baselineMeanOpacity": 0.1744743258898721,
+          "beforeMeanOpacity": 0.1999363647452991,
+          "afterMeanOpacity": 0.1869722837946809
+        },
+        {
+          "longitude": [
+            -60,
+            -30
+          ],
+          "latitude": [
+            -90,
+            -60
+          ],
+          "baselineMeanOpacity": 0.13429803448725253,
+          "beforeMeanOpacity": 0.17714344752336306,
+          "afterMeanOpacity": 0.15168911917695949
+        },
+        {
+          "longitude": [
+            -30,
+            0
+          ],
+          "latitude": [
+            -90,
+            -60
+          ],
+          "baselineMeanOpacity": 0.363381467393849,
+          "beforeMeanOpacity": 0.5288269932503558,
+          "afterMeanOpacity": 0.46032608648710405
+        },
+        {
+          "longitude": [
+            0,
+            30
+          ],
+          "latitude": [
+            -90,
+            -60
+          ],
+          "baselineMeanOpacity": 0.5021674438160951,
+          "beforeMeanOpacity": 0.7814913159903352,
+          "afterMeanOpacity": 0.7229432314514881
+        },
+        {
+          "longitude": [
+            30,
+            60
+          ],
+          "latitude": [
+            -90,
+            -60
+          ],
+          "baselineMeanOpacity": 0.6699644437097108,
+          "beforeMeanOpacity": 0.8795513451390243,
+          "afterMeanOpacity": 0.7862043597580599
+        },
+        {
+          "longitude": [
+            60,
+            90
+          ],
+          "latitude": [
+            -90,
+            -60
+          ],
+          "baselineMeanOpacity": 0.7057323222275218,
+          "beforeMeanOpacity": 0.9707366053299278,
+          "afterMeanOpacity": 0.9062734981643106
+        },
+        {
+          "longitude": [
+            90,
+            120
+          ],
+          "latitude": [
+            -90,
+            -60
+          ],
+          "baselineMeanOpacity": 0.6266629879927477,
+          "beforeMeanOpacity": 0.9158984412744129,
+          "afterMeanOpacity": 0.8584993020587278
+        },
+        {
+          "longitude": [
+            120,
+            150
+          ],
+          "latitude": [
+            -90,
+            -60
+          ],
+          "baselineMeanOpacity": 0.5546277626767914,
+          "beforeMeanOpacity": 0.7092894469859368,
+          "afterMeanOpacity": 0.6183140855546275
+        },
+        {
+          "longitude": [
+            150,
+            180
+          ],
+          "latitude": [
+            -90,
+            -60
+          ],
+          "baselineMeanOpacity": 0.3304534063980219,
+          "beforeMeanOpacity": 0.4347092416346532,
+          "afterMeanOpacity": 0.38982884992434474
+        },
+        {
+          "longitude": [
+            -180,
+            -150
+          ],
+          "latitude": [
+            -60,
+            -30
+          ],
+          "baselineMeanOpacity": 0.20661512542793192,
+          "beforeMeanOpacity": 0.256338520619304,
+          "afterMeanOpacity": 0.23637600023273064
+        },
+        {
+          "longitude": [
+            -150,
+            -120
+          ],
+          "latitude": [
+            -60,
+            -30
+          ],
+          "baselineMeanOpacity": 0.16243586158774503,
+          "beforeMeanOpacity": 0.14219455934261477,
+          "afterMeanOpacity": 0.15621876128038212
+        },
+        {
+          "longitude": [
+            -120,
+            -90
+          ],
+          "latitude": [
+            -60,
+            -30
+          ],
+          "baselineMeanOpacity": 0.23714658034657798,
+          "beforeMeanOpacity": 0.3661731854858519,
+          "afterMeanOpacity": 0.3338762373262012
+        },
+        {
+          "longitude": [
+            -90,
+            -60
+          ],
+          "latitude": [
+            -60,
+            -30
+          ],
+          "baselineMeanOpacity": 0.11300064550266373,
+          "beforeMeanOpacity": 0.11474760975210753,
+          "afterMeanOpacity": 0.11661312598885042
+        },
+        {
+          "longitude": [
+            -60,
+            -30
+          ],
+          "latitude": [
+            -60,
+            -30
+          ],
+          "baselineMeanOpacity": 0.20008695459009973,
+          "beforeMeanOpacity": 0.24265186395521735,
+          "afterMeanOpacity": 0.2149702308393933
+        },
+        {
+          "longitude": [
+            -30,
+            0
+          ],
+          "latitude": [
+            -60,
+            -30
+          ],
+          "baselineMeanOpacity": 0.2632017151888302,
+          "beforeMeanOpacity": 0.4075680919923762,
+          "afterMeanOpacity": 0.36833407530102774
+        },
+        {
+          "longitude": [
+            0,
+            30
+          ],
+          "latitude": [
+            -60,
+            -30
+          ],
+          "baselineMeanOpacity": 0.209576595845445,
+          "beforeMeanOpacity": 0.2842624807658105,
+          "afterMeanOpacity": 0.24971844438897234
+        },
+        {
+          "longitude": [
+            30,
+            60
+          ],
+          "latitude": [
+            -60,
+            -30
+          ],
+          "baselineMeanOpacity": 0.23628386029528498,
+          "beforeMeanOpacity": 0.2997498366490483,
+          "afterMeanOpacity": 0.2487957167479713
+        },
+        {
+          "longitude": [
+            60,
+            90
+          ],
+          "latitude": [
+            -60,
+            -30
+          ],
+          "baselineMeanOpacity": 0.15437321362819703,
+          "beforeMeanOpacity": 0.1837342403093788,
+          "afterMeanOpacity": 0.16187053160924006
+        },
+        {
+          "longitude": [
+            90,
+            120
+          ],
+          "latitude": [
+            -60,
+            -30
+          ],
+          "baselineMeanOpacity": 0.1983424856462261,
+          "beforeMeanOpacity": 0.24987855848837903,
+          "afterMeanOpacity": 0.2208753863903481
+        },
+        {
+          "longitude": [
+            120,
+            150
+          ],
+          "latitude": [
+            -60,
+            -30
+          ],
+          "baselineMeanOpacity": 0.25688304334580675,
+          "beforeMeanOpacity": 0.355817263636445,
+          "afterMeanOpacity": 0.3172194649550388
+        },
+        {
+          "longitude": [
+            150,
+            180
+          ],
+          "latitude": [
+            -60,
+            -30
+          ],
+          "baselineMeanOpacity": 0.11508618886723572,
+          "beforeMeanOpacity": 0.09247174458869138,
+          "afterMeanOpacity": 0.09709177803620316
+        },
+        {
+          "longitude": [
+            -180,
+            -150
+          ],
+          "latitude": [
+            -30,
+            0
+          ],
+          "baselineMeanOpacity": 0.06605564789060232,
+          "beforeMeanOpacity": 0.036394587622772964,
+          "afterMeanOpacity": 0.0400573625219676
+        },
+        {
+          "longitude": [
+            -150,
+            -120
+          ],
+          "latitude": [
+            -30,
+            0
+          ],
+          "baselineMeanOpacity": 0.09970230457158316,
+          "beforeMeanOpacity": 0.13819667972327104,
+          "afterMeanOpacity": 0.13507808238338415
+        },
+        {
+          "longitude": [
+            -120,
+            -90
+          ],
+          "latitude": [
+            -30,
+            0
+          ],
+          "baselineMeanOpacity": 0.10933175956841971,
+          "beforeMeanOpacity": 0.09820313769069486,
+          "afterMeanOpacity": 0.10666066497270099
+        },
+        {
+          "longitude": [
+            -90,
+            -60
+          ],
+          "latitude": [
+            -30,
+            0
+          ],
+          "baselineMeanOpacity": 0.28207136411694844,
+          "beforeMeanOpacity": 0.3071830359245533,
+          "afterMeanOpacity": 0.2836877000368462
+        },
+        {
+          "longitude": [
+            -60,
+            -30
+          ],
+          "latitude": [
+            -30,
+            0
+          ],
+          "baselineMeanOpacity": 0.08273828000267376,
+          "beforeMeanOpacity": 0.09147041978517599,
+          "afterMeanOpacity": 0.0906471998850599
+        },
+        {
+          "longitude": [
+            -30,
+            0
+          ],
+          "latitude": [
+            -30,
+            0
+          ],
+          "baselineMeanOpacity": 0.04243848385744015,
+          "beforeMeanOpacity": 0.014737428069895303,
+          "afterMeanOpacity": 0.01700596217941977
+        },
+        {
+          "longitude": [
+            0,
+            30
+          ],
+          "latitude": [
+            -30,
+            0
+          ],
+          "baselineMeanOpacity": 0.03993660582757779,
+          "beforeMeanOpacity": 0.021008004090263432,
+          "afterMeanOpacity": 0.02189769838269214
+        },
+        {
+          "longitude": [
+            30,
+            60
+          ],
+          "latitude": [
+            -30,
+            0
+          ],
+          "baselineMeanOpacity": 0.08255673045782662,
+          "beforeMeanOpacity": 0.0347838763953302,
+          "afterMeanOpacity": 0.0386028127149026
+        },
+        {
+          "longitude": [
+            60,
+            90
+          ],
+          "latitude": [
+            -30,
+            0
+          ],
+          "baselineMeanOpacity": 0.08280671932795491,
+          "beforeMeanOpacity": 0.0682323733341816,
+          "afterMeanOpacity": 0.07475955200124478
+        },
+        {
+          "longitude": [
+            90,
+            120
+          ],
+          "latitude": [
+            -30,
+            0
+          ],
+          "baselineMeanOpacity": 0.08432061397845642,
+          "beforeMeanOpacity": 0.0521133577325984,
+          "afterMeanOpacity": 0.0565143700238833
+        },
+        {
+          "longitude": [
+            120,
+            150
+          ],
+          "latitude": [
+            -30,
+            0
+          ],
+          "baselineMeanOpacity": 0.06471500051528205,
+          "beforeMeanOpacity": 0.03739969615794537,
+          "afterMeanOpacity": 0.04957667154707402
+        },
+        {
+          "longitude": [
+            150,
+            180
+          ],
+          "latitude": [
+            -30,
+            0
+          ],
+          "baselineMeanOpacity": 0.1059823981820248,
+          "beforeMeanOpacity": 0.03685897911674941,
+          "afterMeanOpacity": 0.05150605502628285
+        },
+        {
+          "longitude": [
+            -180,
+            -150
+          ],
+          "latitude": [
+            0,
+            30
+          ],
+          "baselineMeanOpacity": 0.07548531396852823,
+          "beforeMeanOpacity": 0.07392868358484687,
+          "afterMeanOpacity": 0.07901338874820407
+        },
+        {
+          "longitude": [
+            -150,
+            -120
+          ],
+          "latitude": [
+            0,
+            30
+          ],
+          "baselineMeanOpacity": 0.07163160346861952,
+          "beforeMeanOpacity": 0.049713822315198594,
+          "afterMeanOpacity": 0.056280020084021866
+        },
+        {
+          "longitude": [
+            -120,
+            -90
+          ],
+          "latitude": [
+            0,
+            30
+          ],
+          "baselineMeanOpacity": 0.0652152613441402,
+          "beforeMeanOpacity": 0.024712570210944935,
+          "afterMeanOpacity": 0.028542189265952894
+        },
+        {
+          "longitude": [
+            -90,
+            -60
+          ],
+          "latitude": [
+            0,
+            30
+          ],
+          "baselineMeanOpacity": 0.1268735851121099,
+          "beforeMeanOpacity": 0.14479411705594705,
+          "afterMeanOpacity": 0.13042418159559727
+        },
+        {
+          "longitude": [
+            -60,
+            -30
+          ],
+          "latitude": [
+            0,
+            30
+          ],
+          "baselineMeanOpacity": 0.10466398757237569,
+          "beforeMeanOpacity": 0.08841473261702999,
+          "afterMeanOpacity": 0.09776004364922666
+        },
+        {
+          "longitude": [
+            -30,
+            0
+          ],
+          "latitude": [
+            0,
+            30
+          ],
+          "baselineMeanOpacity": 0.08306177445762268,
+          "beforeMeanOpacity": 0.10279859710745075,
+          "afterMeanOpacity": 0.09407847936321015
+        },
+        {
+          "longitude": [
+            0,
+            30
+          ],
+          "latitude": [
+            0,
+            30
+          ],
+          "baselineMeanOpacity": 0.1368251193667365,
+          "beforeMeanOpacity": 0.15005083821772797,
+          "afterMeanOpacity": 0.13929496267032282
+        },
+        {
+          "longitude": [
+            30,
+            60
+          ],
+          "latitude": [
+            0,
+            30
+          ],
+          "baselineMeanOpacity": 0.09725996045448512,
+          "beforeMeanOpacity": 0.10399549012658006,
+          "afterMeanOpacity": 0.09611562680489917
+        },
+        {
+          "longitude": [
+            60,
+            90
+          ],
+          "latitude": [
+            0,
+            30
+          ],
+          "baselineMeanOpacity": 0.20978094982282258,
+          "beforeMeanOpacity": 0.3168522814206083,
+          "afterMeanOpacity": 0.28299173719156756
+        },
+        {
+          "longitude": [
+            90,
+            120
+          ],
+          "latitude": [
+            0,
+            30
+          ],
+          "baselineMeanOpacity": 0.20909593439989543,
+          "beforeMeanOpacity": 0.2843870222365884,
+          "afterMeanOpacity": 0.26972905089124666
+        },
+        {
+          "longitude": [
+            120,
+            150
+          ],
+          "latitude": [
+            0,
+            30
+          ],
+          "baselineMeanOpacity": 0.12795682882959336,
+          "beforeMeanOpacity": 0.10586064309624894,
+          "afterMeanOpacity": 0.1161740075636156
+        },
+        {
+          "longitude": [
+            150,
+            180
+          ],
+          "latitude": [
+            0,
+            30
+          ],
+          "baselineMeanOpacity": 0.07858833614625153,
+          "beforeMeanOpacity": 0.03141081431828191,
+          "afterMeanOpacity": 0.04211809302767777
+        },
+        {
+          "longitude": [
+            -180,
+            -150
+          ],
+          "latitude": [
+            30,
+            60
+          ],
+          "baselineMeanOpacity": 0.13607153144339493,
+          "beforeMeanOpacity": 0.14681448533515232,
+          "afterMeanOpacity": 0.1550592420134708
+        },
+        {
+          "longitude": [
+            -150,
+            -120
+          ],
+          "latitude": [
+            30,
+            60
+          ],
+          "baselineMeanOpacity": 0.23060185111906034,
+          "beforeMeanOpacity": 0.2799942102961171,
+          "afterMeanOpacity": 0.23851423031091076
+        },
+        {
+          "longitude": [
+            -120,
+            -90
+          ],
+          "latitude": [
+            30,
+            60
+          ],
+          "baselineMeanOpacity": 0.156924702326125,
+          "beforeMeanOpacity": 0.1477085382008497,
+          "afterMeanOpacity": 0.16043530490070385
+        },
+        {
+          "longitude": [
+            -90,
+            -60
+          ],
+          "latitude": [
+            30,
+            60
+          ],
+          "baselineMeanOpacity": 0.18798105764230974,
+          "beforeMeanOpacity": 0.25204531219945614,
+          "afterMeanOpacity": 0.22162327834208873
+        },
+        {
+          "longitude": [
+            -60,
+            -30
+          ],
+          "latitude": [
+            30,
+            60
+          ],
+          "baselineMeanOpacity": 0.18704537626441328,
+          "beforeMeanOpacity": 0.17381074965648427,
+          "afterMeanOpacity": 0.17438806893719236
+        },
+        {
+          "longitude": [
+            -30,
+            0
+          ],
+          "latitude": [
+            30,
+            60
+          ],
+          "baselineMeanOpacity": 0.08161784235128013,
+          "beforeMeanOpacity": 0.03639374507609475,
+          "afterMeanOpacity": 0.044678109415515345
+        },
+        {
+          "longitude": [
+            0,
+            30
+          ],
+          "latitude": [
+            30,
+            60
+          ],
+          "baselineMeanOpacity": 0.017767738071915805,
+          "beforeMeanOpacity": 0.010177025996635487,
+          "afterMeanOpacity": 0.009673344165216612
+        },
+        {
+          "longitude": [
+            30,
+            60
+          ],
+          "latitude": [
+            30,
+            60
+          ],
+          "baselineMeanOpacity": 0.0379659931350255,
+          "beforeMeanOpacity": 0.0040342507290930495,
+          "afterMeanOpacity": 0.004048928930062038
+        },
+        {
+          "longitude": [
+            60,
+            90
+          ],
+          "latitude": [
+            30,
+            60
+          ],
+          "baselineMeanOpacity": 0.14910069721905492,
+          "beforeMeanOpacity": 0.16135864659390872,
+          "afterMeanOpacity": 0.1568165196338476
+        },
+        {
+          "longitude": [
+            90,
+            120
+          ],
+          "latitude": [
+            30,
+            60
+          ],
+          "baselineMeanOpacity": 0.15480393935116768,
+          "beforeMeanOpacity": 0.15393578267175104,
+          "afterMeanOpacity": 0.1561814124266863
+        },
+        {
+          "longitude": [
+            120,
+            150
+          ],
+          "latitude": [
+            30,
+            60
+          ],
+          "baselineMeanOpacity": 0.15676166238025221,
+          "beforeMeanOpacity": 0.1684234136602975,
+          "afterMeanOpacity": 0.15566608929769069
+        },
+        {
+          "longitude": [
+            150,
+            180
+          ],
+          "latitude": [
+            30,
+            60
+          ],
+          "baselineMeanOpacity": 0.2683259695013727,
+          "beforeMeanOpacity": 0.37180220761482946,
+          "afterMeanOpacity": 0.34190712079538815
+        },
+        {
+          "longitude": [
+            -180,
+            -150
+          ],
+          "latitude": [
+            60,
+            90
+          ],
+          "baselineMeanOpacity": 0.45324134590317566,
+          "beforeMeanOpacity": 0.632432449523721,
+          "afterMeanOpacity": 0.5974268836907336
+        },
+        {
+          "longitude": [
+            -150,
+            -120
+          ],
+          "latitude": [
+            60,
+            90
+          ],
+          "baselineMeanOpacity": 0.42524399221823267,
+          "beforeMeanOpacity": 0.5957499237626721,
+          "afterMeanOpacity": 0.5397483709160086
+        },
+        {
+          "longitude": [
+            -120,
+            -90
+          ],
+          "latitude": [
+            60,
+            90
+          ],
+          "baselineMeanOpacity": 0.34268460653274124,
+          "beforeMeanOpacity": 0.4796763080962442,
+          "afterMeanOpacity": 0.44025799146151157
+        },
+        {
+          "longitude": [
+            -90,
+            -60
+          ],
+          "latitude": [
+            60,
+            90
+          ],
+          "baselineMeanOpacity": 0.08876740394625417,
+          "beforeMeanOpacity": 0.025148492922576655,
+          "afterMeanOpacity": 0.03030403004030426
+        },
+        {
+          "longitude": [
+            -60,
+            -30
+          ],
+          "latitude": [
+            60,
+            90
+          ],
+          "baselineMeanOpacity": 0.20609107768881088,
+          "beforeMeanOpacity": 0.07790599385135906,
+          "afterMeanOpacity": 0.09842840659741087
+        },
+        {
+          "longitude": [
+            -30,
+            0
+          ],
+          "latitude": [
+            60,
+            90
+          ],
+          "baselineMeanOpacity": 0.25584977742828174,
+          "beforeMeanOpacity": 0.3699622327504647,
+          "afterMeanOpacity": 0.3477690641127611
+        },
+        {
+          "longitude": [
+            0,
+            30
+          ],
+          "latitude": [
+            60,
+            90
+          ],
+          "baselineMeanOpacity": 0.42247747800557256,
+          "beforeMeanOpacity": 0.6030522917397491,
+          "afterMeanOpacity": 0.5409373771994964
+        },
+        {
+          "longitude": [
+            30,
+            60
+          ],
+          "latitude": [
+            60,
+            90
+          ],
+          "baselineMeanOpacity": 0.2457060700286076,
+          "beforeMeanOpacity": 0.3857981265070953,
+          "afterMeanOpacity": 0.3383572109223415
+        },
+        {
+          "longitude": [
+            60,
+            90
+          ],
+          "latitude": [
+            60,
+            90
+          ],
+          "baselineMeanOpacity": 0.45638871357314054,
+          "beforeMeanOpacity": 0.6956216969984782,
+          "afterMeanOpacity": 0.6615204135831373
+        },
+        {
+          "longitude": [
+            90,
+            120
+          ],
+          "latitude": [
+            60,
+            90
+          ],
+          "baselineMeanOpacity": 0.36042037537043403,
+          "beforeMeanOpacity": 0.45532892924113444,
+          "afterMeanOpacity": 0.4082031860157782
+        },
+        {
+          "longitude": [
+            120,
+            150
+          ],
+          "latitude": [
+            60,
+            90
+          ],
+          "baselineMeanOpacity": 0.3376252454059109,
+          "beforeMeanOpacity": 0.4740431988263239,
+          "afterMeanOpacity": 0.4019041111017206
+        },
+        {
+          "longitude": [
+            150,
+            180
+          ],
+          "latitude": [
+            60,
+            90
+          ],
+          "baselineMeanOpacity": 0.22680434549068756,
+          "beforeMeanOpacity": 0.2854598766708615,
+          "afterMeanOpacity": 0.24391794582489737
+        }
+      ],
+      "limitation": "Measured after gains, before voxel requantisation. The generator must report actual clipping and final baked coverage. Zero-density columns remain zero."
+    }
+  },
+  "normalGuide": {
+    "file": "nubes-relieve.rgba.gz",
+    "width": 1024,
+    "height": 512,
+    "bytes": 2097152,
+    "compressedBytes": 1104031,
+    "sha256": "98be80784df0c148c9b4019135d9726ba72ad531c93a5632317cee28310896b9",
+    "sourceDensitySha256": "7bb42828a61899997da68b19051ee90cf782706449367a59ee68fb5f8a8c0bc7",
+    "slopeStrength": 6,
+    "description": "RGBA8 auxiliary local-Cartesian normal guide from the 90th percentile of actual radial density mass, interpolated within linear radial segments. Opacity-weighted 3×3 auxiliary-height smoothing, physical longitude/latitude gradients, slope emphasis 6 (artistic lighting emphasis), periodic longitude and radial polar taper. RGB encodes N*.5+.5; A is 255 only where resampled radial opacity exceeds .02. Density is unchanged."
+  },
+  "bytes": 134217728,
+  "compressedBytes": 20428512,
+  "sha256": "7bb42828a61899997da68b19051ee90cf782706449367a59ee68fb5f8a8c0bc7",
+  "source": "Original density/noise code. Macro distribution derived from the existing Solar System Scope / INOVE coverage, CC BY 4.0. Resources inspected for volume/envelope, spherical light and atmospheric techniques; illustrative, not current weather."
+}

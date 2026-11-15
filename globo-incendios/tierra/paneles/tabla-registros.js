@@ -119,15 +119,15 @@ export class TablaRegistros {
     );
     const enlace = document.createElement('a');
     enlace.href = url;
-    enlace.download = `${this.nombre || 'fire-sat'}.csv`;
+    enlace.download = `${this.nombre || 'fire-orbit'}.csv`;
     enlace.click();
     setTimeout(() => URL.revokeObjectURL(url), 2000);
   }
 }
 
-// Nombre de archivo sin tildes ni espacios: «fire-sat-chile-valparaiso-2023-febrero-viirs».
+// Nombre de archivo sin tildes ni espacios: «fire-orbit-chile-valparaiso-2023-febrero-viirs».
 export function nombreArchivo(...partes) {
-  return ['fire-sat', ...partes]
+  return ['fire-orbit', ...partes]
     .filter(Boolean)
     .map(p =>
       String(p)

@@ -1,0 +1,447 @@
+/* Tema oscuro. Se carga después de tierra.css y espacio.css.
+   Lleva los paneles, el buscador y los calendarios al mismo tono del fondo espacial
+   (antes eran blancos y contrastaban demasiado con el cielo negro). */
+:root {
+  color-scheme: dark;
+  --tinta: #e6edf7;
+  --tinta-2: #9fb0c8;
+  --papel: #0b1220;
+  --linea: #ffffff1f;
+  --brasa: #c5390a;
+  --brasa-fuerte: #e0521c;
+  --modis: #d9761c;
+  --viirs: #1597b0;
+  /* Calendario día a día: de casi nada (oscuro) a mucho fuego (brillante, como una brasa). */
+  --c0: #18223a;
+  --c1: #3e2a1d;
+  --c2: #7a3712;
+  --c3: #c2561a;
+  --c4: #f08a2e;
+  --c5: #ffc773;
+  /* Historial: divergente azul–rojo; lo normal queda gris oscuro y lo extremo brilla más. */
+  --a-2: #4f97e3;
+  --a-1: #2f5a8c;
+  --a0: #253047;
+  --a1: #8f4330;
+  --a2: #d0533a;
+  --a3: #ff7a5c;
+  --superficie-2: #121b2e;
+  --borde-suave: #ffffff33;
+}
+::selection {
+  color: #02030a;
+  background: #9cc4ff;
+}
+
+/* Panel del país: vidrio oscuro sobre el espacio */
+.panel-pais {
+  background: #0b1220f0;
+  border-left: 1px solid #ffffff14;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.panel-contenido,
+.tabla-marco {
+  scrollbar-color: #ffffff33 transparent;
+}
+.panel-asa span {
+  background: #ffffff40;
+}
+@media (max-width: 720px) {
+  .panel-pais {
+    border-left: 0;
+    border-top: 1px solid #ffffff14;
+  }
+}
+
+/* Buscador y lista de países */
+.campo-pais {
+  background: var(--superficie-2);
+  box-shadow: inset 0 0 0 1px var(--borde-suave);
+}
+.campo-pais:focus-within {
+  outline-color: #9cc4ff;
+}
+#lista-paises {
+  border: 1px solid #ffffff1a;
+  box-shadow: 0 12px 32px #000000a0;
+}
+#lista-paises em {
+  color: #ff9a6b;
+}
+.creditos > div {
+  border: 1px solid #ffffff1a;
+  box-shadow: 0 12px 32px #000000a0;
+}
+
+/* Controles con borde oscuro → borde claro */
+.chip,
+.boton-primario,
+.datos-filtros select {
+  border-color: var(--borde-suave);
+}
+.chip[aria-pressed='true'],
+.hc-modos button[aria-pressed='true'] {
+  border-color: var(--tinta);
+  background: var(--tinta);
+  color: var(--papel);
+}
+.selector-anio select,
+.datos-filtros select {
+  background-color: var(--superficie-2);
+  color: var(--tinta);
+}
+.enlace,
+.ruta-paso {
+  text-decoration-color: #ffffff59;
+}
+.ruta li + li::before {
+  color: #ffffff59;
+}
+.interruptor-pista {
+  background: #ffffff1f;
+  box-shadow: inset 0 0 0 1px #ffffff33;
+}
+.interruptor[aria-checked='true'] .interruptor-pista {
+  background: #e0521c;
+}
+.estado-satelital[data-estado='parcial'] {
+  color: #ff9a6b;
+}
+.tip-calendario {
+  border: 1px solid #ffffff26;
+  background: #1b2638;
+  color: var(--tinta);
+  box-shadow: 0 6px 18px #000000a0;
+}
+
+/* Casillas */
+.mes[data-nivel='4'],
+.mes[data-nivel='5'] {
+  color: #1a0d04;
+}
+.mes-explica {
+  background: var(--superficie-2);
+}
+.hc-celda.incompleta {
+  background-image: repeating-linear-gradient(135deg, #ffffff47 0 2px, transparent 2px 4px);
+}
+.hc-calidad {
+  background: #2a1a14;
+}
+.periodo-mapa {
+  background: var(--superficie-2);
+}
+.tabla-registros tbody tr:hover {
+  background: #ffffff0a;
+}
+.datos-guardados {
+  border: 1px solid #ffffff1a;
+}
+.datos-guardados::backdrop {
+  background: #02030acc;
+}
+
+/* Acceso al panel «Armonización» */
+.hc-como {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid #3987e566;
+  border-radius: 8px;
+  background: linear-gradient(100deg, #3987e526, #1597b014);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.hc-como strong {
+  display: block;
+  font-size: 14px;
+}
+.hc-como span {
+  color: var(--tinta-2);
+}
+.hc-como svg {
+  flex: none;
+  margin-left: auto;
+}
+@media (hover: hover) {
+  .hc-como:hover {
+    border-color: #3987e5;
+    background: linear-gradient(100deg, #3987e540, #1597b026);
+  }
+}
+.hc-como:focus-visible {
+  outline: 2px solid #9cc4ff;
+  outline-offset: 2px;
+}
+.hc-replicable {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-left: 3px solid #3987e5;
+  background: var(--superficie-2);
+  color: var(--tinta-2);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.hc-replicable strong {
+  color: var(--tinta);
+}
+.hc-replicable button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tinta);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: #ffffff59;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.hc-como-pais {
+  margin: 14px 0 0;
+}
+
+/* Etiquetas de los satélites en órbita (globo/orbitas.js) */
+.etiqueta-satelite {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  padding: 2px 7px;
+  border: 1px solid #ffffff1f;
+  border-radius: 999px;
+  background: #050a1acc;
+  color: #e6edf7;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  will-change: transform;
+}
+.etiqueta-satelite span {
+  font-weight: 700;
+}
+@media (max-width: 720px) {
+  .etiqueta-satelite {
+    display: none;
+  }
+}
+.etiqueta-satelite[hidden] {
+  display: none;
+}
+
+/* ---------- Herramientas del mapa de Chile (pais/herramientas-mapa.js) ---------- */
+.herramientas-mapa {
+  position: absolute;
+  z-index: 4;
+  top: 76px;
+  left: var(--margen);
+  display: none;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 5px;
+  width: max-content;
+  white-space: nowrap;
+  padding: 5px;
+  border: 1px solid #ffffff1f;
+  border-radius: 10px;
+  background: #0b1220d9;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px #00000080;
+}
+#escena[data-modo='pais'][data-transition='idle'][data-chile='si'] .herramientas-mapa {
+  display: flex;
+}
+.hm-puntos {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid #ffffff26;
+  border-radius: 999px;
+}
+.hm-puntos button,
+.hm-boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--tinta-2);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.hm-boton {
+  border: 1px solid #ffffff26;
+}
+.hm-puntos button[aria-pressed='true'] {
+  background: var(--tinta);
+  color: var(--papel);
+}
+.hm-boton[aria-pressed='true'] {
+  border-color: #9cc4ff;
+  background: #3987e533;
+  color: var(--tinta);
+}
+@media (hover: hover) {
+  .hm-puntos button[aria-pressed='false']:hover,
+  .hm-boton:hover {
+    color: var(--tinta);
+  }
+}
+.hm-puntos button:focus-visible,
+.hm-boton:focus-visible {
+  outline: 2px solid #9cc4ff;
+  outline-offset: 2px;
+}
+.hm-mover {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  min-height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--tinta-2);
+  cursor: grab;
+  touch-action: none;
+}
+.hm-mover:active,
+.herramientas-mapa.moviendo .hm-mover {
+  cursor: grabbing;
+}
+@media (hover: hover) {
+  .hm-mover:hover {
+    background: #ffffff14;
+    color: var(--tinta);
+  }
+}
+.hm-mover:focus-visible {
+  outline: 2px solid #9cc4ff;
+  outline-offset: 1px;
+}
+.hm-boton svg {
+  width: 14px;
+  height: 14px;
+}
+#pieza.modo-area {
+  cursor: crosshair;
+}
+.caja-area {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  border: 1.5px dashed #9cc4ff;
+  border-radius: 2px;
+  background: #3987e51f;
+  pointer-events: none;
+}
+.resultado-area {
+  position: fixed;
+  z-index: 6;
+  top: 0;
+  left: 0;
+  width: 260px;
+  padding: 10px 12px 12px;
+  border: 1px solid #ffffff26;
+  border-radius: 10px;
+  background: #0b1220f2;
+  color: var(--tinta);
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow: 0 10px 28px #000000a0;
+}
+.resultado-area header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.resultado-area p {
+  margin: 4px 0 0;
+}
+.ra-cerrar {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: #ffffff12;
+  color: var(--tinta);
+  cursor: pointer;
+}
+.ra-sub,
+.ra-nota {
+  color: var(--tinta-2);
+  font-size: 12px;
+}
+.ra-cifra strong {
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+}
+.ra-sensores {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.ra-sensores span {
+  color: var(--tinta-2);
+}
+.ra-sensores .marca-sensor {
+  margin-right: 2px;
+}
+.ra-pobl {
+  padding-top: 6px;
+  border-top: 1px solid #ffffff14;
+  margin-top: 8px !important;
+}
+.ra-pobl small,
+.etiqueta-poblacion small {
+  color: #c9d5e6;
+  font-size: 11px;
+  font-weight: 500;
+}
+.etiqueta-poblacion small {
+  margin-left: 4px;
+  opacity: 0.85;
+}
+.etiqueta-poblacion::before {
+  background: #ffd38a;
+}
+/* Puntos armonizados: la leyenda describe actividad en el período, no potencia de cada foco. */
+#escena[data-puntos-mapa='armonizados'][data-chile='si'] .leyenda-frp .ley-frp {
+  display: none;
+}
+#escena[data-puntos-mapa='armonizados'][data-chile='si'] .leyenda-frp .ley-serie {
+  display: inline;
+}
+@media (max-width: 720px) {
+  .herramientas-mapa {
+    top: 64px;
+    left: 12px;
+    max-width: calc(100vw - 24px);
+    overflow-x: auto;
+    padding: 4px;
+  }
+}

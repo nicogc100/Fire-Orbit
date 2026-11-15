@@ -42,7 +42,8 @@ def main():
             try:
                 with urlopen(url_existente, timeout=2) as respuesta:
                     pagina = respuesta.read(4096).decode("utf-8")
-                    es_tierra = ('name="application-name" content="Fire Sat"' in pagina
+                    es_tierra = ('name="application-name" content="Fire Orbit"' in pagina
+                                 or 'name="application-name" content="Fire Sat"' in pagina
                                  or 'name="application-name" content="Atlas del fuego"' in pagina
                                  or "<title>La Tierra · Atlas</title>" in pagina)
                 if es_tierra:

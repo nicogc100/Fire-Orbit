@@ -1,4 +1,4 @@
-# Fire Sat · application
+# Fire Orbit · application
 
 On Windows, open **Abrir Tierra.cmd**. You need Python 3 and a browser that supports WebGL 2.
 

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#04060f">
+  <meta name="description" content="Observa el fuego desde el espacio con datos de NASA FIRMS y dos sensores satelitales: MODIS y VIIRS.">
+  <meta name="application-name" content="Fire Orbit">
+  <title>Fire Orbit · Nuestro planeta</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="tierra.css?v=20261115nombre2">
+  <link rel="stylesheet" href="espacio.css?v=20261114-espacio">
+  <link rel="stylesheet" href="tema-oscuro.css?v=20261115chl3">
+  <link rel="stylesheet" href="armonizacion.css?v=20261115chl3">
+  <link rel="preload" href="assets/InterTight-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/Archivo-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
+  <script src="arranque.js?v=20261115chl3" defer></script>
+  <script src="espacio.js?v=20261114-espacio" defer></script>
+  <script type="module" src="armonizacion.js?v=20261115chl3"></script>
+</head>
+<body>
+  <main id="escena" data-view="intro" aria-label="Tierra tridimensional interactiva">
+    <div id="nombre-pais" class="nombre-pais" aria-hidden="true"></div>
+    <header class="cabecera">
+      <a class="marca" href="./" aria-label="Fire Orbit: volver al inicio" translate="no">Fire Orbit<span class="marca-punto" aria-hidden="true">.</span></a>
+      <nav class="cabecera-nav" aria-label="Principal">
+        <button type="button" class="enlace-claro" id="restaurar" disabled>Vista inicial</button>
+        <button type="button" class="enlace-claro boton-metodo" id="abrir-metodo" data-abrir-metodo>Armonización</button>
+        <button type="button" class="enlace-claro" id="abrir-datos">Datos guardados</button>
+      </nav>
+    </header>
+    <section class="portada" id="portada" aria-labelledby="titulo">
+      <div class="portada-contenido">
+        <h1 id="titulo" translate="no">Fire Orbit</h1>
+        <p class="presentacion">Observa el fuego desde el espacio con datos de NASA&nbsp;FIRMS y dos sensores satelitales: <span translate="no">MODIS</span> y <span translate="no">VIIRS</span>.</p>
+      </div>
+      <button type="button" class="explorar" id="explorar" disabled>
+        Explorar la Tierra
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14m-6-6 6 6 6-6"/></svg>
+      </button>
+    </section>
+    <canvas id="tierra" tabindex="0" aria-label="Tierra 3D. Arrastra para girar y usa la rueda para acercarte. Las flechas giran la vista; más y menos cambian el zoom."></canvas>
+    <canvas id="pieza" hidden></canvas>
+    <div id="etiquetas-regiones" class="etiquetas-regiones" aria-label="Regiones y ciudades en el mapa"></div>
+    <div class="pieza-leyenda" id="pieza-leyenda" aria-hidden="true" hidden>
+      <div class="leyenda-frp"><span class="ley-frp">Potencia del fuego (FRP)</span><span class="ley-serie">Actividad de fuego en el período</span><div class="frp-escala"><small>Baja</small><i></i><small>Alta</small></div></div>
+      <div class="leyenda-detalle">
+        <span class="ley-cuadro"><i></i>Detección<span class="ley-extra">&nbsp;· huella del píxel (MODIS 1 km, VIIRS 375 m)</span></span>
+      </div>
+      <p class="pieza-ayuda" id="pieza-ayuda"></p>
+    </div>
+    <p class="atribucion-satelital" id="atribucion-satelital">EOxCloudless 2016 <a href="https://cloudless.eox.at" target="_blank" rel="noopener">https://cloudless.eox.at</a> by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 &amp; 2017) · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></p>
+    <aside id="panel-pais" class="panel-pais" aria-labelledby="panel-titulo" hidden></aside>
+    <div id="tip-punto" class="tip-punto" role="tooltip" hidden></div>
+    <aside id="buscador-paises" class="buscador-paises" aria-label="Buscar y seleccionar un país" inert>
+      <label for="buscar-pais">Explora un país</label>
+      <div class="campo-pais">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+        <input id="buscar-pais" name="pais" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lista-paises" aria-describedby="ayuda-pais" placeholder="Buscar un país…" autocomplete="off" spellcheck="false" disabled>
+        <button id="limpiar-pais" type="button" aria-label="Quitar país seleccionado" hidden>×</button>
+      </div>
+      <ul id="lista-paises" role="listbox" aria-label="Países" hidden></ul>
+      <p id="ayuda-pais" class="solo-lectores">Nombre en español o inglés</p>
+      <div class="con-datos" role="group" aria-label="Países con detalle diario">
+        <span>Detalle diario:</span>
+        <button type="button" data-pais-rapido="152">Chile</button>
+      </div>
+    </aside>
+    <span id="anuncio-pais" class="solo-lectores" role="status" aria-live="polite"></span>
+    <div class="carga" id="carga" role="status" aria-live="polite">
+      <span class="orbita" aria-hidden="true"></span>
+      <p id="mensaje-carga">Preparando la Tierra…</p>
+    </div>
+    <div class="error" id="error" role="alert" hidden>
+      <h1>No pudimos abrir la escena</h1>
+      <p id="mensaje-error"></p>
+      <button type="button" class="boton" id="reintentar">Volver a intentar</button>
+      <button type="button" class="enlace-claro" id="error-datos">Ver datos guardados</button>
+    </div>
+    <p class="instruccion" id="instruccion"></p>
+    <div class="pie" aria-label="Controles de la Tierra" role="group">
+      <button type="button" class="boton-icono" id="giro" aria-label="Pausar giro" aria-pressed="false" disabled><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
+      <details class="creditos">
+        <summary class="boton-icono" aria-label="Créditos e información de la escena"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 11v6"/><circle cx="12" cy="7" r=".6" fill="currentColor"/></svg></summary>
+        <div>
+          <p>Las nubes y la iluminación son ilustrativas: no representan el clima real ni la hora actual.</p>
+          <p>Detecciones de incendios: <a href="https://firms.modaps.eosdis.nasa.gov/" target="_blank" rel="noopener">NASA FIRMS</a>, MODIS y VIIRS.</p>
+          <p>Mapas: <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope / INOVE</a>, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. Relieve submarino: <a href="https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-topography-bathymetry/" target="_blank" rel="noopener">NASA Blue Marble</a>.</p>
+          <p>Países, regiones y ciudades: Natural Earth, dominio público. Nombres: <a href="https://github.com/mledoze/countries" target="_blank" rel="noopener">Countries</a>, ODbL. Gráficos: Three.js y D3 Geo. Tipografías: Inter Tight y Archivo (SIL OFL).</p>
+          <p>Relieve regional: <a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">Mapzen Terrain Tiles</a>. <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noopener">Fuentes y créditos de elevación</a>.</p>
+          <p>Detalle satelital: EOxCloudless 2016 <a href="https://cloudless.eox.at" target="_blank" rel="noopener">https://cloudless.eox.at</a> by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 &amp; 2017), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. Solo se descarga con el interruptor activado.</p>
+        </div>
+      </details>
+    </div>
+    <dialog id="datos-guardados" class="datos-guardados" aria-labelledby="datos-titulo"></dialog>
+    <noscript><p class="sin-js">Activa JavaScript para ver la Tierra interactiva.</p></noscript>
+  </main>
+</body>
+</html>
