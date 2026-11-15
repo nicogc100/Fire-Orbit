@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { construirGeometria, construirPuntos, desproyectar, fueraDePieza, proyectar } from './pieza-geo.js?v=20261114ia';
-import { CapaSatelital } from '../satelite/capa-satelital.js?v=20261114ia';
+import { construirGeometria, construirPuntos, desproyectar, fueraDePieza, proyectar } from './pieza-geo.js?v=20261115chl3';
+import { CapaSatelital } from '../satelite/capa-satelital.js?v=20261115chl3';
 import {
   verticePieza,
   fragmentoPieza,
@@ -10,7 +10,7 @@ import {
   fragmentoPuntos,
   verticeCuadros,
   fragmentoCuadros,
-} from './modo-pais-shaders.js?v=20261114ia';
+} from './modo-pais-shaders.js?v=20261115chl3';
 
 // El mapa del país se dibuja en su propio lienzo, sobre el globo. El pase de nubes
 // no cambia y el globo sigue vivo al lado. La cámara del mapa copia la del globo,
@@ -32,6 +32,9 @@ const cuadro = () => {
   );
   return g;
 };
+
+const habitantesCorto = n =>
+  n >= 1e6 ? `${(n / 1e6).toLocaleString('es-CL', { maximumFractionDigits: 1 })} M` : n >= 1000 ? `${Math.round(n / 1000)} mil` : `${n}`;
 
 export class ModoPais {
   constructor({
@@ -81,6 +84,11 @@ export class ModoPais {
     this.uMostrarRelieve = { value: 0 };
     this.vista = null;
     this.localidades = [];
+    // Poblaciones de Chile (INE): [nombre, lon, lat, habitantes]. null: capa apagada.
+    this.poblaciones = null;
+    // Herramienta «medir área»: el arrastre dibuja un rectángulo en vez de mover el mapa.
+    this.modoArea = false;
+    this.arrastreArea = null;
     this.uMapa = { value: this.mapa };
     this.uPantalla = { value: new THREE.Vector2(1, 1) };
     this.uniformesPuntos = {
@@ -188,7 +196,7 @@ export class ModoPais {
       depthWrite: false,
       depthTest: false,
     });
-    this.worker = new Worker(new URL('./cartografia-worker.js?v=20261114ia', import.meta.url), { type: 'module' });
+    this.worker = new Worker(new URL('./cartografia-worker.js?v=20261115chl3', import.meta.url), { type: 'module' });
     this.worker.onmessage = ({ data }) => {
       const resolver = this.respuestas.get(data.pedido);
       this.respuestas.delete(data.pedido);
@@ -734,12 +742,29 @@ export class ModoPais {
     this.capaEtiquetas.replaceChildren();
     this.medidor.font = '600 12px Atlas, Arial, sans-serif';
     const regiones = g.etiquetas.filter(e => e !== this.vista?.region).sort((a, b) => b.area - a.area);
-    this.etiquetasDom = [...this.localidades, ...regiones].map(e => {
+    const poblaciones = this.poblaciones
+      ? this.poblaciones.flatMap(([nombre, lon, lat, habitantes]) => {
+          if (fueraDePieza(g.marco, lon, lat)) return [];
+          const [x, y] = proyectar(g.marco, lon, lat);
+          return [{ nombre, lon, lat, x: x - g.cx, y: y - g.cy, ciudad: true, habitantes }];
+        })
+      : [];
+    const lista = poblaciones.length ? [...poblaciones, ...regiones] : [...this.localidades, ...regiones];
+    this.etiquetasDom = lista.map(e => {
       const nodo = document.createElement('button');
       nodo.type = 'button';
       nodo.className = e.ciudad ? 'etiqueta-region etiqueta-ciudad' : 'etiqueta-region';
-      nodo.textContent = e.nombre;
-      nodo.setAttribute('aria-label', `Acercar a ${e.nombreCompleto ?? e.nombre}`);
+      if (e.habitantes) {
+        nodo.classList.add('etiqueta-poblacion');
+        nodo.textContent = e.nombre;
+        const n = document.createElement('small');
+        n.textContent = habitantesCorto(e.habitantes);
+        nodo.append(n);
+        nodo.setAttribute('aria-label', `Acercar a ${e.nombre} (${e.habitantes.toLocaleString('es-CL')} habitantes)`);
+      } else {
+        nodo.textContent = e.nombre;
+        nodo.setAttribute('aria-label', `Acercar a ${e.nombreCompleto ?? e.nombre}`);
+      }
       nodo.hidden = true;
       nodo.addEventListener('click', () => {
         if (e.ciudad) this.seleccionarCiudad(e);
@@ -747,7 +772,8 @@ export class ModoPais {
         this.canvas.focus({ preventScroll: true });
       });
       this.capaEtiquetas.append(nodo);
-      return { ...e, nodo, ancho: this.medidor.measureText(e.nombre).width + (e.ciudad ? 13 : 6) };
+      const texto = e.habitantes ? `${e.nombre}  ${habitantesCorto(e.habitantes)}` : e.nombre;
+      return { ...e, nodo, ancho: this.medidor.measureText(texto).width + (e.ciudad ? 13 : 6) };
     });
   }
   // Solo se recalcula cuando la vista cambió. Primero las regiones grandes; las que
@@ -767,7 +793,7 @@ export class ModoPais {
     const ocupados = [];
     const margenDerecho = this.area.x + this.area.w + 16;
     // A escala de país, pocas etiquetas: el mapa y los focos van primero.
-    const maximo = this.zoom >= 1.3 ? Infinity : W <= 720 ? 12 : 18;
+    const maximo = this.zoom >= 1.3 ? Infinity : this.poblaciones ? (W <= 720 ? 16 : 34) : W <= 720 ? 12 : 18;
     const enPantalla = (x, y) => {
       const w = m[3] * x + m[7] * y + m[15];
       return [(((m[0] * x + m[4] * y + m[12]) / w + 1) * W) / 2, ((1 - (m[1] * x + m[5] * y + m[13]) / w) * H) / 2];
@@ -1019,10 +1045,106 @@ export class ModoPais {
   }
 
   // ---------- Manipulación ----------
+  // ---------- Poblaciones y área ----------
+  ponerPoblaciones(lista) {
+    this.poblaciones = lista?.length ? lista : null;
+    if (this.geometria) this.crearEtiquetas(this.geometria);
+    this.sucio = true;
+  }
+  activarArea(activo) {
+    this.modoArea = activo;
+    this.arrastreArea = null;
+    this.canvas.classList.toggle('modo-area', activo);
+  }
+  // Matriz y medidas para pasar de la pieza a píxeles del lienzo.
+  proyectorPantalla() {
+    const rect = this.canvas.getBoundingClientRect();
+    this.grupo.updateMatrixWorld();
+    const m = new THREE.Matrix4()
+      .multiplyMatrices(this.camara.projectionMatrix, this.camara.matrixWorldInverse)
+      .multiply(this.grupo.matrixWorld).elements;
+    return (a, b, c = 0) => {
+      const w = m[3] * a + m[7] * b + m[11] * c + m[15];
+      return [
+        rect.left + (((m[0] * a + m[4] * b + m[8] * c + m[12]) / w + 1) * rect.width) / 2,
+        rect.top + ((1 - (m[1] * a + m[5] * b + m[9] * c + m[13]) / w) * rect.height) / 2,
+      ];
+    };
+  }
+  // Cuenta los focos visibles (mismos filtros que el mapa) dentro de un rectángulo de pantalla.
+  contarEnRect(x0, y0, x1, y1) {
+    const p = this.datosPuntos,
+      g = this.geometria;
+    if (!p || !g) return null;
+    const [ax, bx] = [Math.min(x0, x1), Math.max(x0, x1)],
+      [ay, by] = [Math.min(y0, y1), Math.max(y0, y1)];
+    const enPantalla = this.proyectorPantalla();
+    const dentro = (sx, sy) => sx >= ax && sx <= bx && sy >= ay && sy <= by;
+    const f = this.filtro,
+      u = this.uniformesPuntos.uSensores.value,
+      enRegion = this.uniformesPuntos.uRegion.value;
+    const { plano, dia, sensor, registros, region } = p;
+    let modis = 0,
+      viirs = 0,
+      frpMax = 0;
+    // Serie armonizada por zonas: cada zona aporta su valor según la fracción de sus puntos que cae dentro.
+    const porCelda = new Map();
+    for (let i = 0; i < registros.length; i++) {
+      const r = registros[i];
+      if (!r.celda && (dia[i] < f.ini - f.cola || dia[i] > f.fin || (sensor[i] < 0.5 ? u.x : u.y) === 0)) continue;
+      if (enRegion !== -1 && region?.[i] !== enRegion) continue;
+      const [sx, sy] = enPantalla(plano[i * 3], plano[i * 3 + 1], plano[i * 3 + 2]);
+      const esta = dentro(sx, sy);
+      if (r.celda) {
+        const c = porCelda.get(r.idCelda) ?? { dentro: 0, total: 0, valor: r.valor };
+        c.total++;
+        if (esta) c.dentro++;
+        porCelda.set(r.idCelda, c);
+        continue;
+      }
+      if (!esta) continue;
+      if (sensor[i] < 0.5) modis++;
+      else viirs++;
+      if (r.frp > frpMax) frpMax = r.frp;
+    }
+    let armonizado = null;
+    if (porCelda.size) {
+      armonizado = 0;
+      for (const c of porCelda.values()) armonizado += (c.valor * c.dentro) / c.total;
+    }
+    // Superficie aproximada a partir de las cuatro esquinas (proyección local en km).
+    const esquinas = [
+      [ax, ay],
+      [bx, ay],
+      [bx, by],
+      [ax, by],
+    ].map(([x, y]) => this.lonLatEn(x, y));
+    let km2 = null;
+    if (esquinas.every(Boolean)) {
+      const lat0 = THREE.MathUtils.degToRad(esquinas.reduce((s, e) => s + e[1], 0) / 4);
+      const xy = esquinas.map(([lon, lat]) => [lon * 111.32 * Math.cos(lat0), lat * 110.57]);
+      km2 = Math.abs(xy.reduce((s, [x, y], i) => s + x * xy[(i + 1) % 4][1] - xy[(i + 1) % 4][0] * y, 0) / 2);
+    }
+    const poblaciones = (this.listaPoblaciones ?? [])
+      .filter(([, lon, lat]) => !fueraDePieza(g.marco, lon, lat))
+      .filter(([, lon, lat]) => {
+        const [x, y] = proyectar(g.marco, lon, lat);
+        return dentro(...enPantalla(x - g.cx, y - g.cy));
+      });
+    return { modis, viirs, frpMax, armonizado, km2, poblaciones, centro: this.lonLatEn((ax + bx) / 2, (ay + by) / 2) };
+  }
+
   escucharPunteros() {
     const c = this.canvas;
     c.addEventListener('pointerdown', e => {
       if (!this.llegado || e.button !== 0) return;
+      if (this.modoArea) {
+        c.setPointerCapture(e.pointerId);
+        this.arrastreArea = { id: e.pointerId, x0: e.clientX, y0: e.clientY, x1: e.clientX, y1: e.clientY };
+        this.onPunto?.(null);
+        this.onArea?.({ ...this.arrastreArea, final: false });
+        return;
+      }
       this.enfoque = null;
       c.setPointerCapture(e.pointerId);
       this.punteros.set(e.pointerId, { x: e.clientX, y: e.clientY, ox: e.clientX, oy: e.clientY });
@@ -1032,6 +1154,13 @@ export class ModoPais {
       this.onPunto?.(null);
     });
     c.addEventListener('pointermove', e => {
+      const a = this.arrastreArea;
+      if (a && a.id === e.pointerId) {
+        a.x1 = e.clientX;
+        a.y1 = e.clientY;
+        this.onArea?.({ ...a, final: false });
+        return;
+      }
       const p = this.punteros.get(e.pointerId);
       if (!p) {
         if (e.pointerType !== 'touch') this.buscarPunto(e.clientX, e.clientY);
@@ -1059,6 +1188,17 @@ export class ModoPais {
       this.sucio = true;
     });
     const soltar = e => {
+      const a = this.arrastreArea;
+      if (a && a.id === e.pointerId) {
+        this.arrastreArea = null;
+        const chico = Math.abs(a.x1 - a.x0) < 6 || Math.abs(a.y1 - a.y0) < 6;
+        this.onArea?.(
+          chico || e.type === 'pointercancel'
+            ? null
+            : { ...a, final: true, resultado: this.contarEnRect(a.x0, a.y0, a.x1, a.y1) },
+        );
+        return;
+      }
       const p = this.punteros.get(e.pointerId);
       const toque =
         p && e.type === 'pointerup' && this.punteros.size === 1 && Math.hypot(e.clientX - p.ox, e.clientY - p.oy) < 8;
@@ -1085,10 +1225,15 @@ export class ModoPais {
         if (!this.llegado) return;
         e.preventDefault();
         this.acercar(Math.exp(-e.deltaY * 0.0014), e.clientX, e.clientY);
+        this.onVistaMovida?.();
       },
       { passive: false },
     );
-    c.addEventListener('dblclick', () => this.reiniciarVista());
+    c.addEventListener('dblclick', () => {
+      if (this.modoArea) return;
+      this.reiniciarVista();
+      this.onVistaMovida?.();
+    });
     c.addEventListener('keydown', e => {
       const paso = { ArrowLeft: [-0.09, 0], ArrowRight: [0.09, 0], ArrowUp: [0, -0.07], ArrowDown: [0, 0.07] }[e.key];
       if (paso) {

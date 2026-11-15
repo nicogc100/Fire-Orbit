@@ -11,7 +11,6 @@ export const CATALOGO = {
     serie: 'chile-mensual.json',
     grilla: 'chile-grilla.json',
   },
-  620: { id: '620', nombre: 'Portugal', prefijo: 'portugal', anios: [2023] },
 };
 // Índice mundial (procesamiento/5_mundo_armonizar.py): serie mensual harmonizada de cada país.
 let indiceMundo = new Map();

@@ -8,13 +8,16 @@
   <meta name="application-name" content="Fire Sat">
   <title>Fire Sat · Nuestro planeta</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="tierra.css?v=20261114ia">
+  <link rel="stylesheet" href="tierra.css?v=20261115chl3">
   <link rel="stylesheet" href="espacio.css?v=20261114-espacio">
+  <link rel="stylesheet" href="tema-oscuro.css?v=20261115chl3">
+  <link rel="stylesheet" href="armonizacion.css?v=20261115chl3">
   <link rel="preload" href="assets/InterTight-variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/Archivo-variable.woff2" as="font" type="font/woff2" crossorigin>
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
-  <script src="arranque.js?v=20261114ia" defer></script>
+  <script src="arranque.js?v=20261115chl3" defer></script>
   <script src="espacio.js?v=20261114-espacio" defer></script>
+  <script type="module" src="armonizacion.js?v=20261115chl3"></script>
 </head>
 <body>
   <main id="escena" data-view="intro" aria-label="Tierra tridimensional interactiva">
@@ -23,6 +26,7 @@
       <a class="marca" href="./" aria-label="Fire Sat: volver al inicio" translate="no">Fire Sat<span class="marca-punto" aria-hidden="true">.</span></a>
       <nav class="cabecera-nav" aria-label="Principal">
         <button type="button" class="enlace-claro" id="restaurar" disabled>Vista inicial</button>
+        <button type="button" class="enlace-claro boton-metodo" id="abrir-metodo" data-abrir-metodo>Armonización</button>
         <button type="button" class="enlace-claro" id="abrir-datos">Datos guardados</button>
       </nav>
     </header>
@@ -61,7 +65,6 @@
       <div class="con-datos" role="group" aria-label="Países con detalle diario">
         <span>Detalle diario:</span>
         <button type="button" data-pais-rapido="152">Chile</button>
-        <button type="button" data-pais-rapido="620">Portugal</button>
       </div>
     </aside>
     <span id="anuncio-pais" class="solo-lectores" role="status" aria-live="polite"></span>

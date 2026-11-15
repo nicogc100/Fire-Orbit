@@ -9,9 +9,9 @@ import {
   cargarZonas,
   serieDeRegion,
   referenciaHistorica,
-} from '../datos/datos-pais.js?v=20261114ia';
-import { CalendarioHistorico } from './calendario-historico.js?v=20261114ia';
-import { TablaRegistros, nombreArchivo } from './tabla-registros.js?v=20261114ia';
+} from '../datos/datos-pais.js?v=20261115chl3';
+import { CalendarioHistorico } from './calendario-historico.js?v=20261115chl3';
+import { TablaRegistros, nombreArchivo } from './tabla-registros.js?v=20261115chl3';
 
 const numero = new Intl.NumberFormat('es-CL');
 const decimal = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -41,6 +41,13 @@ const ICONO_PAUSA =
   '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
 const ICONO_CSV =
   '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>';
+
+// Acceso al panel «Armonización» (armonizacion.js atiende data-abrir-metodo). Solo Chile tiene el modelo con IA.
+const BOTON_METODO = `<button type="button" class="hc-como hc-como-pais" data-abrir-metodo>
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#9cc4ff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5M4 19h16M7 15l4-5 3 3 5-7"/></svg>
+  <span><strong>Armonización MODIS + VIIRS</strong><span>Gráficos y precisión de la serie 2003–2025.</span></span>
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</button>`;
 
 // Primer día (índice dentro del año) y cantidad de días de cada mes.
 function diasDelMes(anio, mes) {
@@ -326,9 +333,11 @@ export class PanelPais {
           </select>
         </label>
       </div>
+      ${this.entrada?.id === '152' ? BOTON_METODO : ''}
       <div class="pestanas" role="tablist" aria-label="Información del territorio">
         <button type="button" role="tab" id="pestana-calendario" aria-controls="vista-calendario" data-pestana="calendario">Calendario</button>
         <button type="button" role="tab" id="pestana-datos" aria-controls="vista-datos" data-pestana="datos">Datos</button>
+        ${this.entrada?.id === '152' ? '<button type="button" role="tab" id="pestana-validacion" aria-controls="vista-validacion" data-pestana="validacion">Validación</button>' : ''}
       </div>
       <div class="vista-pestana" role="tabpanel" id="vista-calendario" aria-labelledby="pestana-calendario" data-parte="vista-calendario">
         <div data-parte="vista-anio">
@@ -372,6 +381,7 @@ export class PanelPais {
         </div>
         <section class="bloque historico" aria-labelledby="titulo-historico" data-parte="historico" hidden></section>
       </div>
+      ${this.entrada?.id === '152' ? '<div class="vista-pestana" role="tabpanel" id="vista-validacion" aria-labelledby="pestana-validacion" data-parte="vista-validacion" hidden></div>' : ''}
       <div class="vista-pestana" role="tabpanel" id="vista-datos" aria-labelledby="pestana-datos" data-parte="vista-datos" hidden>
         <p class="datos-contexto" data-parte="datos-contexto"></p>
         <div class="datos-barra">
@@ -465,6 +475,7 @@ export class PanelPais {
     this.pestana = nombre;
     this.pintarPestana();
     if (nombre === 'datos') this.pintarDatos();
+    if (nombre === 'validacion') this.pintarValidacion();
     if (foco) this.cuerpo.querySelector(`[data-pestana="${nombre}"]`)?.focus();
   }
   pintarPestana() {
@@ -476,15 +487,34 @@ export class PanelPais {
     }
     this.parte('vista-calendario').hidden = this.pestana !== 'calendario';
     this.parte('vista-datos').hidden = this.pestana !== 'datos';
+    const validacion = this.parte('vista-validacion');
+    if (validacion) {
+      validacion.hidden = this.pestana !== 'validacion';
+      if (!validacion.hidden) this.pintarValidacion();
+    }
+    else if (this.pestana === 'validacion') this.elegirPestana('calendario');
+  }
+  // Validación con CONAF (solo Chile). Mismo módulo que el panel «Armonización».
+  pintarValidacion() {
+    const nodo = this.parte?.('vista-validacion');
+    if (!nodo || nodo.dataset.listo) return;
+    nodo.dataset.listo = '1';
+    import('../armonizacion.js?v=20261115chl3')
+      .then(m => m.pintarValidacion(nodo))
+      .catch(error => {
+        console.error('Validación:', error);
+        delete nodo.dataset.listo;
+      });
   }
   teclaPestanas(e) {
     const tab = e.target.closest('[role="tab"]');
     if (!tab || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
     e.preventDefault();
-    this.elegirPestana(
-      e.key === 'Home' ? 'calendario' : e.key === 'End' ? 'datos' : this.pestana === 'datos' ? 'calendario' : 'datos',
-      true,
-    );
+    const nombres = [...this.cuerpo.querySelectorAll('[data-pestana]')].map(b => b.dataset.pestana);
+    const i = nombres.indexOf(this.pestana);
+    const destino =
+      e.key === 'Home' ? 0 : e.key === 'End' ? nombres.length - 1 : (i + (e.key === 'ArrowRight' ? 1 : nombres.length - 1)) % nombres.length;
+    this.elegirPestana(nombres[destino], true);
   }
   pintarModo() {
     if (!this.parte?.('vista-anio')) return;

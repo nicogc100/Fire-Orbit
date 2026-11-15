@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { HandFlow } from './nubes/nubes-interactivas.js?v=20261114ia';
+import { HandFlow } from './nubes/nubes-interactivas.js?v=20261115chl3';
 import { createCloudNoiseTexture } from './nubes/cloud-volume.js';
-import { CloudLayer } from './nubes/capa-nubes.js?v=20261114ia';
-import { Countries } from './globo/paises.js?v=20261114ia';
-import { ModoPais } from './pais/modo-pais.js?v=20261114ia';
-import { PanelPais } from './paneles/panel-pais.js?v=20261114ia';
-import { PanelDatos } from './paneles/panel-datos.js?v=20261114ia';
+import { CloudLayer } from './nubes/capa-nubes.js?v=20261115chl3';
+import { Countries } from './globo/paises.js?v=20261115chl3';
+import { Orbitas } from './globo/orbitas.js?v=20261115chl3';
+import { ModoPais } from './pais/modo-pais.js?v=20261115chl3';
+import { PanelPais } from './paneles/panel-pais.js?v=20261115chl3';
+import { PanelDatos } from './paneles/panel-datos.js?v=20261115chl3';
 import {
   entradaCatalogo,
   cargarDatos,
@@ -14,10 +15,11 @@ import {
   cargarCeldas,
   sumarCeldas,
   fechaDeDia,
-} from './datos/datos-pais.js?v=20261114ia';
-import { vertexShader, surfaceShader } from './globo/globo-shaders.js?v=20261114ia';
-import { actualizarURL, leerInicial } from './estado-url.js?v=20261114ia';
-import { crearFichaPunto } from './pais/ficha-punto.js?v=20261114ia';
+} from './datos/datos-pais.js?v=20261115chl3';
+import { vertexShader, surfaceShader } from './globo/globo-shaders.js?v=20261115chl3';
+import { actualizarURL, leerInicial } from './estado-url.js?v=20261115chl3';
+import { crearFichaPunto } from './pais/ficha-punto.js?v=20261115chl3';
+import { HerramientasMapa } from './pais/herramientas-mapa.js?v=20261115chl3';
 
 const canvas = document.querySelector('#tierra');
 const loading = document.querySelector('#carga');
@@ -99,7 +101,7 @@ async function main() {
     if (!response.ok) throw new Error('No se pudo cargar el volumen de nubes');
     return response.arrayBuffer();
   });
-  const normalGuideRequest = fetch('./assets/nubes-relieve.rgba.gz?v=20261114ia').then(async response => {
+  const normalGuideRequest = fetch('./assets/nubes-relieve.rgba.gz?v=20261115chl3').then(async response => {
     if (!response.ok) throw new Error('No se pudo cargar el relieve de las nubes');
     const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
     const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
@@ -110,7 +112,7 @@ async function main() {
     }
     return bytes;
   });
-  const volumeRequest = fetch('./assets/nubes-esfericas.rg.gz?v=20261114ia').then(async response => {
+  const volumeRequest = fetch('./assets/nubes-esfericas.rg.gz?v=20261115chl3').then(async response => {
     if (!response.ok) throw new Error('No se pudo cargar el volumen de nubes');
     const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
     const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
@@ -176,9 +178,11 @@ async function main() {
     new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader: surfaceShader }),
   );
   globe.add(surface);
+  const orbitas = new Orbitas({ camera, sunDirection, contenedor: document.querySelector('#escena'), lienzo: canvas });
   function renderEarth() {
     cloudLayer.prepare();
     cloudLayer.compose(scene);
+    orbitas.render(renderer);
   }
 
   const controls = new OrbitControls(camera, canvas);
@@ -576,7 +580,17 @@ async function main() {
     camera.lookAt(0, 0, 0);
     modo.medir();
   }
-  const mostrarPunto = crearFichaPunto({ tip: tipPunto, regionDe: indice => panelPais.regionDe(indice) });
+  // Herramientas del mapa de Chile (se crean junto al panel, más abajo).
+  let herramientas = null;
+  // 'originales': detecciones de cada sensor. 'armonizados': serie armonizada por zonas de la grilla.
+  let puntosModo = 'originales',
+    claveArmonizado = null,
+    indicesOriginales = null;
+  const mostrarPunto = crearFichaPunto({
+    tip: tipPunto,
+    regionDe: indice => panelPais.regionDe(indice),
+    cercana: (lon, lat) => herramientas?.cercana(lon, lat) ?? null,
+  });
   modo = new ModoPais({
     canvas: piezaCanvas,
     stage,
@@ -634,7 +648,10 @@ async function main() {
       cargarDatosPais(paisAbierto, entrada, {}, ++pedidoPais);
     },
     onFiltro: filtro => {
-      modo.filtrar(filtro);
+      // Con los puntos armonizados el mapa muestra el mes o el año completo, no el día ni el sensor.
+      if (puntosModo === 'armonizados' && panelPais.datos) {
+        if (claveArmonizado !== `${panelPais.datos.anio}-${panelPais.mes}`) ponerArmonizados();
+      } else modo.filtrar(filtro);
       if (filtro.persistente) {
         actualizarURL({
           anio: panelPais.datos.anio,
@@ -644,6 +661,7 @@ async function main() {
       }
     },
   });
+  herramientas = new HerramientasMapa({ escena: stage, modo, describirFiltro, onPuntos: cambiarPuntos });
   // Países sin detecciones guardadas: un punto por celda con fuego en el período elegido.
   function ponerMapaSerie(sel) {
     const entrada = panelPais.entrada,
@@ -652,49 +670,104 @@ async function main() {
     cargarCeldas(entrada.id)
       .then(mapa => {
         if (pedido !== pedidoPais) return;
-        const suma = sumarCeldas(mapa, sel.anio, sel.mes);
-        const positivos = Array.from(suma)
-          .filter(v => v > 0)
-          .sort((a, b) => a - b);
-        const ref = positivos[Math.floor(positivos.length * 0.98)] || 1;
-        const lado = mapa.celda_grados;
-        // Mapa de densidad: cada zona recibe más puntos cuanto más fuego tuvo, repartidos al azar
-        // dentro de ella (siempre en el mismo lugar). Las zonas casi sin fuego no se dibujan.
-        const MAX_PUNTOS = 14;
-        const azar = semilla => {
-          let t = semilla >>> 0;
-          return () => {
-            t += 0x6d2b79f5;
-            let r = Math.imul(t ^ (t >>> 15), 1 | t);
-            r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
-            return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-          };
-        };
-        const registros = [];
-        mapa.celdas.forEach(([lat, lon], i) => {
-          const r = suma[i] / ref;
-          if (r < 0.02) return;
-          const n = Math.max(1, Math.round(MAX_PUNTOS * Math.sqrt(Math.min(1, r))));
-          const aleatorio = azar(i * 7919 + 17);
-          // Intensidad del color: proporcional a la raíz (la escala del mapa es logarítmica en FRP).
-          const frp = 10 ** (3 * Math.min(1, Math.sqrt(r))) - 1;
-          for (let k = 0; k < n; k++) {
-            registros.push({
-              lat: lat + aleatorio() * lado,
-              lon: lon + aleatorio() * lado,
-              frp,
-              sensor: 'VIIRS',
-              celda: true,
-              valor: suma[i],
-              tam: lado,
-              sel,
-            });
-          }
-        });
+        const registros = puntosDeCeldas(mapa, sel);
         modo.ponerPuntos({ registros, dias: new Int16Array(registros.length) });
         modo.filtrar({ ini: 0, fin: 400, cola: 0, sensor: 'todos', visibles: registros.length });
       })
       .catch(error => console.warn('Mapa del país no disponible:', error));
+  }
+  // Mapa de densidad de una grilla armonizada para un año (y mes).
+  function puntosDeCeldas(mapa, sel, extra = {}) {
+    const suma = sumarCeldas(mapa, sel.anio, sel.mes);
+    const positivos = Array.from(suma)
+      .filter(v => v > 0)
+      .sort((a, b) => a - b);
+    const ref = positivos[Math.floor(positivos.length * 0.98)] || 1;
+    const lado = mapa.celda_grados;
+    // Mapa de densidad: cada zona recibe más puntos cuanto más fuego tuvo, repartidos al azar
+    // dentro de ella (siempre en el mismo lugar). Las zonas casi sin fuego no se dibujan.
+    const MAX_PUNTOS = 14;
+    const azar = semilla => {
+      let t = semilla >>> 0;
+      return () => {
+        t += 0x6d2b79f5;
+        let r = Math.imul(t ^ (t >>> 15), 1 | t);
+        r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+      };
+    };
+    const registros = [];
+    mapa.celdas.forEach(([lat, lon], i) => {
+      const r = suma[i] / ref;
+      if (r < 0.02) return;
+      const n = Math.max(1, Math.round(MAX_PUNTOS * Math.sqrt(Math.min(1, r))));
+      const aleatorio = azar(i * 7919 + 17);
+      // Intensidad del color: proporcional a la raíz (la escala del mapa es logarítmica en FRP).
+      const frp = 10 ** (3 * Math.min(1, Math.sqrt(r))) - 1;
+      for (let k = 0; k < n; k++) {
+        registros.push({
+          lat: lat + aleatorio() * lado,
+          lon: lon + aleatorio() * lado,
+          frp,
+          sensor: 'VIIRS',
+          celda: true,
+          idCelda: i,
+          latCelda: lat + lado / 2,
+          lonCelda: lon + lado / 2,
+          valor: suma[i],
+          tam: lado,
+          sel,
+          ...extra,
+        });
+      }
+    });
+    return registros;
+  }
+  // Chile: los puntos armonizados salen de su grilla de 0,25° (serie con IA) para el año o mes del panel.
+  async function ponerArmonizados() {
+    const datos = panelPais.datos,
+      pedido = pedidoPais;
+    if (!datos || !panelPais.entrada || panelPais.entrada.soloSerie) return;
+    const sel = { anio: datos.anio, mes: panelPais.mes ?? null };
+    const clave = (claveArmonizado = `${sel.anio}-${sel.mes}`);
+    let zonas;
+    try {
+      zonas = await panelPais.zonasDelPais();
+    } catch (error) {
+      console.warn('Grilla armonizada no disponible:', error);
+      return;
+    }
+    if (pedido !== pedidoPais || puntosModo !== 'armonizados' || clave !== claveArmonizado) return;
+    const registros = puntosDeCeldas(zonas.mapa, sel, { chile: true });
+    modo.ponerPuntos({ registros, dias: new Int16Array(registros.length) });
+    modo.ponerRegionesPuntos(Int32Array.from(registros, r => zonas.regiones[r.idCelda] ?? -1));
+    modo.filtrar({ ini: 0, fin: 400, cola: 0, sensor: 'todos', visibles: registros.length });
+  }
+  function cambiarPuntos(valor) {
+    puntosModo = valor;
+    claveArmonizado = null;
+    tipPunto.hidden = true;
+    if (valor === 'armonizados') {
+      ponerArmonizados();
+      return;
+    }
+    if (!panelPais.datos) return;
+    modo.ponerPuntos(panelPais.datos);
+    if (indicesOriginales) modo.ponerRegionesPuntos(indicesOriginales);
+    panelPais.actualizar();
+  }
+  // Texto del período y sensor que se está viendo (para el resultado de «Medir área»).
+  function describirFiltro() {
+    const d = panelPais.datos;
+    if (!d) return {};
+    const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    let periodo = panelPais.mes === null || panelPais.mes === undefined ? `todo ${d.anio}` : `${meses[panelPais.mes]} de ${d.anio}`;
+    if (puntosModo !== 'armonizados' && Number.isInteger(panelPais.dia)) {
+      const [a, m, dd] = fechaDeDia(panelPais.dia, d.anio).split('-');
+      periodo = `${+dd} de ${meses[+m - 1]} de ${a}`;
+    }
+    const sensor = panelPais.sensor === 'todos' ? 'MODIS y VIIRS' : panelPais.sensor;
+    return { periodo, sensor };
   }
   function cargarDatosPais(country, entrada, inicial, pedido) {
     if (!entrada) return;
@@ -708,7 +781,9 @@ async function main() {
     cargarDatos(entrada)
       .then(async datos => {
         if (pedido !== pedidoPais) return;
+        indicesOriginales = null;
         panelPais.ponerDatos(datos, modo.ponerPuntos(datos), inicial);
+        if (puntosModo === 'armonizados') ponerArmonizados();
         const detalle = await modo.promesaDetalle;
         if (pedido !== pedidoPais || !detalle) return;
         // El contorno detallado puede dejar fuera otras islas que el general.
@@ -716,8 +791,9 @@ async function main() {
         panelPais.actualizar();
         const indices = await modo.regionesDe(datos, country.id);
         if (pedido === pedidoPais && indices) {
+          indicesOriginales = indices;
           panelPais.ponerRegiones(detalle.nombresRegion, indices);
-          modo.ponerRegionesPuntos(indices);
+          if (puntosModo !== 'armonizados') modo.ponerRegionesPuntos(indices);
         }
       })
       .catch(error => {
@@ -735,6 +811,12 @@ async function main() {
     setRotation(false);
     panelPais.preparar(country, entrada);
     stage.dataset.conDatos = !entrada ? 'no' : entrada.soloSerie ? 'serie' : 'si';
+    if (country.id !== paisAbierto?.id) {
+      herramientas.reiniciar();
+      puntosModo = 'originales';
+      indicesOriginales = null;
+    }
+    herramientas.mostrar(country.id === '152' && Boolean(entrada) && !entrada.soloSerie);
     actualizarURL({ pais: country.id, dia: null, sensor: null, anio: null });
     const nombre = country.properties.spanish || country.properties.name;
     piezaCanvas.setAttribute(
@@ -798,6 +880,7 @@ async function main() {
     cambioOrbita = null;
     panelPais.detener();
     delete stage.dataset.modo;
+    herramientas.limpiarArea();
     modo.salir();
     actualizarURL({ pais: null, dia: null, sensor: null, anio: null });
     if (vuelo) {
@@ -969,6 +1052,8 @@ async function main() {
     // La selección de países solo existe con el planeta completo a la vista.
     countries.update(time, delta, seleccionBloqueada(), 1 - avanceMapa);
     modo.update(avanceMapa, Boolean(vuelo || cambioOrbita));
+    // Satélites solo con el planeta completo a la vista (no en la portada ni dentro de un país).
+    orbitas.update(delta, view === 'globe' && !paisAbierto && !vuelo && !transition ? 1 : 0);
     renderEarth();
     frameCount++;
     if (!arranqueHecho && paisPendiente) {

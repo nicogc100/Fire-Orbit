@@ -1,4 +1,4 @@
-import { etiquetaConfianza, etiquetaSatelite } from '../datos/datos-pais.js?v=20261114ia';
+import { etiquetaConfianza, etiquetaSatelite } from '../datos/datos-pais.js?v=20261115chl3';
 
 // Ficha flotante de un foco del mapa: fecha, hora, sensor, potencia y confianza, o el
 // resumen de una zona cuando el país solo tiene la serie harmonizada por celdas.
@@ -6,7 +6,8 @@ const numeroTip = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 1 });
 const fechaTip = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 
 // tip: el elemento #tip-punto. regionDe(indice): nombre de la región del registro.
-export function crearFichaPunto({ tip, regionDe }) {
+// cercana(lon, lat): población más cercana { nombre, km, habitantes } o null (solo Chile).
+export function crearFichaPunto({ tip, regionDe, cercana = () => null }) {
   return function mostrarPunto(registro, x, y, indice) {
     if (!registro) {
       tip.hidden = true;
@@ -31,10 +32,12 @@ export function crearFichaPunto({ tip, regionDe }) {
       const t = document.createElement('strong');
       t.textContent = `${numeroTip.format(Math.round(registro.valor))} celdas-día con fuego`;
       const km = Math.round(registro.tam * 111);
+      const pueblo = registro.chile ? cercana(registro.lonCelda, registro.latCelda) : null;
       const lineas = [
         registro.sel.mes === null ? `Todo ${registro.sel.anio}` : `${meses[registro.sel.mes]} de ${registro.sel.anio}`,
         `Zona de ~${km} km (${registro.tam}°)`,
-        'Serie harmonizada MODIS / VIIRS',
+        registro.chile ? 'Armonizado con IA (escala VIIRS)' : 'Serie harmonizada MODIS / VIIRS',
+        ...(pueblo ? [`Cerca de ${pueblo.nombre}`] : []),
       ];
       tip.append(
         t,
@@ -59,6 +62,11 @@ export function crearFichaPunto({ tip, regionDe }) {
       `${registro.sensor} · ${etiquetaSatelite(registro.satelite)} · ${registro.periodo === 'D' ? 'Día' : 'Noche'}`,
       `Confianza: ${etiquetaConfianza(registro.confianza)}`,
     ];
+    const pueblo = cercana(registro.lon, registro.lat);
+    if (pueblo)
+      lineas.push(
+        `A ${pueblo.km < 10 ? numeroTip.format(pueblo.km) : Math.round(pueblo.km)} km de ${pueblo.nombre} (${pueblo.habitantes.toLocaleString('es-CL')} hab.)`,
+      );
     tip.append(
       titulo,
       ...lineas.map(texto => {

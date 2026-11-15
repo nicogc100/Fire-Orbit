@@ -31,6 +31,15 @@ const TRAMOS_ANOMALIA = [
 ];
 const nivelAnomalia = r => TRAMOS_ANOMALIA.find(t => r < t.hasta).nivel;
 
+// Chile usa el modelo con IA; el resto del mundo, la armonización simple (un factor por mes).
+// data-abrir-metodo lo atiende armonizacion.js (abre el panel «Armonización»).
+const COMO = `<button type="button" class="hc-como" data-abrir-metodo>
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#9cc4ff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5M4 19h16M7 15l4-5 3 3 5-7"/></svg>
+  <span><strong>Armonización MODIS + VIIRS</strong><span>Gráficos y precisión de la serie 2003–2025.</span></span>
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</button>`;
+const REPLICABLE = `<p class="hc-replicable"><strong>Armonización simple</strong> (un factor VIIRS/MODIS por mes). Chile usa armonización con IA, replicable a otros países. <button type="button" data-abrir-metodo>Ver armonización</button></p>`;
+
 // Ordena la serie por año y mes y calcula lo que necesita el calendario.
 export function prepararSerie(serie) {
   const mediana = serie.por_mes_calendario.mediana;
@@ -265,6 +274,7 @@ export class CalendarioHistorico {
         ${ind.peorAnio ? `<li><span>Año con más actividad</span><strong>${ind.peorAnio}</strong><small>${numero.format(ind.totalPeor)} celdas con fuego</small></li>` : ''}
         <li><span>Mes más activo habitualmente</span><strong>${MESES[ind.mesTipico]}</strong><small>mediana ${numero.format(serie.por_mes_calendario.mediana[ind.mesTipico])}</small></li>
       </ul>
+      ${metodo.modelo_ia ? COMO : ''}
       ${avisoCalidad}
       <div class="hc-rejilla" role="group" aria-labelledby="titulo-historico">
         <div class="hc-fila hc-cabeza" aria-hidden="true"><span></span>${INICIALES.map(m => `<span>${m}</span>`).join('')}</div>
@@ -272,7 +282,8 @@ export class CalendarioHistorico {
       </div>
       <div class="leyenda hc-leyenda">${leyenda}</div>
       <p class="hc-nota">${serie.region ? `Región calculada con zonas de ${String(serie.metodo?.zonas_grados ?? 0.25).replace('.', ',')}° (unos ${Math.round((serie.metodo?.zonas_grados ?? 0.25) * 111)} km): cada zona cuenta entera en la región donde está su centro. ` : ''}${this.onMes ? 'Toca un mes para verlo en el mapa, o un año para su detalle día a día. ' : this.detalle ? 'Toca un año para ver sus detecciones día a día. ' : this.onSeleccion ? 'Toca un año o un mes para verlo en el mapa. ' : ''}Las casillas rayadas tienen datos incompletos.
-        ${metodo.error_anual_mediano_pct != null ? `${metodo.anios_traslape ? `Antes de ${metodo.anios_traslape[0]}` : 'Los años sin VIIRS'} se reconstruyen desde MODIS${metodo.modelo_ia ? ' con IA (red neuronal + Random Forest)' : ''} (error anual típico ±${decimal.format(metodo.error_anual_mediano_pct)} %).` : ''}</p>`;
+        ${metodo.error_anual_mediano_pct != null ? `${metodo.anios_traslape ? `Antes de ${metodo.anios_traslape[0]}` : 'Los años sin VIIRS'} se reconstruyen desde MODIS${metodo.modelo_ia ? ' con IA (red neuronal + Random Forest)' : ' con un factor por mes'} (error anual típico ±${decimal.format(metodo.error_anual_mediano_pct)} %).` : ''}</p>
+      ${metodo.modelo_ia ? '' : REPLICABLE}`;
     const t = this.nodo.querySelector('.hc-territorio');
     if (t) t.textContent = this.territorio;
   }

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { geoPath, geoEquirectangular } from '../vendor/d3-geo.js';
 import { countryAt, coordinatesFromPoint, searchCountries } from './paises-geo.js';
-import { entradaCatalogo } from '../datos/datos-pais.js?v=20261114ia';
+import { entradaCatalogo } from '../datos/datos-pais.js?v=20261115chl3';
 
 const W = 4096,
   H = 2048;
