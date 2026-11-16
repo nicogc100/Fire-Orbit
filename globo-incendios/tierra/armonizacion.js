@@ -2,7 +2,7 @@
 // Lee data/chile-metodo.json (resultados del modelo, armonizacion-chile-ia/salida).
 // Se abre con cualquier botón que tenga data-abrir-metodo. Sin dependencias: SVG a mano.
 
-const VERSION = '20261115orb4';
+const VERSION = '20261115orb5';
 const numero = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 });
 const dec1 = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const dec2 = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
